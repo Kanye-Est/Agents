@@ -26,4 +26,6 @@ slides/*.xdv
 slides/*.fls
 slides/*.fdb_latexmk
 slides/slideimg_*.png
+slides/v2slide_*.png
+slides/*.png
 *.log
