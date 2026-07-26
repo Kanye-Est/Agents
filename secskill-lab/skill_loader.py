@@ -48,8 +48,23 @@ class SkillTool(Tool):
         )
         self.instructions = body                       # SKILL.md 正文
         self._handler = _load_handler(skill_dir / "handler.py")
+        declared = meta.get("parameters")
+        self._parameter_specs = (
+            declared if isinstance(declared, list) and declared else None
+        )
 
     def get_parameters(self):
+        if self._parameter_specs is not None:
+            return [
+                ToolParameter(
+                    name=str(spec["name"]),
+                    type=str(spec.get("type", "string")),
+                    description=str(spec.get("description", "")),
+                    required=bool(spec.get("required", False)),
+                )
+                for spec in self._parameter_specs
+                if isinstance(spec, dict) and spec.get("name")
+            ]
         return [ToolParameter(name="input", type="string",
                               description="传给该 skill 的输入文本", required=False)]
 
