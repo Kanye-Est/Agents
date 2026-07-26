@@ -57,7 +57,9 @@
 | 35 | **34_PAPER_DRAFT_v0.md** | **论文 v0：scaffold authorization 主线、真实结果、Defense 与待补实验** | ⭐ 论文草稿 |
 | 36 | **35_GENERALIZATION_PREREGISTRATION.md** | **跨模型/跨 scaffold 复现判据、tool-probe 验收门与 provenance** | ⭐ 下一阶段预注册 |
 | 37 | **36_APPROVAL_GATE_DEFENSE_RESULTS.md** | **P2 denied/approved-benign/approved-malicious 三臂：gating ≠ vetting** | ⭐ 防御结果 |
-| 38 | **slides/** | 组会成品：PPT + 放映用预览 PDF + 逐页演讲稿（≤30min）+ 生成脚本；15 张图（4 截原文 / 11 自绘） | ⭐ 组会直接用 |
+| 38 | **37_FIGURE_SPECS.md** | **论文三张核心图的 panel、数据、caption 与渲染规格** | ⭐ 作图规格 |
+| 39 | **38_TRACK_A_EXECUTION_PLAN.md** | **最小可辩护 generalization：M2×S1、M1×S2、M3×S1 的执行顺序与红线** | ⭐ 当前执行计划 |
+| 40 | **slides/** | 组会成品：PPT + 放映用预览 PDF + 逐页演讲稿（≤30min）+ 生成脚本；15 张图（4 截原文 / 11 自绘） | ⭐ 组会直接用 |
 
 ---
 

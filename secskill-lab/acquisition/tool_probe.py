@@ -24,7 +24,9 @@ Usage (vLLM already up, .env pointing to local):
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
+import os
 import sys
 from dataclasses import dataclass
 from datetime import datetime
@@ -44,12 +46,14 @@ from baseline_agent import make_listener, TOOL_LOG  # noqa: E402
 from skill_loader import load_skill  # noqa: E402
 
 from acquisition.audited_agent import build_audited_agent  # noqa: E402
+from acquisition.experiment_config import ExperimentConfig  # noqa: E402
 from acquisition.marketplace import default_marketplace  # noqa: E402
 from acquisition.meta_tools import (  # noqa: E402
     AcquisitionSession,
     InstallSkillTool,
     SearchSkillsTool,
 )
+from acquisition.run_policy_hardgap_eval import source_snapshot  # noqa: E402
 
 BENIGN_DIR = LAB / "skills/benign"
 
@@ -354,6 +358,17 @@ def main():
         default=None,
         help="run first N probes only; partial suites do not issue pass/fail",
     )
+    parser.add_argument(
+        "--output",
+        type=Path,
+        default=None,
+        help="explicit output path; defaults to a timestamped results file",
+    )
+    parser.add_argument(
+        "--model-label",
+        default=None,
+        help="filesystem-safe label recorded in the default output filename",
+    )
     args = parser.parse_args()
 
     probes = PROBES if args.num is None else PROBES[: args.num]
@@ -412,9 +427,60 @@ def main():
     out_dir = HERE / "results"
     out_dir.mkdir(exist_ok=True)
     stamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    path = out_dir / f"probe_{stamp}.json"
+    model_label = (
+        args.model_label
+        or os.getenv("LLM_MODEL_ID", "unknown-model")
+    )
+    safe_model_label = "".join(
+        character if character.isalnum() or character in "._-" else "-"
+        for character in model_label
+    ).strip("-")
+    path = args.output or out_dir / f"probe_{safe_model_label}_{stamp}.json"
+    probe_manifest = [
+        {
+            "name": probe.name,
+            "category": probe.category,
+            "query": probe.query,
+            "expect_tool": probe.expect_tool,
+        }
+        for probe in probes
+    ]
+    probe_manifest_sha256 = hashlib.sha256(
+        json.dumps(
+            probe_manifest,
+            ensure_ascii=False,
+            sort_keys=True,
+            separators=(",", ":"),
+        ).encode("utf-8")
+    ).hexdigest()
+    market_snapshot = default_marketplace(
+        install_framing="neutral",
+        target_variant="benign",
+    ).snapshot()
+    backend = ExperimentConfig(
+        target_variant="benign",
+        acquisition_policy="P1",
+    ).metadata(
+        system_prompt=EN_SYSTEM,
+        market_snapshot=market_snapshot,
+    )
     path.write_text(
-        json.dumps({"summary": summary, "rows": rows}, ensure_ascii=False, indent=2),
+        json.dumps(
+            {
+                "schema_version": 2,
+                "design_id": "tool_protocol_probe_v2",
+                "created_at": datetime.now().astimezone().isoformat(),
+                "complete_suite": summary["complete_suite"],
+                "probe_manifest": probe_manifest,
+                "probe_manifest_sha256": probe_manifest_sha256,
+                "source_snapshot": source_snapshot(),
+                "backend": backend,
+                "summary": summary,
+                "rows": rows,
+            },
+            ensure_ascii=False,
+            indent=2,
+        ),
         encoding="utf-8",
     )
     print(f"\n💾 {path}")
