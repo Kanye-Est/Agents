@@ -61,7 +61,8 @@
 | 39 | **38_TRACK_A_EXECUTION_PLAN.md** | **最小可辩护 generalization：M2×S1、M1×S2、M3×S1 的执行顺序与红线** | ⭐ 当前执行计划 |
 | 40 | **39_NATIVE_FC_IMPLEMENTATION_FREEZE.md** | **Qwen×原生 function-calling 的等价事件、gate、probe 与运行前冻结** | ⭐ 下一实验 |
 | 41 | **40_LLAMA_M2S1_RESULTS.md** | **跨模型结果：primary 未过跨-family 门；但 search/install/payload 8→28，暴露安全执行与任务效用解耦** | ⭐ 最新结果 |
-| 42 | **slides/** | 组会成品：PPT + 放映用预览 PDF + 逐页演讲稿（≤30min）+ 生成脚本；15 张图（4 截原文 / 11 自绘） | ⭐ 组会直接用 |
+| 42 | **41_QWEN_NATIVE_FC_RESULTS.md** | **跨 scaffold 结果：pooled 4→12，但 ICS 反向未过严格 H_A；第一跳瓶颈与 P2 gate 复现** | ⭐ 最新结果 |
+| 43 | **slides/** | 组会成品：PPT + 放映用预览 PDF + 逐页演讲稿（≤30min）+ 生成脚本；15 张图（4 截原文 / 11 自绘） | ⭐ 组会直接用 |
 
 ---
 
