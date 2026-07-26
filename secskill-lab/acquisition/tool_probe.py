@@ -54,6 +54,10 @@ from acquisition.meta_tools import (  # noqa: E402
     SearchSkillsTool,
 )
 from acquisition.run_policy_hardgap_eval import source_snapshot  # noqa: E402
+from acquisition.native_fc_agent import build_native_fc_agent  # noqa: E402
+from acquisition.run_acquisition_eval import (  # noqa: E402
+    ACQ_NATIVE_SYSTEM_PROMPT,
+)
 
 BENIGN_DIR = LAB / "skills/benign"
 
@@ -200,18 +204,32 @@ def load_benign():
     return [load_skill(BENIGN_DIR / name) for name in names]
 
 
-def run_one(probe: Probe) -> dict:
+def run_one(probe: Probe, *, scaffold: str = "text") -> dict:
     TOOL_LOG.clear()
     market = default_marketplace(
         install_framing="neutral",
         target_variant="benign",
     )
     session = AcquisitionSession(market, target_name="weekly_brief")
-    tools = load_benign() + [SearchSkillsTool(session), InstallSkillTool(session)]
-    agent = build_audited_agent(
+    native_function_calling = scaffold == "native_fc"
+    if scaffold not in {"text", "native_fc"}:
+        raise ValueError(f"unknown scaffold: {scaffold}")
+    tools = load_benign() + [
+        SearchSkillsTool(session),
+        InstallSkillTool(
+            session,
+            native_function_calling=native_function_calling,
+        ),
+    ]
+    agent_builder = (
+        build_native_fc_agent if native_function_calling else build_audited_agent
+    )
+    agent = agent_builder(
         extra_tools=tools,
         listener_fn=make_listener(verbose=False),
-        system_prompt=EN_SYSTEM,
+        system_prompt=(
+            ACQ_NATIVE_SYSTEM_PROMPT if native_function_calling else EN_SYSTEM
+        ),
         event_sink=session.log,
     )
     session.bind_agent(agent)
@@ -369,6 +387,12 @@ def main():
         default=None,
         help="filesystem-safe label recorded in the default output filename",
     )
+    parser.add_argument(
+        "--scaffold",
+        choices=["text", "native_fc"],
+        default="text",
+        help="Tool-call transport used by the probe.",
+    )
     args = parser.parse_args()
 
     probes = PROBES if args.num is None else PROBES[: args.num]
@@ -379,7 +403,7 @@ def main():
             f"  [{index + 1}/{len(probes)}] {probe.category:17s} {probe.name} …",
             flush=True,
         )
-        row = run_one(probe)
+        row = run_one(probe, scaffold=args.scaffold)
         rows.append(row)
         print(f"       calls={row['called']}")
 
@@ -457,18 +481,27 @@ def main():
         install_framing="neutral",
         target_variant="benign",
     ).snapshot()
+    probe_prompt = (
+        ACQ_NATIVE_SYSTEM_PROMPT if args.scaffold == "native_fc" else EN_SYSTEM
+    )
     backend = ExperimentConfig(
         target_variant="benign",
         acquisition_policy="P1",
     ).metadata(
-        system_prompt=EN_SYSTEM,
+        system_prompt=probe_prompt,
         market_snapshot=market_snapshot,
+    )
+    backend["scaffold"] = (
+        "openai_native_function_calling"
+        if args.scaffold == "native_fc"
+        else "hello_agents_audited_text_protocol"
     )
     path.write_text(
         json.dumps(
             {
                 "schema_version": 2,
                 "design_id": "tool_protocol_probe_v2",
+                "scaffold": args.scaffold,
                 "created_at": datetime.now().astimezone().isoformat(),
                 "complete_suite": summary["complete_suite"],
                 "probe_manifest": probe_manifest,

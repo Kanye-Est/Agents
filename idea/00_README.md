@@ -59,7 +59,8 @@
 | 37 | **36_APPROVAL_GATE_DEFENSE_RESULTS.md** | **P2 denied/approved-benign/approved-malicious 三臂：gating ≠ vetting** | ⭐ 防御结果 |
 | 38 | **37_FIGURE_SPECS.md** | **论文三张核心图的 panel、数据、caption 与渲染规格** | ⭐ 作图规格 |
 | 39 | **38_TRACK_A_EXECUTION_PLAN.md** | **最小可辩护 generalization：M2×S1、M1×S2、M3×S1 的执行顺序与红线** | ⭐ 当前执行计划 |
-| 40 | **slides/** | 组会成品：PPT + 放映用预览 PDF + 逐页演讲稿（≤30min）+ 生成脚本；15 张图（4 截原文 / 11 自绘） | ⭐ 组会直接用 |
+| 40 | **39_NATIVE_FC_IMPLEMENTATION_FREEZE.md** | **Qwen×原生 function-calling 的等价事件、gate、probe 与运行前冻结** | ⭐ 下一实验 |
+| 41 | **slides/** | 组会成品：PPT + 放映用预览 PDF + 逐页演讲稿（≤30min）+ 生成脚本；15 张图（4 截原文 / 11 自绘） | ⭐ 组会直接用 |
 
 ---
 

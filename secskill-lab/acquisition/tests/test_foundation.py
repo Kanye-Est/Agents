@@ -5,6 +5,7 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
+from types import SimpleNamespace
 from unittest.mock import patch
 
 
@@ -40,6 +41,10 @@ from acquisition.meta_tools import (  # noqa: E402
     SearchSkillsTool,
 )
 from acquisition.metrics import summarize_run  # noqa: E402
+from acquisition.native_fc_agent import (  # noqa: E402
+    build_native_fc_agent,
+    tool_to_openai_schema,
+)
 from acquisition.queries_hardgap import (  # noqa: E402
     ICS_TASKS,
     PDF_TASKS,
@@ -48,7 +53,9 @@ from acquisition.queries_hardgap import (  # noqa: E402
 from acquisition.run_policy_hardgap_eval import build_manifest  # noqa: E402
 from acquisition.run_acquisition_eval import (  # noqa: E402
     ACQUISITION_ENCOURAGEMENT,
+    ACQ_NATIVE_SYSTEM_PROMPT,
     ACQ_SYSTEM_PROMPT,
+    P0_NATIVE_SYSTEM_PROMPT,
     P0_SYSTEM_PROMPT,
     TOOL_FORMAT_EXAMPLES,
 )
@@ -72,6 +79,40 @@ class FakeLLM:
         if not self.responses:
             raise AssertionError("FakeLLM response sequence exhausted")
         return self.responses.pop(0)
+
+
+class FakeNativeLLM:
+    def __init__(self, messages):
+        self.messages = list(messages)
+        self.requests = []
+        self.model = "fake-native-model"
+        self.temperature = 0.0
+        self.max_tokens = None
+        completions = SimpleNamespace(create=self._create)
+        self._client = SimpleNamespace(
+            chat=SimpleNamespace(completions=completions)
+        )
+
+    def _create(self, **kwargs):
+        if not self.messages:
+            raise AssertionError("FakeNativeLLM message sequence exhausted")
+        self.requests.append(kwargs)
+        return SimpleNamespace(
+            choices=[SimpleNamespace(message=self.messages.pop(0))]
+        )
+
+
+def native_message(content="", calls=None):
+    return SimpleNamespace(
+        content=content,
+        tool_calls=[
+            SimpleNamespace(
+                id=call_id,
+                function=SimpleNamespace(name=name, arguments=arguments),
+            )
+            for call_id, name, arguments in (calls or [])
+        ],
+    )
 
 
 class RegistryOnlyAgent:
@@ -686,6 +727,16 @@ class FoundationTests(unittest.TestCase):
             ),
             P0_SYSTEM_PROMPT,
         )
+        self.assertNotIn("[TOOL_CALL:", P0_NATIVE_SYSTEM_PROMPT)
+        self.assertNotIn("[TOOL_CALL:", ACQ_NATIVE_SYSTEM_PROMPT)
+        self.assertEqual(
+            ACQ_NATIVE_SYSTEM_PROMPT.replace(
+                f"{ACQUISITION_ENCOURAGEMENT}\n",
+                "",
+                1,
+            ),
+            P0_NATIVE_SYSTEM_PROMPT,
+        )
 
         market = default_marketplace(target_variant="benign")
         session = AcquisitionSession(market, run_id="description-mode-test")
@@ -693,6 +744,128 @@ class FoundationTests(unittest.TestCase):
         encouraging = SearchSkillsTool(session, neutral_affordance=False)
         self.assertNotIn("现有工具无法完成", neutral.description)
         self.assertIn("现有工具无法完成", encouraging.description)
+        session.close()
+
+    def test_native_fc_schema_and_gate_preserve_audit_contract(self):
+        market = default_marketplace(target_variant="benign")
+        session = AcquisitionSession(
+            market,
+            acquisition_policy="P2",
+            install_approved=False,
+            run_id="native-gate-test",
+        )
+        install = InstallSkillTool(
+            session,
+            native_function_calling=True,
+        )
+        schema = tool_to_openai_schema(install)
+        function = schema["function"]
+        self.assertEqual(function["name"], "install_skill")
+        self.assertTrue(function["strict"])
+        self.assertEqual(
+            function["parameters"]["required"],
+            ["name"],
+        )
+
+        calls = []
+        agent = build_native_fc_agent(
+            extra_tools=[install],
+            listener_fn=calls.append,
+            system_prompt=P0_NATIVE_SYSTEM_PROMPT,
+            event_sink=session.log,
+            execution_guard=session.execution_guard,
+            llm=FakeNativeLLM(
+                [
+                    native_message(
+                        calls=[
+                            (
+                                "provider-call-1",
+                                "install_skill",
+                                '{"name":"weekly_brief"}',
+                            )
+                        ]
+                    ),
+                    native_message("Explicit approval is required."),
+                ]
+            ),
+        )
+        session.bind_agent(agent)
+        agent.run("install it", max_tool_iterations=2, temperature=0.0)
+        kinds = [event["kind"] for event in session.events]
+        self.assertIn("tool_call_emitted", kinds)
+        self.assertIn("tool_call_parsed", kinds)
+        self.assertIn("install_call_emitted", kinds)
+        self.assertIn("install_call_parsed", kinds)
+        self.assertIn("approval_gate_blocked", kinds)
+        self.assertIn("tool_execution_blocked", kinds)
+        self.assertNotIn("install_execution_started", kinds)
+        self.assertEqual(calls, [])
+        session.close()
+
+    def test_native_fc_full_acquisition_registers_dynamic_function(self):
+        market = default_marketplace(target_variant="benign")
+        session = AcquisitionSession(market, run_id="native-full-test")
+        calls = []
+        llm = FakeNativeLLM(
+            [
+                native_message(
+                    calls=[
+                        (
+                            "provider-search",
+                            "search_skills",
+                            '{"query":"schedule weather weekly report"}',
+                        )
+                    ]
+                ),
+                native_message(
+                    calls=[
+                        (
+                            "provider-install",
+                            "install_skill",
+                            '{"name":"weekly_brief"}',
+                        )
+                    ]
+                ),
+                native_message(
+                    calls=[
+                        (
+                            "provider-invoke",
+                            "weekly_brief",
+                            '{"input":"next week"}',
+                        )
+                    ]
+                ),
+                native_message("The requested weekly brief is complete."),
+            ]
+        )
+        agent = build_native_fc_agent(
+            extra_tools=[
+                SearchSkillsTool(session),
+                InstallSkillTool(
+                    session,
+                    native_function_calling=True,
+                ),
+            ],
+            listener_fn=calls.append,
+            system_prompt=ACQ_NATIVE_SYSTEM_PROMPT,
+            event_sink=session.log,
+            llm=llm,
+        )
+        session.bind_agent(agent)
+        agent.run("make a brief", max_tool_iterations=4, temperature=0.0)
+        kinds = [event["kind"] for event in session.events]
+        self.assertIn("search_called", kinds)
+        self.assertIn("installed_on_disk", kinds)
+        self.assertIn("manifest_verified", kinds)
+        self.assertIn("registered_in_agent", kinds)
+        self.assertEqual(
+            [call["tool_name"] for call in calls],
+            ["search_skills", "install_skill", "weekly_brief"],
+        )
+        third_request_names = {
+            item["function"]["name"] for item in llm.requests[2]["tools"]
+        }
+        self.assertIn("weekly_brief", third_request_names)
         session.close()
 
     def test_verifier_rejects_long_but_unstructured_answer(self):

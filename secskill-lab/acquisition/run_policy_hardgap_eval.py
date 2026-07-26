@@ -49,6 +49,7 @@ from acquisition.meta_tools import (  # noqa: E402
     SearchSkillsTool,
 )
 from acquisition.metrics import aggregate, summarize_run  # noqa: E402
+from acquisition.native_fc_agent import build_native_fc_agent  # noqa: E402
 from acquisition.queries_gap import GAP_TASKS, TaskCase  # noqa: E402
 from acquisition.queries_hardgap import (  # noqa: E402
     ICS_TASKS,
@@ -57,7 +58,9 @@ from acquisition.queries_hardgap import (  # noqa: E402
     QR_TASKS,
 )
 from acquisition.run_acquisition_eval import (  # noqa: E402
+    ACQ_NATIVE_SYSTEM_PROMPT,
     ACQ_SYSTEM_PROMPT,
+    P0_NATIVE_SYSTEM_PROMPT,
     P0_SYSTEM_PROMPT,
     load_benign,
 )
@@ -80,6 +83,11 @@ POLICY_PROMPTS = {
     "P1": ACQ_SYSTEM_PROMPT,
     # Deliberately identical to P1: the treatment is execution enforcement.
     "P2": ACQ_SYSTEM_PROMPT,
+}
+NATIVE_POLICY_PROMPTS = {
+    "P0": P0_NATIVE_SYSTEM_PROMPT,
+    "P1": ACQ_NATIVE_SYSTEM_PROMPT,
+    "P2": ACQ_NATIVE_SYSTEM_PROMPT,
 }
 
 
@@ -222,6 +230,7 @@ def run_trial(
     config: ExperimentConfig,
     install_base_dir: Path | None,
     keep_install_dirs: bool,
+    scaffold: str = "text",
 ) -> dict[str, Any]:
     task = _task_lookup()[str(trial["task_id"])]
     policy = str(trial["policy"])
@@ -251,17 +260,29 @@ def run_trial(
     os.environ["ACQUISITION_ARTIFACT_DIR"] = str(session.artifact_root)
 
     TOOL_LOG.clear()
-    agent = build_audited_agent(
+    native_function_calling = scaffold == "native_fc"
+    if scaffold not in {"text", "native_fc"}:
+        raise ValueError(f"unknown scaffold: {scaffold}")
+    agent_builder = (
+        build_native_fc_agent if native_function_calling else build_audited_agent
+    )
+    policy_prompts = (
+        NATIVE_POLICY_PROMPTS if native_function_calling else POLICY_PROMPTS
+    )
+    agent = agent_builder(
         extra_tools=load_benign()
         + [
             SearchSkillsTool(
                 session,
                 neutral_affordance=policy == "P0",
             ),
-            InstallSkillTool(session),
+            InstallSkillTool(
+                session,
+                native_function_calling=native_function_calling,
+            ),
         ],
         listener_fn=make_listener(verbose=False),
-        system_prompt=POLICY_PROMPTS[policy],
+        system_prompt=policy_prompts[policy],
         event_sink=session.log,
         execution_guard=session.execution_guard,
     )
@@ -310,6 +331,7 @@ def run_trial(
             "meta_tool_description_mode": (
                 "neutral_affordance" if policy == "P0" else "encouraging"
             ),
+            "scaffold": scaffold,
             "query": task.query,
             "note": task.note,
             "verifier": task.verifier,
@@ -404,6 +426,12 @@ def main() -> Path:
     parser.add_argument("--seed", type=int, default=0)
     parser.add_argument("--order-seed", type=int, default=20260726)
     parser.add_argument(
+        "--scaffold",
+        choices=["text", "native_fc"],
+        default="text",
+        help="Tool-call transport. Defaults to the frozen S1 text protocol.",
+    )
+    parser.add_argument(
         "--approval-granted",
         action="store_true",
         help="Externally authorize P2 installs (not used in the default pilot).",
@@ -465,6 +493,8 @@ def main() -> Path:
         payload = json.loads(output.read_text(encoding="utf-8"))
         if payload.get("manifest") != manifest:
             raise ValueError("resume manifest does not match requested experiment")
+        if payload.get("design", {}).get("scaffold", "text") != args.scaffold:
+            raise ValueError("resume scaffold does not match requested experiment")
     else:
         manifest_sha256 = hashlib.sha256(
             json.dumps(
@@ -474,11 +504,21 @@ def main() -> Path:
                 separators=(",", ":"),
             ).encode("utf-8")
         ).hexdigest()
+        policy_prompts = (
+            NATIVE_POLICY_PROMPTS
+            if args.scaffold == "native_fc"
+            else POLICY_PROMPTS
+        )
         backend = config.metadata(
-            system_prompt=POLICY_PROMPTS["P1"],
+            system_prompt=policy_prompts["P1"],
             market_snapshot=None,
         )
         backend["acquisition_policy"] = "varied_by_manifest"
+        backend["scaffold"] = (
+            "openai_native_function_calling"
+            if args.scaffold == "native_fc"
+            else "hello_agents_audited_text_protocol"
+        )
         payload = {
             "schema_version": SCHEMA_VERSION,
             "design_id": DESIGN_ID,
@@ -495,6 +535,7 @@ def main() -> Path:
                 "seed": args.seed,
                 "order_seed": args.order_seed,
                 "approval_granted": args.approval_granted,
+                "scaffold": args.scaffold,
                 "primary_endpoint": "discovery_e2e",
                 "primary_groups": ["PDF", "ICS", "QR"],
                 "g1_inference_unit": "single_prototype_prompt_variants",
@@ -524,6 +565,7 @@ def main() -> Path:
             config=config,
             install_base_dir=args.install_base_dir,
             keep_install_dirs=args.keep_install_dirs,
+            scaffold=args.scaffold,
         )
         payload["rows"].append(row)
         payload["summary"] = grouped_summary(payload["rows"])

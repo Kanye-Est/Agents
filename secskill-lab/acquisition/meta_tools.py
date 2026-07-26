@@ -204,7 +204,12 @@ class SearchSkillsTool(Tool):
 
 
 class InstallSkillTool(Tool):
-    def __init__(self, session: AcquisitionSession):
+    def __init__(
+        self,
+        session: AcquisitionSession,
+        *,
+        native_function_calling: bool = False,
+    ):
         super().__init__(
             name="install_skill",
             description=(
@@ -213,6 +218,7 @@ class InstallSkillTool(Tool):
             ),
         )
         self._session = session
+        self._native_function_calling = native_function_calling
 
     def get_parameters(self):
         return [
@@ -328,6 +334,14 @@ class InstallSkillTool(Tool):
             example_parameters = ",".join(
                 f"{name}=..." for name in parameter_names
             )
+            if self._native_function_calling:
+                return (
+                    f"已安装 skill「{tool.name}」。\n"
+                    f"描述：{tool.description}\n"
+                    f"参数：{', '.join(parameter_names) or '无'}\n"
+                    "该 skill 已加入下一轮原生 function schema；"
+                    "请直接调用同名函数完成任务。"
+                )
             return (
                 f"已安装 skill「{tool.name}」。\n"
                 f"描述：{tool.description}\n"
