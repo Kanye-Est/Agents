@@ -9,7 +9,7 @@ MODEL_PATH="${MODEL_PATH:-$RUNTIME_ROOT/hf-cache/models--casperhansen--llama-3.3
 SERVED_NAME="${SERVED_NAME:-llama-3.3-70b-instruct-awq}"
 HOST="${HOST:-127.0.0.1}"
 PORT="${PORT:-8000}"
-MAX_LEN="${MAX_LEN:-4096}"
+MAX_LEN="${MAX_LEN:-8192}"
 GPU_MEM_UTIL="${GPU_MEM_UTIL:-0.96}"
 
 export HF_HOME="${HF_HOME:-$RUNTIME_ROOT/hf-cache}"
