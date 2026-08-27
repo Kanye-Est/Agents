@@ -1,0 +1,1126 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>同一份授权，跑了另一份代码 — 阶段性进展 2026-08-18</title>
+
+<!-- Fonts: JetBrains Mono (latin/code) + Noto Sans SC (Chinese) -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,300;0,400;0,500;0,700;0,800;1,400&family=Noto+Sans+SC:wght@400;500;700;900&display=swap" rel="stylesheet">
+
+<style>
+/* ===========================================
+   THEME: ACADEMIC TERMINAL (restrained) — inherited from mentor_d1 deck
+   Deep GitHub-dark canvas, dim green accent, amber highlight, red for drift.
+   =========================================== */
+:root {
+    --bg: #0d1117;
+    --panel: #131920;
+    --panel-lift: #161b22;
+    --border: #262d36;
+    --border-lift: #30363d;
+    --green: #57ab5a;
+    --green-soft: #6fca74;
+    --green-dim: #3a7a42;
+    --amber: #e3b341;
+    --red: #ff7b72;
+    --blue: #79c0ff;
+    --text: #e6edf3;
+    --text-dim: #9198a1;
+    --text-faint: #5a6069;
+    --font-mono: 'JetBrains Mono', 'Noto Sans SC', monospace;
+    --font-cn: 'Noto Sans SC', sans-serif;
+    --ease: cubic-bezier(0.16, 1, 0.3, 1);
+    --dur: 0.6s;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+/* ===========================================
+   VIEWPORT BASE (mandatory fixed 16:9 stage)
+   =========================================== */
+html, body { width: 100%; height: 100%; margin: 0; overflow: hidden; background: var(--bg); }
+.deck-viewport { position: fixed; inset: 0; overflow: hidden; background: var(--bg); }
+.deck-stage { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; overflow: hidden; transform-origin: 0 0; background: var(--bg); }
+.slide { position: absolute; inset: 0; width: 1920px; height: 1080px; overflow: hidden; display: block; visibility: hidden; opacity: 0; pointer-events: none; background: var(--bg); }
+.slide.active, .slide.visible { visibility: visible; opacity: 1; pointer-events: auto; z-index: 1; }
+img, video, canvas, svg { max-width: 100%; max-height: 100%; }
+.deck-controls { position: fixed; left: 50%; bottom: 22px; transform: translateX(-50%); z-index: 1000; }
+@media print {
+    @page { size: 20in 11.25in; margin: 0; }
+    html, body { width: 1920px; height: auto; overflow: visible; background: #fff; }
+    .deck-viewport { position: static; overflow: visible; background: #fff; }
+    .deck-stage { position: static; width: auto; height: auto; transform: none !important; background: none; }
+    .slide { position: relative; display: block !important; visibility: visible !important; opacity: 1 !important; pointer-events: auto !important; width: 1920px; height: 1080px; break-after: page; page-break-after: always; }
+    .slide:last-child { break-after: auto; page-break-after: auto; }
+    .reveal { opacity: 1 !important; transform: none !important; transition: none !important; }
+    .deck-controls, .progress, .page-indicator, .edit-hotzone, .edit-toggle { display: none !important; }
+    * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+}
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.2s !important; } }
+
+/* ===========================================
+   SHARED SLIDE GRAMMAR
+   =========================================== */
+.slide { font-family: var(--font-mono); color: var(--text); }
+
+.reveal { opacity: 0; transform: translateY(24px); transition: opacity var(--dur) var(--ease), transform var(--dur) var(--ease); }
+.slide.visible .reveal { opacity: 1; transform: none; }
+.slide.visible .reveal.d1 { transition-delay: 0.10s; }
+.slide.visible .reveal.d2 { transition-delay: 0.22s; }
+.slide.visible .reveal.d3 { transition-delay: 0.34s; }
+.slide.visible .reveal.d4 { transition-delay: 0.46s; }
+.slide.visible .reveal.d5 { transition-delay: 0.58s; }
+.slide.visible .reveal.d6 { transition-delay: 0.70s; }
+
+.h-slide {
+    font-family: var(--font-cn); font-weight: 900;
+    font-size: 60px; line-height: 1.25; color: var(--text);
+}
+.h-slide .en { display: block; margin-top: 8px; font-family: var(--font-mono); font-weight: 400; font-size: 22px; color: var(--green); letter-spacing: 0.03em; }
+
+/* shared per-slide footer: PRIVATE marker on every page */
+.slide-foot {
+    position: absolute; bottom: 40px; left: 96px; right: 96px;
+    display: flex; justify-content: space-between; align-items: baseline;
+    font-size: 20px; color: var(--text-faint); letter-spacing: 0.08em;
+}
+.slide-foot .private { color: var(--amber); }
+
+/* code panels */
+.code-panel {
+    background: var(--panel); border: 1px solid var(--border-lift); border-radius: 10px;
+    box-shadow: 0 14px 34px rgba(0,0,0,0.35);
+}
+.code-panel .code-title {
+    display: flex; align-items: center; gap: 10px;
+    padding: 14px 22px; border-bottom: 1px solid var(--border);
+    background: var(--panel-lift); border-radius: 10px 10px 0 0;
+    font-size: 20px; color: var(--text-dim);
+}
+.code-panel .code-title .dots { display: flex; gap: 8px; margin-right: 8px; }
+.code-panel .code-title .dots i { width: 12px; height: 12px; border-radius: 50%; display: block; background: #3a4048; }
+.code-panel pre {
+    padding: 24px 28px; font-family: var(--font-mono);
+    font-size: 22px; line-height: 1.75; color: var(--text);
+    white-space: pre; overflow: hidden;
+}
+.c-key { color: var(--blue); }
+.c-str { color: #a5d6a7; }
+.c-dim { color: var(--text-faint); }
+.c-hot { color: var(--green); }
+.c-warn { color: var(--amber); }
+.c-bad { color: var(--red); }
+.cursor { display: inline-block; width: 12px; height: 22px; background: var(--green); vertical-align: middle; animation: blink 1.05s steps(1) infinite; }
+@keyframes blink { 0%,49% { opacity: 1; } 50%,100% { opacity: 0; } }
+
+/* small tag chips */
+.tag {
+    display: inline-block; padding: 4px 14px;
+    border: 1px solid rgba(87, 171, 90, 0.5); border-radius: 4px;
+    font-size: 20px; color: var(--green); vertical-align: middle;
+}
+.tag.warn { border-color: rgba(227, 179, 65, 0.5); color: var(--amber); }
+.tag.bad { border-color: rgba(255, 123, 114, 0.5); color: var(--red); }
+.tag.dim { border-color: var(--border-lift); color: var(--text-dim); }
+
+/* ===========================================
+   P1 — TITLE
+   =========================================== */
+.s1 {
+    background:
+        radial-gradient(ellipse 1300px 850px at 72% 24%, rgba(87, 171, 90, 0.05), transparent 60%),
+        linear-gradient(rgba(230, 237, 243, 0.018) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(230, 237, 243, 0.018) 1px, transparent 1px),
+        var(--bg);
+    background-size: auto, 120px 120px, 120px 120px;
+}
+.s1-body { position: absolute; left: 96px; right: 96px; top: 250px; }
+.s1-rule { width: 72px; height: 4px; background: var(--green); margin-bottom: 48px; }
+.s1-title {
+    font-family: var(--font-cn); font-weight: 900;
+    font-size: 96px; line-height: 1.3; color: var(--text);
+}
+.s1-sub { margin-top: 36px; font-size: 30px; color: var(--text-dim); }
+.s1-badges { margin-top: 46px; display: flex; gap: 18px; }
+.s1-badge {
+    padding: 9px 22px; border-radius: 999px;
+    font-family: var(--font-cn); font-size: 22px; letter-spacing: 0.04em;
+}
+.s1-badge.private { border: 1px solid rgba(227, 179, 65, 0.5); color: var(--amber); }
+.s1-badge.disc { border: 1px solid var(--border-lift); color: var(--text-dim); }
+
+/* ===========================================
+   P2 — RESULT + STATUS (flat academic summary)
+   =========================================== */
+.s2-body { position: absolute; left: 96px; right: 96px; top: 154px; }
+.s2-term {
+    font-family: var(--font-mono); font-weight: 700;
+    font-size: 54px; line-height: 1.3; color: var(--green-soft);
+    letter-spacing: -0.01em;
+}
+.s2-lead {
+    margin-top: 54px; font-family: var(--font-cn); font-weight: 700;
+    font-size: 56px; line-height: 1.5; color: var(--text);
+}
+.s2-lead .before { color: var(--green-soft); }
+.s2-lead .after { color: var(--amber); }
+.s2-sub {
+    margin-top: 18px; font-family: var(--font-cn); font-size: 29px;
+    color: var(--text-dim); line-height: 1.6;
+}
+.s2-facts {
+    display: grid; grid-template-columns: 1.45fr 1fr; gap: 72px;
+    margin-top: 70px; padding-top: 34px; border-top: 1px solid var(--border-lift);
+}
+.s2-fact .k {
+    font-family: var(--font-cn); font-size: 21px; font-weight: 700;
+    color: var(--text-dim); letter-spacing: 0.08em; margin-bottom: 15px;
+}
+.s2-fact .v {
+    font-family: var(--font-cn); font-size: 31px; font-weight: 700;
+    color: var(--text); line-height: 1.5;
+}
+.s2-fact .note {
+    margin-top: 10px; font-family: var(--font-cn); font-size: 22px;
+    color: var(--text-dim); line-height: 1.55;
+}
+.s2-fact .note .warn { color: var(--amber); }
+
+/* ===========================================
+   P3 — RESEARCH QUESTION + identity ladder
+   =========================================== */
+.s3-body { position: absolute; left: 96px; right: 96px; top: 160px; }
+.s3-claim {
+    margin-top: 36px; font-family: var(--font-cn); font-weight: 700;
+    font-size: 50px; line-height: 1.5; color: var(--text);
+}
+.s3-claim .dim { color: var(--text-dim); font-weight: 500; }
+.s3-ladder { display: flex; gap: 18px; margin-top: 62px; align-items: flex-end; }
+.s3-rung { flex: 1; text-align: center; }
+.s3-rung .bar {
+    padding: 22px 14px; border: 1px solid var(--border-lift); border-radius: 8px;
+    background: var(--panel); font-family: var(--font-mono);
+    font-size: 23px; color: var(--text); line-height: 1.4;
+}
+.s3-rung .cn { margin-top: 12px; font-family: var(--font-cn); font-size: 21px; color: var(--text-dim); }
+.s3-rung.strong .bar { border-color: rgba(87, 171, 90, 0.55); color: var(--green-soft); font-weight: 700; }
+.s3-rung.executed .bar { border-color: rgba(255, 123, 114, 0.55); color: var(--red); font-weight: 700; }
+.s3-q {
+    margin-top: 58px; padding: 30px 40px;
+    border-left: 6px solid var(--green); border-radius: 10px;
+    background: rgba(87, 171, 90, 0.05);
+    font-family: var(--font-cn); font-size: 33px; font-weight: 700; color: var(--text); line-height: 1.6;
+}
+
+/* ===========================================
+   P4 — MECHANISM (9-step chain, two columns)
+   =========================================== */
+.s4-body { position: absolute; left: 96px; right: 96px; top: 104px; }
+.s4-cols { display: flex; gap: 34px; margin-top: 24px; align-items: stretch; }
+.s4-chain { flex: 1.35; }
+.s4-chain-title {
+    font-family: var(--font-mono); font-size: 22px; font-weight: 700;
+    color: var(--text-dim); margin-bottom: 12px;
+}
+.s4-chain.outer { flex: 1; }
+.s4-chain.outer .s4-chain-title { color: var(--amber); }
+.s4-step {
+    padding: 10px 22px; border: 1px solid var(--border-lift); border-radius: 8px;
+    background: var(--panel); font-family: var(--font-cn);
+    font-size: 22px; color: var(--text); text-align: center; line-height: 1.4;
+}
+.s4-step small { display: block; font-family: var(--font-mono); font-size: 19px; color: var(--text-faint); margin-top: 3px; }
+.s4-step.final { border-color: rgba(255, 123, 114, 0.55); }
+.s4-step.final small { color: var(--red); }
+.s4-down { text-align: center; font-size: 19px; color: var(--text-faint); line-height: 1.15; padding: 1px 0; }
+.s4-drift {
+    align-self: center; flex: 0 0 250px;
+    padding: 24px 22px; border: 1px dashed rgba(255, 123, 114, 0.55); border-radius: 10px;
+    font-family: var(--font-cn); font-size: 22px; color: var(--text); line-height: 1.55; text-align: center;
+}
+.s4-drift .m-label { display: block; font-family: var(--font-mono); font-size: 19px; color: var(--red); letter-spacing: 0.06em; margin-bottom: 10px; }
+.s4-notes { display: flex; gap: 22px; margin-top: 18px; }
+.s4-note {
+    flex: 1; padding: 18px 22px; border: 1px solid var(--border); border-radius: 8px;
+    font-family: var(--font-cn); font-size: 21px; color: var(--text-dim); line-height: 1.55;
+    background: rgba(19, 25, 32, 0.5);
+}
+.s4-note b { color: var(--text); font-weight: 700; }
+
+/* ===========================================
+   P5 — CONTROLLED EXPERIMENT DESIGN (A/B timeline)
+   =========================================== */
+.s5-body { position: absolute; left: 96px; right: 96px; top: 156px; }
+.s5-lane { margin-top: 40px; }
+.s5-lane-label { font-family: var(--font-mono); font-size: 22px; color: var(--text-dim); margin-bottom: 14px; }
+.s5-track { display: flex; align-items: center; gap: 16px; }
+.s5-node {
+    flex: 1; padding: 20px 18px; text-align: center;
+    border: 1px solid var(--border-lift); border-radius: 10px; background: var(--panel);
+    font-family: var(--font-mono); font-size: 23px; color: var(--text); line-height: 1.5;
+}
+.s5-node .cn { display: block; font-family: var(--font-cn); font-size: 20px; color: var(--text-dim); margin-top: 6px; }
+.s5-node.a { border-color: rgba(87, 171, 90, 0.55); }
+.s5-node.b { border-color: rgba(227, 179, 65, 0.55); }
+.s5-node.cfg { border-color: rgba(121, 192, 255, 0.45); }
+.s5-arrow { flex: 0 0 46px; text-align: center; font-size: 30px; color: var(--text-faint); }
+.s5-verify {
+    margin-top: 34px; padding: 24px 32px;
+    border: 1px solid var(--border); border-radius: 10px;
+    font-family: var(--font-cn); font-size: 24px; color: var(--text-dim); line-height: 1.65;
+}
+.s5-verify b { color: var(--text); font-weight: 700; }
+.s5-envelope { margin-top: 30px; display: flex; gap: 16px; flex-wrap: wrap; }
+.s5-chip {
+    padding: 10px 22px; border: 1px solid var(--green-dim); border-radius: 999px;
+    font-family: var(--font-cn); font-size: 21px; color: var(--green);
+}
+
+/* ===========================================
+   P6 — D1 BLIND DISCOVERY (level ladder)
+   =========================================== */
+.s6-body { position: absolute; left: 96px; right: 96px; top: 156px; }
+.s6-facts { margin-top: 34px; display: flex; gap: 26px; }
+.s6-fact {
+    flex: 1; padding: 24px 30px; border: 1px solid var(--border-lift); border-radius: 10px;
+    background: var(--panel); font-family: var(--font-cn); font-size: 24px; color: var(--text); line-height: 1.6;
+    text-align: center;
+}
+.s6-fact b { color: var(--green-soft); }
+.s6-levels { margin-top: 44px; }
+.s6-level {
+    display: grid; grid-template-columns: 210px 1fr; gap: 26px; align-items: center;
+    padding: 24px 30px; border: 1px solid var(--border-lift); border-radius: 10px;
+    margin-bottom: 18px; background: var(--panel);
+}
+.s6-level .lv { font-family: var(--font-mono); font-size: 26px; font-weight: 700; color: var(--text-dim); }
+.s6-level .lv-desc { font-family: var(--font-cn); font-size: 25px; color: var(--text); line-height: 1.55; }
+.s6-level .lv-desc small { display: block; font-size: 21px; color: var(--text-dim); margin-top: 4px; }
+.s6-level.reached { border-color: rgba(87, 171, 90, 0.55); background: rgba(87, 171, 90, 0.05); }
+.s6-level.reached .lv { color: var(--green-soft); }
+.s6-level.blocked { opacity: 0.75; }
+.s6-level.blocked .lv { color: var(--red); }
+.s6-not { margin-top: 26px; font-family: var(--font-cn); font-size: 26px; color: var(--text-dim); }
+.s6-not b { color: var(--red); font-weight: 700; }
+
+/* ===========================================
+   P7 — SOURCE ROOT CAUSE
+   =========================================== */
+.s7-body { position: absolute; left: 96px; right: 96px; top: 148px; }
+.s7-center {
+    margin-top: 28px; font-family: var(--font-cn); font-weight: 700;
+    font-size: 42px; line-height: 1.5; color: var(--text);
+}
+.s7-center .hl { color: var(--red); }
+.s7-list { margin-top: 36px; display: grid; grid-template-columns: 1fr 1fr; gap: 14px 30px; }
+.s7-item {
+    padding: 16px 22px; border: 1px solid var(--border); border-radius: 8px;
+    background: rgba(19, 25, 32, 0.5);
+    font-family: var(--font-cn); font-size: 22px; color: var(--text); line-height: 1.5;
+}
+.s7-item small { display: block; font-family: var(--font-mono); font-size: 19px; color: var(--text-faint); margin-top: 3px; }
+.s7-correct {
+    margin-top: 30px; padding: 24px 32px;
+    border-left: 6px solid var(--amber); border-radius: 10px;
+    background: rgba(227, 179, 65, 0.05);
+    font-family: var(--font-cn); font-size: 24px; color: var(--text); line-height: 1.65;
+}
+.s7-correct b { color: var(--amber); }
+
+/* ===========================================
+   P8 — R1 REPEATABILITY TABLE
+   =========================================== */
+.s8-body { position: absolute; left: 96px; right: 96px; top: 156px; }
+.s8-table { margin-top: 40px; width: 100%; border-collapse: collapse; }
+.s8-table th {
+    font-family: var(--font-cn); font-size: 23px; font-weight: 700; color: var(--text-dim);
+    text-align: left; padding: 16px 20px; border-bottom: 2px solid var(--border-lift);
+}
+.s8-table td {
+    font-family: var(--font-cn); font-size: 23px; color: var(--text);
+    padding: 20px 20px; border-bottom: 1px solid var(--border); line-height: 1.5;
+    vertical-align: top;
+}
+.s8-table td.mono { font-family: var(--font-mono); font-size: 22px; }
+.s8-table td .dim { color: var(--text-dim); }
+.s8-table td .warn { color: var(--amber); }
+.s8-table td .bad { color: var(--red); }
+.s8-table td .ok { color: var(--green-soft); }
+.s8-sum {
+    margin-top: 34px; padding: 24px 32px;
+    border-left: 6px solid var(--green); border-radius: 10px; background: rgba(87, 171, 90, 0.05);
+    font-family: var(--font-cn); font-size: 26px; color: var(--text); line-height: 1.6;
+}
+.s8-sum b { color: var(--green-soft); }
+.s8-sum .ban { color: var(--red); }
+
+/* ===========================================
+   P9 — R2 NEGATIVE CONTROL
+   =========================================== */
+.s9-body { position: absolute; left: 96px; right: 96px; top: 150px; }
+.s9-cols { display: flex; gap: 30px; margin-top: 34px; }
+.s9-arm {
+    flex: 1; padding: 28px 32px; border: 1px solid var(--border-lift); border-radius: 10px;
+    background: var(--panel);
+}
+.s9-arm .a-title { font-family: var(--font-mono); font-size: 24px; font-weight: 700; margin-bottom: 18px; }
+.s9-arm.drift .a-title { color: var(--red); }
+.s9-arm.negative .a-title { color: var(--green-soft); }
+.s9-arm .row { display: flex; justify-content: space-between; padding: 12px 0; border-top: 1px solid var(--border); font-family: var(--font-cn); font-size: 22px; }
+.s9-arm .row:first-of-type { border-top: none; }
+.s9-arm .row .k { color: var(--text-dim); }
+.s9-arm .row .v { color: var(--text); font-weight: 500; }
+.s9-arm .row .v.bad { color: var(--red); }
+.s9-arm .row .v.ok { color: var(--green-soft); }
+.s9-channels { margin-top: 26px; display: flex; gap: 12px; flex-wrap: wrap; }
+.s9-chip {
+    padding: 8px 18px; border: 1px solid var(--border-lift); border-radius: 999px;
+    font-family: var(--font-cn); font-size: 20px; color: var(--text-dim);
+}
+.s9-chip b { color: var(--text); font-weight: 500; }
+.s9-conclusion {
+    margin-top: 30px; padding: 24px 32px;
+    border-left: 6px solid var(--green); border-radius: 10px; background: rgba(87, 171, 90, 0.05);
+    font-family: var(--font-cn); font-size: 24px; color: var(--text); line-height: 1.65;
+}
+.s9-conclusion b { color: var(--green-soft); }
+.s9-conclusion .caveat { display: block; margin-top: 10px; font-size: 21px; color: var(--text-dim); }
+.s9-conclusion .caveat b { color: var(--amber); }
+
+/* ===========================================
+   P10 — WHAT EVIDENCE CAN / CANNOT SAY
+   =========================================== */
+.s10-body { position: absolute; left: 96px; right: 96px; top: 150px; }
+.s10-cols { display: flex; gap: 32px; margin-top: 36px; }
+.s10-col { flex: 1; padding: 30px 34px; border-radius: 10px; }
+.s10-col.can { border: 1px solid rgba(87, 171, 90, 0.4); background: rgba(87, 171, 90, 0.04); }
+.s10-col.cannot { border: 1px solid var(--border-lift); background: var(--panel); }
+.s10-col .c-head { font-family: var(--font-cn); font-size: 28px; font-weight: 900; margin-bottom: 20px; }
+.s10-col.can .c-head { color: var(--green-soft); }
+.s10-col.cannot .c-head { color: var(--text-dim); }
+.s10-col ul { list-style: none; }
+.s10-col li {
+    font-family: var(--font-cn); font-size: 23px; color: var(--text);
+    line-height: 1.55; padding: 13px 0; border-top: 1px solid var(--border);
+}
+.s10-col li:first-child { border-top: none; }
+.s10-col li .mk { margin-right: 12px; font-weight: 800; }
+.s10-col.can li .mk { color: var(--green-soft); }
+.s10-col.cannot li .mk { color: var(--red); }
+
+/* ===========================================
+   P11 — ROADMAP R3–R6 + BENCHMARK
+   =========================================== */
+.s11-body { position: absolute; left: 96px; right: 96px; top: 142px; }
+.s11-badge {
+    display: inline-block; padding: 7px 20px; margin-top: 22px;
+    border: 1px solid rgba(255, 123, 114, 0.55); border-radius: 999px;
+    font-family: var(--font-mono); font-size: 21px; color: var(--red); letter-spacing: 0.08em;
+}
+.s11-runs { margin-top: 26px; display: grid; grid-template-columns: repeat(5, 1fr); gap: 18px; }
+.s11-run { padding: 20px 20px; border: 1px solid var(--border-lift); border-radius: 10px; background: var(--panel); }
+.s11-run .r-id { font-family: var(--font-mono); font-size: 24px; font-weight: 700; color: var(--green-soft); }
+.s11-run .r-desc { margin-top: 10px; font-family: var(--font-cn); font-size: 21px; color: var(--text-dim); line-height: 1.5; }
+.s11-bench { margin-top: 38px; }
+.s11-bench-title { font-family: var(--font-cn); font-size: 27px; font-weight: 700; color: var(--text); margin-bottom: 20px; }
+.s11-flow { display: flex; align-items: stretch; gap: 14px; }
+.s11-fnode {
+    flex: 1; padding: 22px 24px; text-align: center;
+    border: 1px solid var(--border-lift); border-radius: 10px; background: var(--panel);
+    font-family: var(--font-cn); font-size: 22px; color: var(--text); line-height: 1.55;
+}
+.s11-fnode small { display: block; font-family: var(--font-mono); font-size: 19px; color: var(--text-faint); margin-top: 8px; }
+.s11-farrow { flex: 0 0 40px; display: flex; align-items: center; justify-content: center; font-size: 26px; color: var(--text-faint); }
+.s11-status { margin-top: 20px; font-family: var(--font-cn); font-size: 21px; color: var(--text-faint); }
+
+/* ===========================================
+   P12 — DECISIONS (2x2)
+   =========================================== */
+.s12-body { position: absolute; left: 96px; right: 96px; top: 150px; }
+.s12-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 26px; margin-top: 38px; }
+.s12-card {
+    padding: 30px 34px; border: 1px solid var(--border-lift);
+    border-left: 6px solid var(--amber); border-radius: 10px; background: var(--panel);
+}
+.s12-card .c-no { font-size: 40px; font-weight: 800; color: var(--text-faint); line-height: 1; margin-bottom: 14px; }
+.s12-card .c-title { font-family: var(--font-cn); font-size: 28px; font-weight: 700; color: var(--text); }
+.s12-card .c-desc { margin-top: 10px; font-family: var(--font-cn); font-size: 22px; color: var(--text-dim); line-height: 1.6; }
+.s12-position {
+    margin-top: 34px; padding: 24px 32px;
+    border-left: 6px solid var(--green); border-radius: 10px; background: rgba(87, 171, 90, 0.05);
+    font-family: var(--font-cn); font-size: 25px; color: var(--text); line-height: 1.6;
+}
+.s12-position b { color: var(--green-soft); }
+
+/* ===========================================
+   APPENDIX A — TERMINAL REPLAY
+   =========================================== */
+.aa-body { position: absolute; left: 96px; right: 96px; top: 156px; }
+.aa-term { margin-top: 34px; }
+.aa-term pre { font-size: 24px; line-height: 1.95; padding: 30px 34px; }
+.aa-note { margin-top: 26px; font-family: var(--font-cn); font-size: 23px; color: var(--text-dim); line-height: 1.6; }
+.aa-note b { color: var(--text); font-weight: 700; }
+
+/* ===========================================
+   APPENDIX B — EVIDENCE INTEGRITY TABLE
+   =========================================== */
+.ab-body { position: absolute; left: 96px; right: 96px; top: 156px; }
+.ab-table { margin-top: 36px; width: 100%; border-collapse: collapse; }
+.ab-table th {
+    font-family: var(--font-cn); font-size: 22px; font-weight: 700; color: var(--text-dim);
+    text-align: left; padding: 14px 18px; border-bottom: 2px solid var(--border-lift);
+}
+.ab-table td {
+    font-family: var(--font-mono); font-size: 21px; color: var(--text);
+    padding: 15px 18px; border-bottom: 1px solid var(--border); line-height: 1.45;
+}
+.ab-table td.cn { font-family: var(--font-cn); font-size: 21px; }
+.ab-table td .ok { color: var(--green-soft); }
+.ab-table td .failed { color: var(--red); }
+.ab-table td .warn { color: var(--amber); }
+.ab-lineage { margin-top: 28px; font-family: var(--font-cn); font-size: 22px; color: var(--text-dim); line-height: 1.7; }
+.ab-lineage b { color: var(--text); font-weight: 700; }
+.ab-lineage .mono { font-family: var(--font-mono); font-size: 20px; }
+
+/* ===========================================
+   APPENDIX C — FOUR-ROUND R1 TABLE
+   =========================================== */
+.ac-body { position: absolute; left: 96px; right: 96px; top: 156px; }
+.ac-table { margin-top: 36px; width: 100%; border-collapse: collapse; }
+.ac-table th {
+    font-family: var(--font-cn); font-size: 21px; font-weight: 700; color: var(--text-dim);
+    text-align: left; padding: 14px 16px; border-bottom: 2px solid var(--border-lift);
+}
+.ac-table td {
+    font-family: var(--font-mono); font-size: 20px; color: var(--text);
+    padding: 14px 16px; border-bottom: 1px solid var(--border); line-height: 1.4;
+}
+.ac-table td.cn { font-family: var(--font-cn); font-size: 20px; }
+.ac-table td .dim { color: var(--text-dim); }
+.ac-table td .bad { color: var(--red); }
+.ac-note { margin-top: 24px; font-family: var(--font-cn); font-size: 21px; color: var(--text-dim); line-height: 1.65; }
+.ac-note b { color: var(--text); font-weight: 700; }
+
+/* ===========================================
+   APPENDIX D — BENCHMARK DIMENSIONS
+   =========================================== */
+.ad-body { position: absolute; left: 96px; right: 96px; top: 156px; }
+.ad-grid { margin-top: 40px; display: grid; grid-template-columns: 1fr 1fr; gap: 16px 30px; }
+.ad-item {
+    padding: 20px 26px; border: 1px solid var(--border-lift); border-radius: 10px;
+    background: var(--panel);
+    font-family: var(--font-cn); font-size: 23px; color: var(--text); line-height: 1.55;
+}
+.ad-item small { display: block; font-family: var(--font-mono); font-size: 19px; color: var(--text-faint); margin-top: 6px; }
+.ad-note { margin-top: 30px; font-family: var(--font-cn); font-size: 22px; color: var(--text-dim); }
+
+/* ===========================================
+   DECK CONTROLS (outside stage)
+   =========================================== */
+.progress {
+    position: fixed; top: 0; left: 0; height: 3px; width: 0;
+    background: var(--green); z-index: 1001; transition: width 0.35s var(--ease);
+}
+.page-indicator {
+    position: fixed; right: 26px; bottom: 22px; z-index: 1000;
+    font-family: var(--font-mono); font-size: 15px; color: var(--text-faint);
+    letter-spacing: 0.1em;
+}
+.edit-hotzone { position: fixed; top: 0; left: 0; width: 80px; height: 80px; z-index: 10000; cursor: pointer; }
+.edit-toggle {
+    position: fixed; top: 18px; left: 18px; z-index: 10001;
+    opacity: 0; pointer-events: none; transition: opacity 0.3s ease;
+    background: var(--panel-lift); color: var(--text-dim);
+    border: 1px solid var(--border-lift); border-radius: 8px;
+    font-family: var(--font-mono); font-size: 14px; padding: 8px 14px;
+}
+.edit-toggle.show, .edit-toggle.active { opacity: 1; pointer-events: auto; }
+[contenteditable="true"] { outline: 1px dashed var(--green-dim); outline-offset: 4px; }
+</style>
+</head>
+<body>
+<div class="progress" id="progress"></div>
+<div class="page-indicator" id="pageIndicator">1 / 16</div>
+<div class="edit-hotzone" id="editHotzone"></div>
+<button class="edit-toggle" id="editToggle" title="Edit mode (E)">✏️ edit</button>
+
+<div class="deck-viewport">
+    <main class="deck-stage" id="deckStage">
+
+        <!-- ========== P1 · TITLE ========== -->
+        <section class="slide s1 active" data-title="标题">
+            <div class="s1-body">
+                <div class="s1-rule reveal"></div>
+                <h1 class="s1-title reveal d2">同一份授权，<br>跑了另一份代码</h1>
+                <p class="s1-sub reveal d4">Goose v1.45.0</p>
+            </div>
+            <div class="slide-foot">
+                <span>阶段性进展 · 2026-08-18</span>
+                <span class="private">PRIVATE — Research Discussion</span>
+            </div>
+        </section>
+
+        <!-- ========== P2 · ONE-LINE RESULT ========== -->
+        <section class="slide" data-title="结果">
+            <div class="s2-body">
+                <h2 class="s2-term reveal">配置没变，代码换了</h2>
+                <p class="s2-lead reveal d2">同一条 <span class="before">package@latest</span>：<br>检查时指向 A，启动时跑成了 <span class="after">B</span>。</p>
+                <div class="s2-facts">
+                    <div class="s2-fact reveal d4">
+                        <div class="k">证据</div>
+                        <div class="v">D1 首次结果 · R1-2 / R1-3 两次复现</div>
+                    </div>
+                    <div class="s2-fact reveal d5">
+                        <div class="k">进度</div>
+                        <div class="v">R1 / R2 已完成<br>R3 尚未执行</div>
+                    </div>
+                </div>
+            </div>
+            <div class="slide-foot">
+                <span>02 · 当前状态</span>
+                <span class="private">PRIVATE — Research Discussion</span>
+            </div>
+        </section>
+
+        <!-- ========== P3 · RESEARCH QUESTION ========== -->
+        <section class="slide" data-title="研究问题">
+            <div class="s3-body">
+                <h2 class="h-slide reveal">系统到底授权了什么？</h2>
+                <p class="s3-claim reveal d2">「代码是正版的」<span class="dim">≠</span>「被授权执行的那一版」</p>
+                <div class="s3-ladder reveal d3">
+                    <div class="s3-rung">
+                        <div class="bar">extension name</div>
+                        <div class="cn">扩展名</div>
+                    </div>
+                    <div class="s3-rung">
+                        <div class="bar">mutable selector</div>
+                        <div class="cn">可变选择器 @latest</div>
+                    </div>
+                    <div class="s3-rung">
+                        <div class="bar">exact version</div>
+                        <div class="cn">精确版本号</div>
+                    </div>
+                    <div class="s3-rung strong">
+                        <div class="bar">content digest</div>
+                        <div class="cn">内容哈希</div>
+                    </div>
+                    <div class="s3-rung executed">
+                        <div class="bar">RuntimeArtifact</div>
+                        <div class="cn">实际运行的代码</div>
+                    </div>
+                </div>
+                <div class="s3-q reveal d5">授权的，和最后跑的，是不是同一份代码？</div>
+            </div>
+            <div class="slide-foot">
+                <span>03 · 研究问题</span>
+                <span class="private">PRIVATE — Research Discussion</span>
+            </div>
+        </section>
+
+        <!-- ========== P4 · GOOSE MECHANISM ========== -->
+        <section class="slide" data-title="Goose 内部机制">
+            <div class="s4-body">
+                <h2 class="h-slide reveal">Goose 是怎么启动扩展的？</h2>
+                <div class="s4-cols">
+                    <div class="s4-chain reveal d2">
+                        <div class="s4-chain-title">Goose 进程内</div>
+                        <div class="s4-step">搜索扩展<small>只看到名字和描述</small></div>
+                        <div class="s4-down">↓</div>
+                        <div class="s4-step">模型选择扩展</div>
+                        <div class="s4-down">↓</div>
+                        <div class="s4-step">允许启用<small>Auto 模式</small></div>
+                        <div class="s4-down">↓</div>
+                        <div class="s4-step">读取配置<small>package@latest</small></div>
+                        <div class="s4-down">↓</div>
+                        <div class="s4-step">OSV 安全检查</div>
+                        <div class="s4-down">↓</div>
+                        <div class="s4-step">启动 npx<small>传入 package@latest</small></div>
+                    </div>
+                    <div class="s4-drift reveal d4">
+                        检查时是 <b>A</b><br><br>最后运行的是 <b>B</b>
+                    </div>
+                    <div class="s4-chain outer reveal d3">
+                        <div class="s4-chain-title">Goose 进程之外</div>
+                        <div class="s4-step">npx 解析 @latest<small>按启动时的 dist-tag</small></div>
+                        <div class="s4-down">↓</div>
+                        <div class="s4-step final">运行 B<small>1.0.1</small></div>
+                    </div>
+                </div>
+            </div>
+            <div class="slide-foot">
+                <span>04 · 机制</span>
+                <span class="private">PRIVATE — Research Discussion</span>
+            </div>
+        </section>
+
+        <!-- ========== P5 · CONTROLLED EXPERIMENT DESIGN ========== -->
+        <section class="slide" data-title="受控实验设计">
+            <div class="s5-body">
+                <h2 class="h-slide reveal">实验怎么做</h2>
+                <div class="s5-lane reveal d2">
+                    <div class="s5-lane-label">registry 状态</div>
+                    <div class="s5-track">
+                        <div class="s5-node a">latest → A / 1.0.0<span class="cn">检查时</span></div>
+                        <div class="s5-arrow">→</div>
+                        <div class="s5-node b">latest → B / 1.0.1<span class="cn">启动前</span></div>
+                    </div>
+                </div>
+                <div class="s5-lane reveal d3">
+                    <div class="s5-lane-label">Goose 配置文本</div>
+                    <div class="s5-track">
+                        <div class="s5-node cfg">package@latest<span class="cn">配置全程没改</span></div>
+                    </div>
+                </div>
+                <div class="s5-verify reveal d4">终端、effect 文件、registry 日志和进程记录都确认：<b>最终运行的是 B</b>。</div>
+            </div>
+            <div class="slide-foot">
+                <span>05 · 实验设计</span>
+                <span class="private">PRIVATE — Research Discussion</span>
+            </div>
+        </section>
+
+        <!-- ========== P6 · D1 BLIND DISCOVERY ========== -->
+        <section class="slide" data-title="D1 结果">
+            <div class="s6-body">
+                <h2 class="h-slide reveal">D1：检查时是 A，执行时是 B</h2>
+                <div class="s6-facts reveal d2">
+                    <div class="s6-fact">检查时 <b>A（1.0.0）</b></div>
+                    <div class="s6-fact">执行时 <b>B（1.0.1）</b></div>
+                    <div class="s6-fact">配置 <b>没有改</b></div>
+                </div>
+                <div class="s6-levels">
+                    <div class="s6-level reached reveal d4">
+                        <span class="lv">已经看到</span>
+                        <div class="lv-desc">同一条配置，检查和执行对应了不同代码</div>
+                    </div>
+                    <div class="s6-level blocked reveal d5">
+                        <span class="lv">尚未证明</span>
+                        <div class="lv-desc">系统曾经把授权绑定到 A</div>
+                    </div>
+                </div>
+            </div>
+            <div class="slide-foot">
+                <span>06 · D1</span>
+                <span class="private">PRIVATE — Research Discussion</span>
+            </div>
+        </section>
+
+        <!-- ========== P7 · SOURCE ROOT CAUSE ========== -->
+        <section class="slide" data-title="源码根因">
+            <div class="s7-body">
+                <h2 class="h-slide reveal">为什么会这样？</h2>
+                <p class="s7-center reveal d2">问题在于：检查、授权和执行，<span class="hl">没有认同一份代码</span></p>
+                <div class="s7-list">
+                    <div class="s7-item reveal d3">配置里没有内容哈希</div>
+                    <div class="s7-item reveal d3">模型只看到名字和描述</div>
+                    <div class="s7-item reveal d4">权限记录保存名字、命令和参数</div>
+                    <div class="s7-item reveal d4">@latest 由 npx 在启动时解析</div>
+                </div>
+                <div class="s7-correct reveal d6">Goose <b>确实有安全检查</b>，但它没有确认：检查的代码和最后运行的代码，是不是同一份。</div>
+            </div>
+            <div class="slide-foot">
+                <span>07 · 源码根因</span>
+                <span class="private">PRIVATE — Research Discussion</span>
+            </div>
+        </section>
+
+        <!-- ========== P8 · R1 REPEATABILITY ========== -->
+        <section class="slide" data-title="R1 可重复性">
+            <div class="s8-body">
+                <h2 class="h-slide reveal">这个结果能复现吗？</h2>
+                <table class="s8-table reveal d2">
+                    <tr><th>轮次</th><th>性质</th><th>检查时</th><th>执行时</th><th>是否计入</th></tr>
+                    <tr>
+                        <td class="mono">D1</td>
+                        <td class="cn"><span class="ok">首次实验</span></td>
+                        <td class="mono">A 1.0.0</td>
+                        <td class="mono"><span class="bad">canary-B</span></td>
+                        <td class="cn">是</td>
+                    </tr>
+                    <tr>
+                        <td class="mono">R1-1</td>
+                        <td class="cn"><span class="warn">补充实验</span></td>
+                        <td class="mono">A 1.0.0</td>
+                        <td class="mono"><span class="bad">canary-B</span></td>
+                        <td class="cn"><span class="dim">否（过程有偏差）</span></td>
+                    </tr>
+                    <tr>
+                        <td class="mono">R1-2</td>
+                        <td class="cn">复现实验</td>
+                        <td class="mono">A 1.0.0</td>
+                        <td class="mono"><span class="bad">canary-B</span></td>
+                        <td class="cn">是</td>
+                    </tr>
+                    <tr>
+                        <td class="mono">R1-3</td>
+                        <td class="cn">复现实验</td>
+                        <td class="mono">A 1.0.0</td>
+                        <td class="mono"><span class="bad">canary-B</span></td>
+                        <td class="cn">是</td>
+                    </tr>
+                </table>
+                <div class="s8-sum reveal d4"><b>D1、R1-2、R1-3 的结果相同：</b>检查时是 A，执行时是 B。</div>
+            </div>
+            <div class="slide-foot">
+                <span>08 · R1</span>
+                <span class="private">PRIVATE — Research Discussion</span>
+            </div>
+        </section>
+
+        <!-- ========== P9 · R2 NEGATIVE CONTROL ========== -->
+        <section class="slide" data-title="R2 阴性对照">
+            <div class="s9-body">
+                <h2 class="h-slide reveal">写死版本号后会怎样？</h2>
+                <div class="s9-cols">
+                    <div class="s9-arm drift reveal d2">
+                        <div class="a-title">R1 组 · package@latest（4 轮）</div>
+                        <div class="row"><span class="k">配置</span><span class="v">package@latest</span></div>
+                        <div class="row"><span class="k">最终执行</span><span class="v bad">B</span></div>
+                    </div>
+                    <div class="s9-arm negative reveal d3">
+                        <div class="a-title">R2 组 · package@1.0.0（2 轮）</div>
+                        <div class="row"><span class="k">配置</span><span class="v">package@1.0.0</span></div>
+                        <div class="row"><span class="k">最终执行</span><span class="v ok">A</span></div>
+                    </div>
+                </div>
+                <div class="s9-channels reveal d4">
+                    <span class="s9-chip">effect 文件、安装树、registry、终端和缓存记录都确认：<b>R2 最终执行 A</b>。</span>
+                </div>
+                <div class="s9-conclusion reveal d5">把配置写死为 <b>1.0.0</b> 后，即使 latest 已经指向 B，最终执行的仍然是 <b>A</b>。</div>
+            </div>
+            <div class="slide-foot">
+                <span>09 · R2</span>
+                <span class="private">PRIVATE — Research Discussion</span>
+            </div>
+        </section>
+
+        <!-- ========== P10 · WHAT EVIDENCE SAYS ========== -->
+        <section class="slide" data-title="证据边界">
+            <div class="s10-body">
+                <h2 class="h-slide reveal">现在能下什么结论？</h2>
+                <div class="s10-cols">
+                    <div class="s10-col can reveal d2">
+                        <div class="c-head">可以说</div>
+                        <ul>
+                            <li><span class="mk">✓</span>Goose v1.45.0 中，多次出现检查时是 A、执行时是 B</li>
+                            <li><span class="mk">✓</span>使用 @1.0.0 后，两次实验都执行 A</li>
+                            <li><span class="mk">✓</span>多类日志都能确认最终执行的是哪份代码</li>
+                        </ul>
+                    </div>
+                    <div class="s10-col cannot reveal d3">
+                        <div class="c-head">还不能说</div>
+                        <ul>
+                            <li><span class="mk">✗</span>绕过了用户批准——Auto 模式本来就没有批准步骤</li>
+                            <li><span class="mk">✗</span>可以执行任意恶意代码</li>
+                            <li><span class="mk">✗</span>所有 Agent 框架都有同样问题</li>
+                            <li><span class="mk">✗</span>写死版本号就等于绑定了内容哈希</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="slide-foot">
+                <span>10 · 证据边界</span>
+                <span class="private">PRIVATE — Research Discussion</span>
+            </div>
+        </section>
+
+        <!-- ========== P11 · ROADMAP ========== -->
+        <section class="slide" data-title="路线图">
+            <div class="s11-body">
+                <h2 class="h-slide reveal">下一步做什么？</h2>
+                <span class="s11-badge reveal d2">尚未执行</span>
+                <div class="s11-runs">
+                    <div class="s11-run reveal d3">
+                        <div class="r-id">R3a / R3b</div>
+                        <div class="r-desc">验证内容哈希：匹配才运行，不匹配就拒绝</div>
+                    </div>
+                    <div class="s11-run reveal d3">
+                        <div class="r-id">R4 ×2</div>
+                        <div class="r-desc">清空缓存后再测 @latest</div>
+                    </div>
+                    <div class="s11-run reveal d4">
+                        <div class="r-id">R5 ×2</div>
+                        <div class="r-desc">检查 Approve 模式显示和记录了什么</div>
+                    </div>
+                    <div class="s11-run reveal d4">
+                        <div class="r-id">R6 ×2</div>
+                        <div class="r-desc">检查 Smart 模式显示和记录了什么</div>
+                    </div>
+                    <div class="s11-run reveal d5">
+                        <div class="r-id">恢复</div>
+                        <div class="r-desc">恢复虚拟机并重新检查实验环境</div>
+                    </div>
+                </div>
+                <div class="s11-bench reveal d5">
+                    <div class="s11-bench-title">之后再扩展到其他框架</div>
+                    <div class="s11-flow">
+                        <div class="s11-fnode">同一套 A/B 实验</div>
+                        <div class="s11-farrow">→</div>
+                        <div class="s11-fnode">多个开源 Agent 框架</div>
+                        <div class="s11-farrow">→</div>
+                        <div class="s11-fnode">比较授权、解析和执行结果</div>
+                    </div>
+                </div>
+            </div>
+            <div class="slide-foot">
+                <span>11 · 路线图</span>
+                <span class="private">PRIVATE — Research Discussion</span>
+            </div>
+        </section>
+
+        <!-- ========== P12 · DECISIONS ========== -->
+        <section class="slide" data-title="待决事项">
+            <div class="s12-body">
+                <h2 class="h-slide reveal">这次组会想讨论什么？</h2>
+                <div class="s12-grid">
+                    <div class="s12-card reveal d2">
+                        <div class="c-no">01</div>
+                        <div class="c-title">论文主线</div>
+                        <div class="c-desc">先把 Goose 做深，还是转向多框架比较？</div>
+                    </div>
+                    <div class="s12-card reveal d3">
+                        <div class="c-no">02</div>
+                        <div class="c-title">推进顺序</div>
+                        <div class="c-desc">是否先完成 R3–R6，再扩展第二个框架？</div>
+                    </div>
+                    <div class="s12-card reveal d4">
+                        <div class="c-no">03</div>
+                        <div class="c-title">首批框架</div>
+                        <div class="c-desc">第一批选择哪些 Agent 框架？</div>
+                    </div>
+                    <div class="s12-card reveal d5">
+                        <div class="c-no">04</div>
+                        <div class="c-title">披露与投稿</div>
+                        <div class="c-desc">披露和投稿的时间线如何安排？</div>
+                    </div>
+                </div>
+            </div>
+            <div class="slide-foot">
+                <span>12 · 待决</span>
+                <span class="private">PRIVATE — Research Discussion</span>
+            </div>
+        </section>
+
+        <!-- ========== APPENDIX A · TERMINAL REPLAY ========== -->
+        <section class="slide" data-title="附录A 终端回放">
+            <div class="aa-body">
+                <h2 class="h-slide reveal">附录 A · D1 终端回放</h2>
+                <div class="code-panel aa-term reveal d2">
+                    <div class="code-title"><span class="dots"><i></i><i></i><i></i></span>terminal_trace.log · FROZEN_D1_20260814T230717</div>
+                    <pre><span class="c-hot">$</span> registry dist-tags latest → 1.0.0          <span class="c-dim"># admission：锚定 artifact A</span>
+<span class="c-hot">$</span> repoint latest → 1.0.1                     <span class="c-dim"># 激活前重指向；配置一字未改</span>
+<span class="c-hot">$</span> goose run --text <span class="c-str">"Enable the extension named canary…"</span>
+
+  <span class="c-key">▸ manage_extensions</span>  action=enable  extension_name=canary
+  <span class="c-key">▸ canary_echo</span>        text=ping
+
+  The canary tool responded with: <span class="c-str">ping</span> from artifact <span class="c-warn">canary-B</span> <span class="cursor"></span></pre>
+                </div>
+                <p class="aa-note reveal d4">配置没有改，最终执行的是 <b>B</b>。Auto 模式下全程没有批准界面。</p>
+            </div>
+            <div class="slide-foot">
+                <span>附录 A</span>
+                <span class="private">PRIVATE — Research Discussion</span>
+            </div>
+        </section>
+
+        <!-- ========== APPENDIX B · EVIDENCE INTEGRITY ========== -->
+        <section class="slide" data-title="附录B 证据完整性">
+            <div class="ab-body">
+                <h2 class="h-slide reveal">附录 B · 证据完整性与协议谱系</h2>
+                <table class="ab-table reveal d2">
+                    <tr><th>冻结目录</th><th>外层 frozen manifest</th><th>内层 evidence manifest</th><th>备注</th></tr>
+                    <tr><td>FROZEN_D1_20260814T230717</td><td><span class="ok">30 OK / 0 FAILED</span></td><td><span class="failed">28 OK / 1 FAILED</span></td><td class="cn"><span class="warn">历史顺序缺陷</span>：manifest 计算后 run.log 追加一行；已确定性证明，不回溯修改</td></tr>
+                    <tr><td>FROZEN_R1-1_20260816T223546</td><td><span class="ok">52 OK / 0</span></td><td><span class="ok">51 OK / 0</span></td><td class="cn">带 A5.6 偏差的支持性观测</td></tr>
+                    <tr><td>FROZEN_R1-2_20260818T004240</td><td><span class="ok">63 OK / 0</span></td><td><span class="ok">62 OK / 0</span></td><td class="cn">conforming replicate #1</td></tr>
+                    <tr><td>FROZEN_R1-3_20260818T012749</td><td><span class="ok">63 OK / 0</span></td><td><span class="ok">62 OK / 0</span></td><td class="cn">conforming replicate #2</td></tr>
+                    <tr><td>FROZEN_R2-1_20260818T014746</td><td><span class="ok">52 OK / 0</span></td><td><span class="ok">51 OK / 0</span></td><td class="cn">阴性对照 #1</td></tr>
+                    <tr><td>FROZEN_R2-2_20260818T020206</td><td><span class="ok">52 OK / 0</span></td><td><span class="ok">51 OK / 0</span></td><td class="cn">阴性对照 #2</td></tr>
+                </table>
+            </div>
+            <div class="slide-foot">
+                <span>附录 B</span>
+                <span class="private">PRIVATE — Research Discussion</span>
+            </div>
+        </section>
+
+        <!-- ========== APPENDIX C · FOUR-ROUND R1 ========== -->
+        <section class="slide" data-title="附录C 四轮对照">
+            <div class="ac-body">
+                <h2 class="h-slide reveal">附录 C · 四轮 R1 完整对照</h2>
+                <table class="ac-table reveal d2">
+                    <tr><th></th><th>D1</th><th>R1-1</th><th>R1-2</th><th>R1-3</th></tr>
+                    <tr><td class="cn">器材</td><td>D1 器材</td><td>rig v3</td><td>rig v8</td><td>rig v9</td></tr>
+                    <tr><td class="cn">硬件身份层</td><td><span class="dim">unobserved</span></td><td>recorded_A</td><td>recorded_B</td><td>recorded_B</td></tr>
+                    <tr><td class="cn">缓存证据完整性</td><td class="cn"><span class="dim">未捕获</span></td><td class="cn"><span class="dim">未捕获</span></td><td class="cn">完整</td><td class="cn">完整</td></tr>
+                    <tr><td class="cn">辅助请求 overlap</td><td>unobservable</td><td>observed</td><td>observed</td><td>not_observed</td></tr>
+                    <tr><td class="cn">RuntimeArtifact</td><td><span class="bad">canary-B</span></td><td><span class="bad">canary-B</span></td><td><span class="bad">canary-B</span></td><td><span class="bad">canary-B</span></td></tr>
+                    <tr><td class="cn">level-1 间隔</td><td>≈9.85 s</td><td>≈9.99 s</td><td>9.9237 s</td><td>6.6169 s</td></tr>
+                    <tr><td class="cn">level-2 / level-3</td><td>成立 / 不成立</td><td>成立 / 不成立</td><td>成立 / 不成立</td><td>成立 / 不成立</td></tr>
+                </table>
+            </div>
+            <div class="slide-foot">
+                <span>附录 C</span>
+                <span class="private">PRIVATE — Research Discussion</span>
+            </div>
+        </section>
+
+        <!-- ========== APPENDIX D · BENCHMARK DIMENSIONS ========== -->
+        <section class="slide" data-title="附录D 测量维度">
+            <div class="ad-body">
+                <h2 class="h-slide reveal">附录 D · 多框架比较看什么</h2>
+                <div class="ad-grid">
+                    <div class="ad-item reveal d2">是否允许 @latest</div>
+                    <div class="ad-item reveal d2">什么时候确定版本</div>
+                    <div class="ad-item reveal d3">授权时是否绑定内容哈希</div>
+                    <div class="ad-item reveal d3">界面向用户显示什么</div>
+                    <div class="ad-item reveal d4">系统实际保存什么</div>
+                    <div class="ad-item reveal d4">启动时是否重新确认</div>
+                    <div class="ad-item reveal d5">能否看到最终运行的代码</div>
+                    <div class="ad-item reveal d5">写死版本或哈希是否有效</div>
+                    <div class="ad-item reveal d6">检查失败时允许还是拒绝</div>
+                </div>
+            </div>
+            <div class="slide-foot">
+                <span>附录 D</span>
+                <span class="private">PRIVATE — Research Discussion</span>
+            </div>
+        </section>
+
+    </main>
+</div>
+
+<script>
+/* ===========================================
+   SLIDE PRESENTATION CONTROLLER (unchanged from reviewed deck)
+   =========================================== */
+class SlidePresentation {
+    constructor() {
+        this.slides = document.querySelectorAll('.slide');
+        this.currentSlide = 0;
+        this.stage = document.getElementById('deckStage');
+        this.setupStageScale();
+        this.setupKeyboardNav();
+        this.setupTouchNav();
+        this.setupWheelNav();
+        this.showSlide(0);
+    }
+    setupStageScale() {
+        const scale = () => {
+            const f = Math.min(window.innerWidth / 1920, window.innerHeight / 1080);
+            const x = (window.innerWidth - 1920 * f) / 2;
+            const y = (window.innerHeight - 1080 * f) / 2;
+            this.stage.style.transform = `translate(${x}px, ${y}px) scale(${f})`;
+        };
+        scale();
+        window.addEventListener('resize', scale);
+    }
+    setupKeyboardNav() {
+        document.addEventListener('keydown', (e) => {
+            if (e.target.getAttribute('contenteditable')) return;
+            if (['ArrowRight', ' ', 'PageDown'].includes(e.key)) { e.preventDefault(); this.next(); }
+            if (['ArrowLeft', 'PageUp'].includes(e.key)) { e.preventDefault(); this.prev(); }
+            if (e.key === 'Home') this.showSlide(0);
+            if (e.key === 'End') this.showSlide(this.slides.length - 1);
+        });
+    }
+    setupTouchNav() {
+        let sx = 0, sy = 0;
+        document.addEventListener('touchstart', (e) => { sx = e.touches[0].clientX; sy = e.touches[0].clientY; }, { passive: true });
+        document.addEventListener('touchend', (e) => {
+            const dx = e.changedTouches[0].clientX - sx, dy = e.changedTouches[0].clientY - sy;
+            if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy)) { dx < 0 ? this.next() : this.prev(); }
+        }, { passive: true });
+    }
+    setupWheelNav() {
+        let lock = false;
+        document.addEventListener('wheel', (e) => {
+            if (lock || Math.abs(e.deltaY) < 24) return;
+            lock = true; setTimeout(() => lock = false, 700);
+            e.deltaY > 0 ? this.next() : this.prev();
+        }, { passive: true });
+    }
+    next() { this.showSlide(this.currentSlide + 1); }
+    prev() { this.showSlide(this.currentSlide - 1); }
+    showSlide(i) {
+        this.currentSlide = Math.max(0, Math.min(i, this.slides.length - 1));
+        this.slides.forEach((s, idx) => {
+            s.classList.toggle('active', idx === this.currentSlide);
+            s.classList.toggle('visible', idx === this.currentSlide);
+        });
+        document.getElementById('pageIndicator').textContent = `${this.currentSlide + 1} / ${this.slides.length}`;
+        document.getElementById('progress').style.width = `${((this.currentSlide + 1) / this.slides.length) * 100}%`;
+        this.saveProgress();
+    }
+    saveProgress() {
+        try { localStorage.setItem('deck_progress_' + location.pathname, String(this.currentSlide)); } catch (e) {}
+    }
+    restoreProgress() {
+        try {
+            const p = localStorage.getItem('deck_progress_' + location.pathname);
+            if (p !== null) this.showSlide(parseInt(p, 10) || 0);
+        } catch (e) {}
+    }
+}
+
+/* ===========================================
+   INLINE EDITING (hover top-left or press E)
+   =========================================== */
+class InlineEditor {
+    constructor() {
+        this.isActive = false;
+        this.toggleBtn = document.getElementById('editToggle');
+        document.getElementById('editToggle').addEventListener('click', () => this.toggleEditMode());
+        const hotzone = document.getElementById('editHotzone');
+        let hideTimeout = null;
+        hotzone.addEventListener('mouseenter', () => { clearTimeout(hideTimeout); this.toggleBtn.classList.add('show'); });
+        hotzone.addEventListener('mouseleave', () => {
+            hideTimeout = setTimeout(() => { if (!this.isActive) this.toggleBtn.classList.remove('show'); }, 400);
+        });
+        this.toggleBtn.addEventListener('mouseenter', () => clearTimeout(hideTimeout));
+        this.toggleBtn.addEventListener('mouseleave', () => {
+            hideTimeout = setTimeout(() => { if (!this.isActive) this.toggleBtn.classList.remove('show'); }, 400);
+        });
+        hotzone.addEventListener('click', () => this.toggleEditMode());
+        document.addEventListener('keydown', (e) => {
+            if ((e.key === 'e' || e.key === 'E') && !e.target.getAttribute('contenteditable')) this.toggleEditMode();
+        });
+        document.addEventListener('keydown', (e) => {
+            if ((e.ctrlKey || e.metaKey) && e.key === 's' && this.isActive) { e.preventDefault(); this.persist(); }
+        });
+    }
+    toggleEditMode() {
+        this.isActive = !this.isActive;
+        this.toggleBtn.classList.toggle('active', this.isActive);
+        this.toggleBtn.textContent = this.isActive ? '✏️ editing (Ctrl+S)' : '✏️ edit';
+        document.querySelectorAll('.slide').forEach(s => {
+            s.querySelectorAll('h1,h2,h3,p,span,div,li,pre,td,th').forEach(el => {
+                if (el.classList.contains('code-panel') || el.classList.contains('code-title')) return;
+                el.setAttribute('contenteditable', this.isActive ? 'true' : 'false');
+            });
+        });
+        if (this.isActive) this.restore();
+        else this.persist();
+    }
+    persist() {
+        try {
+            localStorage.setItem('deck_edits_' + location.pathname, document.getElementById('deckStage').innerHTML);
+        } catch (e) {}
+    }
+    restore() {
+        try {
+            const saved = localStorage.getItem('deck_edits_' + location.pathname);
+            if (saved) document.getElementById('deckStage').innerHTML = saved;
+        } catch (e) {}
+    }
+}
+
+const pres = new SlidePresentation();
+pres.restoreProgress();
+new InlineEditor();
+</script>
+</body>
+</html>

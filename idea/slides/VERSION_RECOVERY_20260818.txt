@@ -1,0 +1,10 @@
+版本恢复记录（2026-08-18）
+
+- mentor_authorization_drift_progress_20260818_detailed_before_simplification.pdf
+  15:00 导出的 16 页详细版 PDF，未被本轮精简覆盖。
+
+- mentor_authorization_drift_progress_20260818_too_simple_draft.html
+  本轮被认为“过度精简”的可编辑 HTML 草稿，单独保留用于对照，不作为正式版。
+
+- mentor_authorization_drift_progress_20260818.html
+  当前工作文件；恢复完成前不要据此覆盖 detailed PDF。

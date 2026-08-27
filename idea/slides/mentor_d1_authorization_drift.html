@@ -1,0 +1,897 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>同一份授权，两份不同的代码 — D1 汇报</title>
+
+<!-- Fonts: JetBrains Mono (latin/code) + Noto Sans SC (Chinese) -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,300;0,400;0,500;0,700;0,800;1,400&family=Noto+Sans+SC:wght@400;500;700;900&display=swap" rel="stylesheet">
+
+<style>
+/* ===========================================
+   THEME: ACADEMIC TERMINAL (restrained)
+   Deep GitHub-dark canvas, one green accent,
+   amber for highlights, red for drift markers.
+   =========================================== */
+:root {
+    --bg: #0d1117;
+    --panel: #131920;
+    --panel-lift: #161b22;
+    --border: #262d36;
+    --border-lift: #30363d;
+    --green: #57ab5a;
+    --green-dim: #3a7a42;
+    --amber: #e3b341;
+    --red: #ff7b72;
+    --blue: #79c0ff;
+    --text: #e6edf3;
+    --text-dim: #9198a1;
+    --text-faint: #5a6069;
+    --font-mono: 'JetBrains Mono', 'Noto Sans SC', monospace;
+    --font-cn: 'Noto Sans SC', sans-serif;
+    --ease: cubic-bezier(0.16, 1, 0.3, 1);
+    --dur: 0.6s;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+/* ===========================================
+   VIEWPORT BASE (mandatory fixed 16:9 stage)
+   =========================================== */
+html, body { width: 100%; height: 100%; margin: 0; overflow: hidden; background: var(--bg); }
+.deck-viewport { position: fixed; inset: 0; overflow: hidden; background: var(--bg); }
+.deck-stage { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; overflow: hidden; transform-origin: 0 0; background: var(--bg); }
+.slide { position: absolute; inset: 0; width: 1920px; height: 1080px; overflow: hidden; display: block; visibility: hidden; opacity: 0; pointer-events: none; background: var(--bg); }
+.slide.active, .slide.visible { visibility: visible; opacity: 1; pointer-events: auto; z-index: 1; }
+img, video, canvas, svg { max-width: 100%; max-height: 100%; }
+.deck-controls { position: fixed; left: 50%; bottom: 22px; transform: translateX(-50%); z-index: 1000; }
+@media print {
+    html, body { width: 1920px; height: auto; overflow: visible; background: #fff; }
+    .deck-viewport { position: static; overflow: visible; background: #fff; }
+    .deck-stage { position: static; width: auto; height: auto; transform: none !important; background: none; }
+    .slide { position: relative; display: block !important; visibility: visible !important; opacity: 1 !important; pointer-events: auto !important; width: 1920px; height: 1080px; break-after: page; page-break-after: always; }
+    .slide:last-child { break-after: auto; page-break-after: auto; }
+    .deck-controls { display: none !important; }
+}
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.2s !important; } }
+
+/* ===========================================
+   SHARED SLIDE GRAMMAR
+   =========================================== */
+.slide { font-family: var(--font-mono); color: var(--text); }
+
+/* entrance reveals, re-triggered per slide activation */
+.reveal { opacity: 0; transform: translateY(24px); transition: opacity var(--dur) var(--ease), transform var(--dur) var(--ease); }
+.slide.visible .reveal { opacity: 1; transform: none; }
+.slide.visible .reveal.d1 { transition-delay: 0.10s; }
+.slide.visible .reveal.d2 { transition-delay: 0.22s; }
+.slide.visible .reveal.d3 { transition-delay: 0.34s; }
+.slide.visible .reveal.d4 { transition-delay: 0.46s; }
+.slide.visible .reveal.d5 { transition-delay: 0.58s; }
+.slide.visible .reveal.d6 { transition-delay: 0.70s; }
+
+/* thin top/bottom chrome shared by content slides */
+.slide-chrome-top {
+    position: absolute; top: 58px; left: 96px; right: 96px;
+    display: flex; justify-content: space-between; align-items: baseline;
+    font-size: 21px; letter-spacing: 0.1em; color: var(--text-faint);
+    padding-bottom: 22px; border-bottom: 1px solid var(--border);
+}
+.slide-chrome-top .hot { color: var(--green); }
+.slide-chrome-bottom {
+    position: absolute; bottom: 54px; left: 96px; right: 96px;
+    display: flex; justify-content: space-between; align-items: baseline;
+    font-size: 19px; color: var(--text-faint); letter-spacing: 0.06em;
+    padding-top: 20px; border-top: 1px solid var(--border);
+}
+
+/* section headings */
+.h-slide {
+    font-family: var(--font-cn); font-weight: 900;
+    font-size: 64px; line-height: 1.25; color: var(--text);
+}
+.h-slide .en { display: block; margin-top: 10px; font-family: var(--font-mono); font-weight: 400; font-size: 24px; color: var(--green); letter-spacing: 0.04em; }
+
+/* code panels */
+.code-panel {
+    background: var(--panel); border: 1px solid var(--border-lift); border-radius: 10px;
+    box-shadow: 0 14px 34px rgba(0,0,0,0.35);
+}
+.code-panel .code-title {
+    display: flex; align-items: center; gap: 10px;
+    padding: 14px 22px; border-bottom: 1px solid var(--border);
+    background: var(--panel-lift); border-radius: 10px 10px 0 0;
+    font-size: 19px; color: var(--text-dim);
+}
+.code-panel .code-title .dots { display: flex; gap: 8px; margin-right: 8px; }
+.code-panel .code-title .dots i { width: 12px; height: 12px; border-radius: 50%; display: block; }
+.code-panel .code-title .dots i:nth-child(1){ background:#3a4048; }
+.code-panel .code-title .dots i:nth-child(2){ background:#3a4048; }
+.code-panel .code-title .dots i:nth-child(3){ background:#3a4048; }
+.code-panel pre {
+    padding: 26px 30px; font-family: var(--font-mono);
+    font-size: 24px; line-height: 1.75; color: var(--text);
+    white-space: pre; overflow: hidden;
+}
+.c-key { color: var(--blue); }      /* keys / keywords */
+.c-str { color: #a5d6a7; }          /* strings */
+.c-dim { color: var(--text-faint); } /* comments / dims */
+.c-hot { color: var(--green); }     /* emphasis green */
+.c-warn { color: var(--amber); }    /* warning amber */
+.c-bad { color: var(--red); }       /* drift red */
+
+/* blinking cursor */
+.cursor { display: inline-block; width: 12px; height: 24px; background: var(--green); vertical-align: middle; animation: blink 1.05s steps(1) infinite; }
+@keyframes blink { 0%,49% { opacity: 1; } 50%,100% { opacity: 0; } }
+
+/* ===========================================
+   SLIDE 1 — TITLE (minimal + subtle decor)
+   =========================================== */
+.s1 {
+    background:
+        radial-gradient(ellipse 1300px 850px at 72% 24%, rgba(57, 211, 83, 0.045), transparent 60%),
+        linear-gradient(rgba(230, 237, 243, 0.018) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(230, 237, 243, 0.018) 1px, transparent 1px);
+    background-size: auto, 120px 120px, 120px 120px;
+}
+.s1-watermark {
+    position: absolute; right: 60px; top: 40px;
+    font-family: var(--font-mono); font-weight: 800; font-size: 460px; line-height: 1;
+    color: transparent;
+    -webkit-text-stroke: 1.5px rgba(230, 237, 243, 0.07);
+    letter-spacing: -0.04em;
+    user-select: none;
+}
+.s1-body { position: absolute; left: 96px; right: 96px; top: 330px; }
+.s1-rule { width: 72px; height: 4px; background: var(--green); margin-bottom: 52px; }
+.s1-title {
+    font-family: var(--font-cn); font-weight: 900;
+    font-size: 116px; line-height: 1.24; color: var(--text);
+}
+.s1-sub {
+    margin-top: 46px; font-size: 30px; color: var(--text-dim);
+    letter-spacing: 0.02em;
+}
+.s1-corner {
+    position: absolute; right: 96px; bottom: 64px;
+    font-size: 19px; color: var(--text-faint); letter-spacing: 0.1em;
+}
+
+/* ===========================================
+   SLIDE 2 — RESEARCH QUESTION + CHAIN
+   =========================================== */
+.s2-body { position: absolute; left: 96px; right: 96px; top: 180px; }
+.s2-question {
+    font-family: var(--font-cn); font-weight: 700;
+    font-size: 52px; line-height: 1.5; color: var(--text);
+    margin-top: 40px;
+}
+.s2-question .hl { color: #6fca74; }
+.s2-system {
+    margin-top: 30px; font-family: var(--font-cn);
+    font-size: 26px; color: var(--text-dim); line-height: 1.6;
+}
+.s2-system b { color: #6fca74; font-weight: 700; }
+.s2-chain { margin-top: 60px; }
+.chain-row { display: flex; align-items: center; gap: 0; }
+.chain-node {
+    flex: 1; text-align: center; padding: 34px 18px;
+    border: 1px solid var(--border-lift); border-radius: 10px;
+    background: var(--panel);
+    font-family: var(--font-cn); font-size: 28px; color: var(--text);
+    line-height: 1.5;
+}
+.chain-node small { display: block; margin-top: 8px; font-family: var(--font-mono); font-size: 19px; color: var(--text-faint); }
+.chain-node.last { border-color: rgba(111, 202, 116, 0.5); }
+.chain-node.last small { color: #6fca74; }
+.chain-arrow {
+    flex: 0 0 72px; text-align: center;
+    font-size: 34px; color: var(--text-faint);
+}
+.chain-brackets { display: flex; gap: 24px; margin-top: 26px; }
+.bracket { position: relative; padding: 30px 26px 0 26px; }
+.bracket::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 8px;
+    border: 1px solid var(--text-faint); border-bottom: none;
+    border-radius: 8px 8px 0 0;
+}
+.bracket.b1 { flex: 3; }
+.bracket.b2 { flex: 1.35; }
+.bracket.b2::before { border-color: #6fca74; }
+.bracket .b-label { font-family: var(--font-mono); font-size: 26px; font-weight: 700; }
+.bracket.b1 .b-label { color: var(--text-dim); }
+.bracket.b2 .b-label { color: #6fca74; }
+.bracket .b-desc { margin-top: 8px; font-family: var(--font-cn); font-size: 24px; color: var(--text-dim); line-height: 1.55; }
+.s2-note {
+    margin-top: 46px; padding-top: 26px; border-top: 1px solid var(--border);
+    font-family: var(--font-cn); font-size: 26px; color: var(--text-dim); line-height: 1.65;
+}
+.s2-note b { color: var(--text); font-weight: 700; }
+
+/* ===========================================
+   SLIDE 3 — POSITIONING (supply vs consumer)
+   =========================================== */
+.s3-body { position: absolute; left: 96px; right: 96px; top: 180px; }
+.s3-claim {
+    margin-top: 54px; font-family: var(--font-cn); font-weight: 700;
+    font-size: 56px; line-height: 1.5; color: var(--text);
+}
+.s3-claim .dim { color: var(--text-dim); font-weight: 500; }
+.s3-cols { display: flex; gap: 32px; margin-top: 74px; }
+.s3-panel {
+    flex: 1; padding: 40px 44px;
+    border: 1px solid var(--border-lift); border-radius: 10px; background: var(--panel);
+}
+.s3-panel .p-label { font-family: var(--font-mono); font-size: 25px; font-weight: 700; color: var(--text-dim); }
+.s3-panel .p-q { margin-top: 22px; font-family: var(--font-cn); font-size: 29px; color: var(--text); line-height: 1.7; }
+.s3-panel.mine { border-color: rgba(111, 202, 116, 0.45); }
+.s3-panel.mine .p-label { color: #6fca74; }
+.s3-panel .p-note { margin-top: 22px; padding-top: 22px; border-top: 1px solid var(--border); font-family: var(--font-cn); font-size: 24px; color: var(--text-dim); line-height: 1.65; }
+.s3-foot {
+    margin-top: 56px; font-family: var(--font-cn);
+    font-size: 27px; color: var(--text-dim); line-height: 1.7;
+}
+.s3-foot b { color: var(--text); font-weight: 700; }
+
+/* ===========================================
+   SLIDE 4 — GOOSE MECHANISM (two chains + code)
+   =========================================== */
+.s4-body { position: absolute; left: 96px; right: 96px; top: 168px; }
+.s4-grid { display: flex; gap: 36px; margin-top: 46px; align-items: stretch; }
+.s4-left { flex: 1.05; }
+.s4-left pre { font-size: 22px; line-height: 1.8; }
+.s4-caption {
+    margin-top: 26px; font-family: var(--font-cn); font-size: 25px;
+    color: var(--text-dim); line-height: 1.65;
+}
+.s4-caption b { color: var(--text); font-weight: 700; }
+.s4-right { flex: 1; display: flex; flex-direction: column; gap: 24px; }
+.chainbox {
+    padding: 28px 32px; border: 1px solid var(--border-lift);
+    border-radius: 10px; background: var(--panel);
+}
+.chainbox .cb-title { font-family: var(--font-mono); font-size: 23px; font-weight: 700; color: var(--text-dim); margin-bottom: 16px; }
+.chainbox .cb-steps { font-family: var(--font-cn); font-size: 25px; color: var(--text); line-height: 1.9; }
+.chainbox .cb-steps .sep { color: var(--text-faint); padding: 0 8px; }
+.chainbox.exec { border-color: rgba(227, 179, 65, 0.4); }
+.chainbox.exec .cb-title { color: var(--amber); }
+.s4-missing {
+    margin-top: 34px; padding: 26px 32px;
+    border: 1px dashed rgba(255, 123, 114, 0.5); border-radius: 10px;
+    font-family: var(--font-cn); font-size: 26px; color: var(--text); line-height: 1.7;
+}
+.s4-missing .m-label { font-family: var(--font-mono); font-size: 21px; color: var(--red); letter-spacing: 0.08em; display: block; margin-bottom: 10px; }
+
+/* ===========================================
+   SLIDE 4B — TWO CHAINS (full vertical)
+   =========================================== */
+.s4b-body { position: absolute; left: 96px; right: 96px; top: 118px; }
+.s4b-cols { display: flex; gap: 40px; margin-top: 26px; }
+.s4b-chain { flex: 1; }
+.s4b-chain-title {
+    font-family: var(--font-mono); font-size: 23px; font-weight: 700;
+    color: var(--text-dim); margin-bottom: 14px;
+}
+.s4b-chain.exec .s4b-chain-title { color: var(--amber); }
+.s4b-step {
+    padding: 11px 26px; border: 1px solid var(--border-lift); border-radius: 8px;
+    background: var(--panel); font-family: var(--font-cn);
+    font-size: 25px; color: var(--text); text-align: center; line-height: 1.45;
+}
+.s4b-down { text-align: center; font-size: 22px; color: var(--text-faint); line-height: 1.1; padding: 2px 0; }
+.s4b-gap {
+    margin-top: 26px; padding: 20px 34px 24px;
+    border: 1px dashed rgba(255, 123, 114, 0.55); border-radius: 10px;
+}
+.s4b-gap .g-label {
+    font-family: var(--font-cn); font-size: 25px; color: var(--red);
+    line-height: 1.5; margin-bottom: 18px;
+}
+.s4b-gap .g-label b { color: var(--text); font-weight: 700; }
+.s4b-gap .g-flow { display: flex; align-items: center; gap: 14px; }
+.s4b-gap .g-step {
+    flex: 1; text-align: center; padding: 12px 12px;
+    border: 1px solid rgba(255, 123, 114, 0.35); border-radius: 8px;
+    font-family: var(--font-cn); font-size: 22px; color: var(--text); line-height: 1.45;
+}
+.s4b-gap .g-arrow { color: var(--red); font-size: 24px; flex: 0 0 auto; }
+
+/* ===========================================
+   SLIDE 5 — TERMINAL REPLAY
+   =========================================== */
+.s5-body { position: absolute; left: 96px; right: 96px; top: 168px; }
+.s5-term { margin-top: 44px; }
+.s5-term pre { font-size: 25px; line-height: 2.0; padding: 32px 36px; }
+.s5-note {
+    margin-top: 34px; font-family: var(--font-cn); font-size: 26px;
+    color: var(--text-dim); line-height: 1.65;
+}
+.s5-note b { color: var(--text); font-weight: 700; }
+
+/* ===========================================
+   SLIDE 6 — DESIGN & FREEZE TIMELINE
+   =========================================== */
+.s6-body { position: absolute; left: 96px; right: 96px; top: 168px; }
+.tl { position: relative; margin-top: 100px; padding: 0 10px; }
+.tl-line { position: absolute; left: 0; right: 0; top: 11px; height: 2px; background: var(--border-lift); }
+.tl-items { display: flex; }
+.tl-item { flex: 1; position: relative; padding: 0 14px; }
+.tl-item::before {
+    content: ''; position: absolute; left: 14px; top: 3px;
+    width: 16px; height: 16px; border-radius: 50%;
+    background: var(--bg); border: 2px solid var(--text-dim);
+}
+.tl-item.drift::before { border-color: var(--amber); background: var(--amber); }
+.tl-item .tl-t { margin-top: 40px; font-family: var(--font-mono); font-size: 22px; color: var(--text-dim); }
+.tl-item .tl-e { margin-top: 10px; font-family: var(--font-cn); font-size: 25px; color: var(--text); line-height: 1.55; }
+.tl-item.drift .tl-e { color: var(--amber); }
+.s6-facts { display: flex; gap: 32px; margin-top: 92px; }
+.s6-fact {
+    flex: 1; padding: 30px 34px; border: 1px solid var(--border-lift);
+    border-radius: 10px; background: var(--panel);
+    font-family: var(--font-cn); font-size: 25px; color: var(--text-dim); line-height: 1.7;
+}
+.s6-fact b { display: block; color: var(--text); font-weight: 700; margin-bottom: 10px; }
+
+/* ===========================================
+   SLIDE 7 — EVIDENCE (D1 story, step by step)
+   =========================================== */
+.s7-body { position: absolute; left: 96px; right: 96px; top: 150px; }
+.s7-steps { margin-top: 40px; }
+.s7-step { display: grid; grid-template-columns: 88px 1fr; gap: 26px; padding: 26px 0; border-top: 1px solid var(--border); }
+.s7-step:first-child { border-top: none; padding-top: 6px; }
+.s7-step .st-no { font-size: 40px; font-weight: 800; color: var(--text-faint); line-height: 1.1; }
+.s7-step .st-what { font-family: var(--font-cn); font-size: 30px; color: var(--text); line-height: 1.5; }
+.s7-step .st-what b { font-weight: 700; }
+.s7-step .st-what .warn { color: var(--amber); font-weight: 700; }
+.s7-step .st-ev { margin-top: 12px; font-size: 22px; color: var(--text-dim); line-height: 1.6; }
+.s7-step .st-ev .k { color: #6fca74; }
+.s7-note {
+    margin-top: 30px; padding-top: 24px; border-top: 1px solid var(--border);
+    font-family: var(--font-cn); font-size: 25px; color: var(--text-dim); line-height: 1.65;
+}
+.s7-note b { color: var(--text); font-weight: 700; }
+.s7-note .warn { color: var(--amber); font-weight: 700; }
+
+/* ===========================================
+   SLIDE 8 — WHAT IT IS / IS NOT
+   =========================================== */
+.s8-body { position: absolute; left: 96px; right: 96px; top: 156px; }
+.s8-is {
+    margin-top: 40px; padding: 36px 44px;
+    border: 1px solid rgba(111, 202, 116, 0.4); border-left: 6px solid #6fca74;
+    border-radius: 10px; background: rgba(111, 202, 116, 0.05);
+}
+.s8-is .is-head {
+    font-family: var(--font-mono); font-size: 24px; font-weight: 700; color: #6fca74;
+    margin-bottom: 20px;
+}
+.s8-is .is-item {
+    display: flex; gap: 18px; align-items: baseline;
+    font-family: var(--font-cn); font-size: 28px; color: var(--text); line-height: 1.55;
+    padding: 8px 0;
+}
+.s8-is .is-item .mk { color: #6fca74; font-weight: 800; flex: 0 0 auto; }
+.s8-not-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 26px; margin-top: 34px;
+}
+.s8-not {
+    padding: 28px 32px; border: 1px solid var(--border-lift);
+    border-radius: 10px; background: var(--panel);
+}
+.s8-not .n-head {
+    display: flex; align-items: baseline; gap: 16px; margin-bottom: 12px;
+}
+.s8-not .n-mk { color: var(--red); font-weight: 800; font-size: 28px; flex: 0 0 auto; }
+.s8-not .n-term { font-family: var(--font-mono); font-size: 27px; font-weight: 700; color: var(--text); }
+.s8-not .n-term .strike { text-decoration: line-through; text-decoration-color: rgba(255,123,114,0.6); }
+.s8-not .n-why { font-family: var(--font-cn); font-size: 23px; color: var(--text-dim); line-height: 1.55; }
+
+/* ===========================================
+   SLIDE 9 — DECISIONS
+   =========================================== */
+.s9-body { position: absolute; left: 96px; right: 96px; top: 150px; }
+.s9-cards { display: flex; flex-direction: column; gap: 26px; margin-top: 38px; }
+.s9-card {
+    display: grid; grid-template-columns: 130px 1fr; gap: 26px;
+    padding: 30px 38px; border: 1px solid var(--border-lift);
+    border-left: 6px solid var(--amber); border-radius: 10px;
+    background: var(--panel);
+}
+.s9-card.confirm { border-left-color: #6fca74; }
+.s9-card .c-no {
+    font-size: 62px; font-weight: 800; color: var(--text-faint); line-height: 1;
+}
+.s9-card.confirm .c-no { color: rgba(111, 202, 116, 0.55); }
+.s9-card .c-title { font-family: var(--font-cn); font-size: 32px; font-weight: 700; color: var(--text); }
+.s9-card .c-desc { margin-top: 10px; font-family: var(--font-cn); font-size: 24px; color: var(--text-dim); line-height: 1.6; }
+.s9-card .c-desc b { color: var(--text); font-weight: 700; }
+.s9-card .c-opts { margin-top: 14px; display: flex; gap: 12px; flex-wrap: wrap; }
+.s9-card .c-opt {
+    padding: 7px 18px; border: 1px solid var(--border-lift); border-radius: 999px;
+    font-family: var(--font-cn); font-size: 21px; color: var(--text-dim);
+}
+.s9-foot {
+    margin-top: 30px; font-family: var(--font-cn); font-size: 22px;
+    color: var(--text-faint); line-height: 1.7;
+}
+
+/* ===========================================
+   DECK CONTROLS (outside stage)
+   =========================================== */
+.progress {
+    position: fixed; top: 0; left: 0; height: 3px; width: 0;
+    background: var(--green); z-index: 1001; transition: width 0.35s var(--ease);
+}
+.page-indicator {
+    position: fixed; right: 26px; bottom: 22px; z-index: 1000;
+    font-family: var(--font-mono); font-size: 15px; color: var(--text-faint);
+    letter-spacing: 0.1em;
+}
+
+/* edit mode toggle (hover top-left hotzone or press E) */
+.edit-hotzone { position: fixed; top: 0; left: 0; width: 80px; height: 80px; z-index: 10000; cursor: pointer; }
+.edit-toggle {
+    position: fixed; top: 18px; left: 18px; z-index: 10001;
+    opacity: 0; pointer-events: none; transition: opacity 0.3s ease;
+    background: var(--panel-lift); color: var(--text-dim);
+    border: 1px solid var(--border-lift); border-radius: 8px;
+    font-family: var(--font-mono); font-size: 14px; padding: 8px 14px;
+}
+.edit-toggle.show, .edit-toggle.active { opacity: 1; pointer-events: auto; }
+[contenteditable="true"] { outline: 1px dashed var(--green-dim); outline-offset: 4px; }
+</style>
+</head>
+<body>
+<div class="progress" id="progress"></div>
+<div class="page-indicator" id="pageIndicator">1 / 1</div>
+<div class="edit-hotzone" id="editHotzone"></div>
+<button class="edit-toggle" id="editToggle" title="Edit mode (E)">✏️ edit</button>
+
+<div class="deck-viewport">
+    <main class="deck-stage" id="deckStage">
+
+        <!-- ========== SLIDE 1 · TITLE ========== -->
+        <section class="slide s1 active" data-title="标题">
+            <div class="s1-watermark" aria-hidden="true">D1</div>
+            <div class="s1-body">
+                <div class="s1-rule reveal"></div>
+                <h1 class="s1-title reveal d2">同一份授权，<br>两份不同的代码</h1>
+                <p class="s1-sub reveal d4">authorization-reference drift · Goose canary D1</p>
+            </div>
+        </section>
+
+        <!-- ========== SLIDE 2 · RESEARCH QUESTION ========== -->
+        <section class="slide" data-title="研究问题">
+            <div class="s2-body">
+                <h2 class="h-slide reveal">研究问题</h2>
+                <p class="s2-question reveal d2">当 Agent 自主获取外部能力时，<br>用户的授权最终绑定到了<span class="hl">哪一份代码</span>？</p>
+                <p class="s2-system reveal d3">真实系统：<b>Goose v1.45.0</b>（Extension Manager）—— 10 个受测 agent 系统中，唯一普通任务即可触发扩展搜索与启用的（route grade R3）</p>
+
+                <div class="s2-chain reveal d4">
+                    <div class="chain-row">
+                        <div class="chain-node">普通任务<small>用户指令</small></div>
+                        <div class="chain-arrow">→</div>
+                        <div class="chain-node">发现并选择扩展<small>search_available_extensions</small></div>
+                        <div class="chain-arrow">→</div>
+                        <div class="chain-node">启用<small>manage_extensions(enable)</small></div>
+                        <div class="chain-arrow">→</div>
+                        <div class="chain-node last">启动具体字节<small>npx 解析 @latest</small></div>
+                    </div>
+                    <div class="chain-brackets">
+                        <div class="bracket b1">
+                            <div class="b-label">acquisition gap</div>
+                            <div class="b-desc">原课题：Agent 会不会自主走到「启用」这一步</div>
+                        </div>
+                        <div class="bracket b2">
+                            <div class="b-label">authorization-binding gap</div>
+                            <div class="b-desc">走到之后：Goose 的授权绑定了什么</div>
+                        </div>
+                    </div>
+                </div>
+
+                <p class="s2-note reveal d6">本次汇报：在 Goose 中实测到 <b>authorization-reference drift</b> —— 授权绑定的可变引用在启动时解析成另一份代码。它与 TOCTOU 同族，但<b>当前证据不支持 TOCTOU 定性</b>。</p>
+            </div>
+        </section>
+
+        <!-- ========== SLIDE 3 · POSITIONING ========== -->
+        <section class="slide" data-title="问题定位">
+            <div class="s3-body">
+                <h2 class="h-slide reveal">问题定位</h2>
+                <p class="s3-claim reveal d2">「代码是正版的」<span class="dim">≠</span>「被授权执行的那一版」</p>
+                <div class="s3-cols">
+                    <div class="s3-panel reveal d3">
+                        <div class="p-label">supply-side · 供应链完整性</div>
+                        <div class="p-q">谁发布？是否被篡改？是否已知恶意？</div>
+                        <div class="p-note">Goose 的 OSV 检查在这一层。</div>
+                    </div>
+                    <div class="s3-panel mine reveal d4">
+                        <div class="p-label">consumer-side · 授权绑定</div>
+                        <div class="p-q">执行的制品，是否就是被授权的那一份？</div>
+                        <div class="p-note">本研究在这一层。</div>
+                    </div>
+                </div>
+                <p class="s3-foot reveal d5">B 可以<b>正常发布、未被篡改、无 OSV 通告</b>——但仍不是被授权的那一份。这是 OSV 检查回答不了的问题。</p>
+            </div>
+        </section>
+
+        <!-- ========== SLIDE 4 · GOOSE MECHANISM ========== -->
+        <section class="slide" data-title="Goose 机制">
+            <div class="s4-body">
+                <h2 class="h-slide reveal">授权与执行，是两条链</h2>
+                <div class="s4-grid">
+                    <div class="s4-left reveal d2">
+                        <div class="code-panel">
+                            <div class="code-title"><span class="dots"><i></i><i></i><i></i></span>goose config（本实验实测形态）</div>
+                            <pre>extensions:
+  canary:
+    enabled: <span class="c-key">false</span>
+    type: stdio
+    cmd: npx
+    args: [<span class="c-str">"-y"</span>, <span class="c-str">"goose-activation-canary@latest"</span>]</pre>
+                        </div>
+                        <p class="s4-caption">配置保存的是一条<b>启动配方</b>，不是制品身份——<br>没有版本号，没有 digest。授权时<b>无物可绑</b>。</p>
+                    </div>
+                    <div class="s4-right">
+                        <div class="chainbox reveal d3">
+                            <div class="cb-title">授权链（goose 内部）</div>
+                            <div class="cb-steps">模型只见扩展名<br>manage_extensions(enable)<span class="sep">→</span>Auto 放行<span class="sep">→</span>按名取回配方<span class="sep">→</span>OSV 查包名</div>
+                        </div>
+                        <div class="chainbox exec reveal d4">
+                            <div class="cb-title">解析链（npx 内部，启动后才发生）</div>
+                            <div class="cb-steps">读取当时的 dist-tags.latest<span class="sep">→</span>解析出具体版本<span class="sep">→</span>执行该版本字节</div>
+                        </div>
+                        <div class="s4-missing reveal d5">
+                            <span class="m-label">缺失的环节</span>
+                            解析出具体制品 → 将版本 / digest 交回授权系统 → 确认绑定 → 复验 → 再执行
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========== SLIDE 4B · TWO CHAINS (FULL) ========== -->
+        <section class="slide" data-title="两条链">
+            <div class="s4b-body">
+                <h2 class="h-slide reveal">两条链之间，缺了一段</h2>
+                <div class="s4b-cols">
+                    <div class="s4b-chain reveal d2">
+                        <div class="s4b-chain-title">授权 / 控制链（goose）</div>
+                        <div class="s4b-step">模型选择 canary</div>
+                        <div class="s4b-down">↓</div>
+                        <div class="s4b-step">manage_extensions</div>
+                        <div class="s4b-down">↓</div>
+                        <div class="s4b-step">Auto Allow / 工具级批准</div>
+                        <div class="s4b-down">↓</div>
+                        <div class="s4b-step">按名字读取配置</div>
+                        <div class="s4b-down">↓</div>
+                        <div class="s4b-step">按包名做 OSV 检查</div>
+                    </div>
+                    <div class="s4b-chain exec reveal d3">
+                        <div class="s4b-chain-title">制品解析 / 执行链（npx）</div>
+                        <div class="s4b-step">启动 npx</div>
+                        <div class="s4b-down">↓</div>
+                        <div class="s4b-step">npx 读取当时的 latest</div>
+                        <div class="s4b-down">↓</div>
+                        <div class="s4b-step">解析出具体版本</div>
+                        <div class="s4b-down">↓</div>
+                        <div class="s4b-step">启动该版本的代码</div>
+                    </div>
+                </div>
+                <div class="s4b-gap reveal d5">
+                    <div class="g-label">Goose 决定<b>「是否允许启用」</b>，npx 决定<b>「实际启用哪份代码」</b>——但 Goose 在授权时还不知道、也不记录 npx 最终选择的代码身份。两条链之间缺少：</div>
+                    <div class="g-flow">
+                        <div class="g-step">解析出具体制品</div>
+                        <div class="g-arrow">→</div>
+                        <div class="g-step">版本 / 来源 / digest<br>交回授权系统</div>
+                        <div class="g-arrow">→</div>
+                        <div class="g-step">确认授权绑定<br>到这个制品</div>
+                        <div class="g-arrow">→</div>
+                        <div class="g-step">重新校验</div>
+                        <div class="g-arrow">→</div>
+                        <div class="g-step">再执行</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========== SLIDE 5 · TERMINAL REPLAY ========== -->
+        <section class="slide" data-title="终端回放">
+            <div class="s5-body">
+                <h2 class="h-slide reveal">D1 会话回放</h2>
+                <div class="code-panel s5-term reveal d2">
+                    <div class="code-title"><span class="dots"><i></i><i></i><i></i></span>terminal_trace.log · FROZEN_D1_20260814T230717</div>
+                    <pre><span class="c-hot">$</span> registry dist-tags latest → 1.0.0          <span class="c-dim"># admission：锚定 artifact A</span>
+<span class="c-hot">$</span> repoint latest → 1.0.1                     <span class="c-dim"># 激活前重指向；配置一字未改</span>
+<span class="c-hot">$</span> goose run --text <span class="c-str">"Enable the extension named canary…"</span>
+
+  <span class="c-key">▸ manage_extensions</span>  action=enable  extension_name=canary
+  <span class="c-key">▸ canary_echo</span>        text=ping
+
+  The canary tool responded with: <span class="c-str">ping</span> from artifact <span class="c-warn">canary-B</span> <span class="cursor"></span></pre>
+                </div>
+                <p class="s5-note reveal d4">模型全程只发出过<b>扩展的名字</b>；配置里的选择器文本从未改变；最终执行并自报身份的是 <b>B</b>。整个过程<b>无任何批准界面出现</b>（Auto 模式）。</p>
+            </div>
+        </section>
+
+        <!-- ========== SLIDE 7 · EVIDENCE ========== -->
+        <section class="slide" data-title="证据">
+            <div class="s7-body">
+                <h2 class="h-slide reveal">D1 里发生了什么</h2>
+                <div class="s7-steps">
+                    <div class="s7-step reveal d2">
+                        <span class="st-no">1</span>
+                        <div>
+                            <div class="st-what">admission 时，latest 指向 <b>1.0.0（A）</b>——研究者此时解析并记录了 A 的 digest</div>
+                            <div class="st-ev">registry 日志 <span class="k">registry_start latest=1.0.0</span> · sha256(A) = cfb882e2…</div>
+                        </div>
+                    </div>
+                    <div class="s7-step reveal d3">
+                        <span class="st-no">2</span>
+                        <div>
+                            <div class="st-what">激活前，把 latest <span class="warn">重指向 1.0.1（B）</span>——Goose 的配置一字未改</div>
+                            <div class="st-ev">registry 日志 <span class="k">dist_tag_repointed 1.0.0 → 1.0.1</span> · 运行前后配置哈希相同</div>
+                        </div>
+                    </div>
+                    <div class="s7-step reveal d4">
+                        <span class="st-no">3</span>
+                        <div>
+                            <div class="st-what">Goose 启动 npx 后，npx 查询元数据，解析到 <span class="warn">1.0.1</span>——版本在这一刻才确定</div>
+                            <div class="st-ev">registry 日志 <span class="k">packument_fetch latest=1.0.1</span>（goose 启动 11 秒后）</div>
+                        </div>
+                    </div>
+                    <div class="s7-step reveal d5">
+                        <span class="st-no">4</span>
+                        <div>
+                            <div class="st-what">实际执行的是 <b>B，不是 A</b>——只有真正跑起来的代码才会写出 effect 文件</div>
+                            <div class="st-ev"><span class="k">effect_B_process_start / mcp_initialize / first_tool_execution</span> · init → tool = 9.85 s</div>
+                        </div>
+                    </div>
+                </div>
+                <p class="s7-note reveal d6">注：B 的文件是本机已有的缓存，这次没有重新下载；但「选 1.0.1」这个决定是 npx 启动时现场查询 registry 做出的。<span class="warn">文件缓存改变不了版本被换掉的事实</span>。</p>
+            </div>
+        </section>
+
+        <!-- ========== SLIDE 7B · PROGRESS ========== -->
+        <section class="slide" data-title="实验进展">
+            <div class="s6-body">
+                <h2 class="h-slide reveal">实验进展</h2>
+                <div class="tl reveal d2">
+                    <div class="tl-line"></div>
+                    <div class="tl-items">
+                        <div class="tl-item">
+                            <div class="tl-t">23:00</div>
+                            <div class="tl-e">协议冻结<br>零次运行</div>
+                        </div>
+                        <div class="tl-item">
+                            <div class="tl-t">23:01:01</div>
+                            <div class="tl-e">admission<br>锚定 A @1.0.0</div>
+                        </div>
+                        <div class="tl-item drift">
+                            <div class="tl-t">23:01:03</div>
+                            <div class="tl-e">repoint<br>latest → 1.0.1</div>
+                        </div>
+                        <div class="tl-item">
+                            <div class="tl-t">23:01:14</div>
+                            <div class="tl-e">npx 解析<br>执行 B</div>
+                        </div>
+                        <div class="tl-item">
+                            <div class="tl-t">23:07</div>
+                            <div class="tl-e">证据封存<br>停止扩大测试</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="s6-facts">
+                    <div class="s6-fact reveal d4"><b>已证实（仅 D1）</b>同一条配置在不同时刻启动了不同代码，drift 成立；init 效果早于首次工具调用 9.85 秒。</div>
+                    <div class="s6-fact reveal d5"><b>已停止</b>第二级判据一成立即停：D2 / D3 未运行，全部证据哈希封存。</div>
+                    <div class="s6-fact reveal d6"><b>还没测</b>普通任务触发的完整 E2E、Approve / Smart 模式、锁定版本与 digest 校验后的表现。</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========== SLIDE 8 · IS / IS NOT ========== -->
+        <section class="slide" data-title="定性边界">
+            <div class="s8-body">
+                <h2 class="h-slide reveal">定性边界</h2>
+                <div class="s8-is reveal d2">
+                    <div class="is-head">它是什么</div>
+                    <div class="is-item"><span class="mk">✓</span><span>authorization-reference drift 的真实系统实测——授权的是可变引用，启动时解析成另一份代码且被接受</span></div>
+                    <div class="is-item"><span class="mk">✓</span><span>授权绑定缺失的结构性证据——由配置与权限记录的形态决定，与发布者是否恶意无关</span></div>
+                </div>
+                <div class="s8-not-grid">
+                    <div class="s8-not reveal d3">
+                        <div class="n-head"><span class="n-mk">✗</span><span class="n-term">dependency confusion</span></div>
+                        <div class="n-why">A、B 是同一个合法包的两个版本，不存在包名抢注。</div>
+                    </div>
+                    <div class="s8-not reveal d4">
+                        <div class="n-head"><span class="n-mk">✗</span><span class="n-term">prompt injection</span></div>
+                        <div class="n-why">D1 由用户明确指令驱动，全程无恶意内容。</div>
+                    </div>
+                    <div class="s8-not reveal d5">
+                        <div class="n-head"><span class="n-mk">✗</span><span class="n-term">经典 TOCTOU</span></div>
+                        <div class="n-why">未证明系统曾在早期检查并绑定过 A。</div>
+                    </div>
+                    <div class="s8-not reveal d6">
+                        <div class="n-head"><span class="n-mk">✗</span><span class="n-term">「<span class="strike">只是没锁版本</span>」</span></div>
+                        <div class="n-why">没锁版本解释漂移为何发生；安全问题是授权未绑定最终制品。</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========== SLIDE 9 · DECISIONS ========== -->
+        <section class="slide" data-title="待决事项">
+            <div class="s9-body">
+                <h2 class="h-slide reveal">需要讨论决定的三件事</h2>
+                <div class="s9-cards">
+                    <div class="s9-card reveal d2">
+                        <span class="c-no">01</span>
+                        <div>
+                            <div class="c-title">披露路径</div>
+                            <div class="c-desc">何时联系 Goose vendor，披露节奏如何与投稿时间线协调。</div>
+                            <div class="c-opts">
+                                <span class="c-opt">现在就联系</span>
+                                <span class="c-opt">先与导师定稿口径再联系</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="s9-card reveal d3">
+                        <span class="c-no">02</span>
+                        <div>
+                            <div class="c-title">普通任务 E2E 还跑不跑</div>
+                            <div class="c-desc">headline 结论需要普通任务触发的 E2E（D1 只是确定性控制组）；但停止规则要求先停下。</div>
+                            <div class="c-opts">
+                                <span class="c-opt">完全冻结，披露后再说</span>
+                                <span class="c-opt">披露协调期内跑完，一并披露</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="s9-card confirm reveal d4">
+                        <span class="c-no">03</span>
+                        <div>
+                            <div class="c-title">确认：剩余重复不再执行</div>
+                            <div class="c-desc">原计划确定性控制组跑三次（D1/D2/D3）。停止规则规定：<b>第二级判据一成立就立即停</b>，不能为了凑满三次继续跑——所以 D2/D3 不再执行，协议按此修订。需要确认这一理解一致。</div>
+                        </div>
+                    </div>
+                </div>
+                <p class="s9-foot reveal d5">会前待办：源码层断言固化为证据记录（file:line）｜证据目录移出 /tmp｜协议文件追加 D1 结果 amendment</p>
+            </div>
+        </section>
+
+    </main>
+</div>
+
+<script>
+/* ===========================================
+   SLIDE PRESENTATION CONTROLLER
+   =========================================== */
+class SlidePresentation {
+    constructor() {
+        this.slides = document.querySelectorAll('.slide');
+        this.currentSlide = 0;
+        this.stage = document.getElementById('deckStage');
+        this.setupStageScale();
+        this.setupKeyboardNav();
+        this.setupTouchNav();
+        this.setupWheelNav();
+        this.showSlide(0);
+    }
+    setupStageScale() {
+        const scale = () => {
+            const f = Math.min(window.innerWidth / 1920, window.innerHeight / 1080);
+            const x = (window.innerWidth - 1920 * f) / 2;
+            const y = (window.innerHeight - 1080 * f) / 2;
+            this.stage.style.transform = `translate(${x}px, ${y}px) scale(${f})`;
+        };
+        scale();
+        window.addEventListener('resize', scale);
+    }
+    setupKeyboardNav() {
+        document.addEventListener('keydown', (e) => {
+            if (e.target.getAttribute('contenteditable')) return;
+            if (['ArrowRight', ' ', 'PageDown'].includes(e.key)) { e.preventDefault(); this.next(); }
+            if (['ArrowLeft', 'PageUp'].includes(e.key)) { e.preventDefault(); this.prev(); }
+            if (e.key === 'Home') this.showSlide(0);
+            if (e.key === 'End') this.showSlide(this.slides.length - 1);
+        });
+    }
+    setupTouchNav() {
+        let sx = 0, sy = 0;
+        document.addEventListener('touchstart', (e) => { sx = e.touches[0].clientX; sy = e.touches[0].clientY; }, { passive: true });
+        document.addEventListener('touchend', (e) => {
+            const dx = e.changedTouches[0].clientX - sx, dy = e.changedTouches[0].clientY - sy;
+            if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy)) { dx < 0 ? this.next() : this.prev(); }
+        }, { passive: true });
+    }
+    setupWheelNav() {
+        let lock = false;
+        document.addEventListener('wheel', (e) => {
+            if (lock || Math.abs(e.deltaY) < 24) return;
+            lock = true; setTimeout(() => lock = false, 700);
+            e.deltaY > 0 ? this.next() : this.prev();
+        }, { passive: true });
+    }
+    next() { this.showSlide(this.currentSlide + 1); }
+    prev() { this.showSlide(this.currentSlide - 1); }
+    showSlide(i) {
+        this.currentSlide = Math.max(0, Math.min(i, this.slides.length - 1));
+        this.slides.forEach((s, idx) => {
+            s.classList.toggle('active', idx === this.currentSlide);
+            s.classList.toggle('visible', idx === this.currentSlide);
+        });
+        document.getElementById('pageIndicator').textContent = `${this.currentSlide + 1} / ${this.slides.length}`;
+        document.getElementById('progress').style.width = `${((this.currentSlide + 1) / this.slides.length) * 100}%`;
+        this.saveProgress();
+    }
+    saveProgress() {
+        try { localStorage.setItem('deck_progress_' + location.pathname, String(this.currentSlide)); } catch (e) {}
+    }
+    restoreProgress() {
+        try {
+            const p = localStorage.getItem('deck_progress_' + location.pathname);
+            if (p !== null) this.showSlide(parseInt(p, 10) || 0);
+        } catch (e) {}
+    }
+}
+
+/* ===========================================
+   INLINE EDITING (hover top-left or press E)
+   =========================================== */
+class InlineEditor {
+    constructor() {
+        this.isActive = false;
+        this.toggleBtn = document.getElementById('editToggle');
+        document.getElementById('editToggle').addEventListener('click', () => this.toggleEditMode());
+        const hotzone = document.getElementById('editHotzone');
+        let hideTimeout = null;
+        hotzone.addEventListener('mouseenter', () => { clearTimeout(hideTimeout); this.toggleBtn.classList.add('show'); });
+        hotzone.addEventListener('mouseleave', () => {
+            hideTimeout = setTimeout(() => { if (!this.isActive) this.toggleBtn.classList.remove('show'); }, 400);
+        });
+        this.toggleBtn.addEventListener('mouseenter', () => clearTimeout(hideTimeout));
+        this.toggleBtn.addEventListener('mouseleave', () => {
+            hideTimeout = setTimeout(() => { if (!this.isActive) this.toggleBtn.classList.remove('show'); }, 400);
+        });
+        hotzone.addEventListener('click', () => this.toggleEditMode());
+        document.addEventListener('keydown', (e) => {
+            if ((e.key === 'e' || e.key === 'E') && !e.target.getAttribute('contenteditable')) this.toggleEditMode();
+        });
+        document.addEventListener('keydown', (e) => {
+            if ((e.ctrlKey || e.metaKey) && e.key === 's' && this.isActive) { e.preventDefault(); this.persist(); }
+        });
+    }
+    toggleEditMode() {
+        this.isActive = !this.isActive;
+        this.toggleBtn.classList.toggle('active', this.isActive);
+        this.toggleBtn.textContent = this.isActive ? '✏️ editing (Ctrl+S)' : '✏️ edit';
+        document.querySelectorAll('.slide').forEach(s => {
+            s.querySelectorAll('h1,h2,h3,p,span,div,li,pre').forEach(el => {
+                if (el.classList.contains('code-panel') || el.classList.contains('code-title')) return;
+                el.setAttribute('contenteditable', this.isActive ? 'true' : 'false');
+            });
+        });
+        if (this.isActive) this.restore();
+        else this.persist();
+    }
+    persist() {
+        try {
+            localStorage.setItem('deck_edits_' + location.pathname, document.getElementById('deckStage').innerHTML);
+        } catch (e) {}
+    }
+    restore() {
+        try {
+            const saved = localStorage.getItem('deck_edits_' + location.pathname);
+            if (saved) document.getElementById('deckStage').innerHTML = saved;
+        } catch (e) {}
+    }
+}
+
+const pres = new SlidePresentation();
+pres.restoreProgress();
+new InlineEditor();
+</script>
+</body>
+</html>

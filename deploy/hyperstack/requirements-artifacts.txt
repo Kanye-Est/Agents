@@ -1,0 +1,5 @@
+# Frozen verifier/generator dependencies for the hard-artifact pilot.
+opencv-python-headless==4.12.0.88
+pillow==11.3.0
+pypdf==6.12.2
+qrcode==8.2

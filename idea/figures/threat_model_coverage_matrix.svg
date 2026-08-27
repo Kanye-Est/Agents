@@ -1,0 +1,149 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900" role="img" aria-labelledby="title desc">
+  <title id="title">相关工作威胁模型与终点评测矩阵</title>
+  <desc id="desc">比较代表工作在初始状态、触发方式、检索推荐、安装命令、实际安装、调用载荷与任务完成方面的覆盖。</desc>
+  <defs>
+    <style>
+      .sans { font-family: "Noto Sans CJK SC", "Microsoft YaHei", Arial, sans-serif; }
+      .title { font-size: 40px; font-weight: 700; fill: #102A43; }
+      .subtitle { font-size: 20px; fill: #486581; }
+      .head { font-size: 17px; font-weight: 700; fill: #F8FAFC; }
+      .rowtitle { font-size: 18px; font-weight: 700; fill: #102A43; }
+      .rowmeta { font-size: 14px; fill: #627D98; }
+      .cell { font-size: 15px; font-weight: 700; text-anchor: middle; dominant-baseline: middle; }
+      .foot { font-size: 16px; fill: #334E68; }
+      .callout { font-size: 21px; font-weight: 700; fill: white; }
+      .callout2 { font-size: 16px; fill: #E6FFFA; }
+    </style>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="130%">
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#102A43" flood-opacity="0.12"/>
+    </filter>
+  </defs>
+
+  <rect width="1600" height="900" fill="#F7FAFC"/>
+  <text x="70" y="66" class="sans title">不能只问“测没测 install”：要同时对齐触发方式与评测终点</text>
+  <text x="70" y="105" class="sans subtitle">同一篇论文可能覆盖真实安装，却仍与“普通任务触发的自主安装”处于不同 threat model。</text>
+
+  <!-- Table frame -->
+  <g filter="url(#shadow)">
+    <rect x="70" y="145" width="1460" height="520" rx="16" fill="white"/>
+  </g>
+  <path d="M70 161 Q70 145 86 145 H1514 Q1530 145 1530 161 V220 H70 Z" fill="#334E68"/>
+
+  <!-- Column headers -->
+  <text x="190" y="185" class="sans head" text-anchor="middle">工作</text>
+  <text x="445" y="177" class="sans head" text-anchor="middle">初始状态 / 触发</text>
+  <text x="445" y="201" class="sans head" text-anchor="middle">THREAT MODEL</text>
+  <text x="700" y="185" class="sans head" text-anchor="middle">检索 / 推荐</text>
+  <text x="895" y="177" class="sans head" text-anchor="middle">安装意图</text>
+  <text x="895" y="201" class="sans head" text-anchor="middle">或命令</text>
+  <text x="1085" y="185" class="sans head" text-anchor="middle">实际安装</text>
+  <text x="1260" y="177" class="sans head" text-anchor="middle">调用 / 载荷</text>
+  <text x="1260" y="201" class="sans head" text-anchor="middle">或 RCE</text>
+  <text x="1430" y="185" class="sans head" text-anchor="middle">task_ok</text>
+
+  <!-- Grid -->
+  <g stroke="#E2E8F0" stroke-width="1.5">
+    <line x1="310" y1="145" x2="310" y2="665"/>
+    <line x1="580" y1="145" x2="580" y2="665"/>
+    <line x1="805" y1="145" x2="805" y2="665"/>
+    <line x1="985" y1="145" x2="985" y2="665"/>
+    <line x1="1175" y1="145" x2="1175" y2="665"/>
+    <line x1="1345" y1="145" x2="1345" y2="665"/>
+    <line x1="70" y1="220" x2="1530" y2="220"/>
+    <line x1="70" y1="294" x2="1530" y2="294"/>
+    <line x1="70" y1="368" x2="1530" y2="368"/>
+    <line x1="70" y1="442" x2="1530" y2="442"/>
+    <line x1="70" y1="516" x2="1530" y2="516"/>
+    <line x1="70" y1="590" x2="1530" y2="590"/>
+  </g>
+
+  <!-- alternating rows -->
+  <rect x="70" y="294" width="1460" height="74" fill="#F8FAFC"/>
+  <rect x="70" y="442" width="1460" height="74" fill="#F8FAFC"/>
+  <rect x="70" y="590" width="1460" height="75" fill="#ECFDF5"/>
+
+  <!-- Row labels -->
+  <text x="90" y="249" class="sans rowtitle">Skill-Inject / Poise</text>
+  <text x="90" y="273" class="sans rowmeta">post-load 家族</text>
+  <text x="330" y="249" class="sans rowtitle">恶意 skill 已加载</text>
+  <text x="330" y="273" class="sans rowmeta">跳过 acquisition</text>
+
+  <text x="90" y="323" class="sans rowtitle">Semantic SC</text>
+  <text x="90" y="347" class="sans rowmeta">registry 攻击</text>
+  <text x="330" y="323" class="sans rowtitle">skill 已在 registry</text>
+  <text x="330" y="347" class="sans rowmeta">测排序与候选内选择</text>
+
+  <text x="90" y="397" class="sans rowtitle">SearchGEO</text>
+  <text x="90" y="421" class="sans rowmeta">搜索证据操纵</text>
+  <text x="330" y="397" class="sans rowtitle">询问/搜索 skill</text>
+  <text x="330" y="421" class="sans rowmeta">伪造多源推荐证据</text>
+
+  <text x="90" y="471" class="sans rowtitle">Skills Don’t Exist</text>
+  <text x="90" y="495" class="sans rowmeta">幻觉名抢注</text>
+  <text x="330" y="471" class="sans rowtitle">能力问题 → 推荐</text>
+  <text x="330" y="495" class="sans rowmeta">PoC 再明确要求安装</text>
+
+  <text x="90" y="545" class="sans rowtitle">HalluSquatting</text>
+  <text x="90" y="569" class="sans rowmeta">真实 marketplace E2E</text>
+  <text x="330" y="545" class="sans rowtitle">用户明确说 install X</text>
+  <text x="330" y="569" class="sans rowmeta">攻击 identifier resolver</text>
+
+  <text x="90" y="619" class="sans rowtitle" fill="#047857">本工作目标</text>
+  <text x="90" y="643" class="sans rowmeta">自主 acquisition 基准</text>
+  <text x="330" y="619" class="sans rowtitle" fill="#047857">用户只给普通任务</text>
+  <text x="330" y="643" class="sans rowmeta">agent 自己识别能力缺口</text>
+
+  <!-- Cell pills helper: x centers 700,895,1085,1260,1430; y 257,331,405,479,553,627 -->
+  <!-- Skill-Inject / Poise -->
+  <g><rect x="652" y="240" width="96" height="34" rx="17" fill="#E2E8F0"/><text x="700" y="257" class="sans cell" fill="#64748B">不适用</text></g>
+  <g><rect x="847" y="240" width="96" height="34" rx="17" fill="#E2E8F0"/><text x="895" y="257" class="sans cell" fill="#64748B">不适用</text></g>
+  <g><rect x="1037" y="240" width="96" height="34" rx="17" fill="#E2E8F0"/><text x="1085" y="257" class="sans cell" fill="#64748B">已预置</text></g>
+  <g><rect x="1212" y="240" width="96" height="34" rx="17" fill="#DCFCE7"/><text x="1260" y="257" class="sans cell" fill="#047857">覆盖</text></g>
+  <g><rect x="1382" y="240" width="96" height="34" rx="17" fill="#FEF3C7"/><text x="1430" y="257" class="sans cell" fill="#B45309">部分</text></g>
+
+  <!-- Semantic SC -->
+  <g><rect x="652" y="314" width="96" height="34" rx="17" fill="#DCFCE7"/><text x="700" y="331" class="sans cell" fill="#047857">覆盖</text></g>
+  <g><rect x="847" y="314" width="96" height="34" rx="17" fill="#E2E8F0"/><text x="895" y="331" class="sans cell" fill="#64748B">未测</text></g>
+  <g><rect x="1037" y="314" width="96" height="34" rx="17" fill="#E2E8F0"/><text x="1085" y="331" class="sans cell" fill="#64748B">未测</text></g>
+  <g><rect x="1212" y="314" width="96" height="34" rx="17" fill="#E2E8F0"/><text x="1260" y="331" class="sans cell" fill="#64748B">未测</text></g>
+  <g><rect x="1382" y="314" width="96" height="34" rx="17" fill="#E2E8F0"/><text x="1430" y="331" class="sans cell" fill="#64748B">未测</text></g>
+
+  <!-- SearchGEO -->
+  <g><rect x="652" y="388" width="96" height="34" rx="17" fill="#DCFCE7"/><text x="700" y="405" class="sans cell" fill="#047857">覆盖</text></g>
+  <g><rect x="837" y="388" width="116" height="34" rx="17" fill="#DCFCE7"/><text x="895" y="405" class="sans cell" fill="#047857">精确命令</text></g>
+  <g><rect x="1037" y="388" width="96" height="34" rx="17" fill="#FEE2E2"/><text x="1085" y="405" class="sans cell" fill="#B91C1C">未执行</text></g>
+  <g><rect x="1212" y="388" width="96" height="34" rx="17" fill="#E2E8F0"/><text x="1260" y="405" class="sans cell" fill="#64748B">未测</text></g>
+  <g><rect x="1382" y="388" width="96" height="34" rx="17" fill="#E2E8F0"/><text x="1430" y="405" class="sans cell" fill="#64748B">未测</text></g>
+
+  <!-- Skills That Don't Exist -->
+  <g><rect x="652" y="462" width="96" height="34" rx="17" fill="#DCFCE7"/><text x="700" y="479" class="sans cell" fill="#047857">大规模</text></g>
+  <g><rect x="847" y="462" width="96" height="34" rx="17" fill="#FEF3C7"/><text x="895" y="479" class="sans cell" fill="#B45309">PoC</text></g>
+  <g><rect x="1037" y="462" width="96" height="34" rx="17" fill="#FEF3C7"/><text x="1085" y="479" class="sans cell" fill="#B45309">n=1</text></g>
+  <g><rect x="1212" y="462" width="96" height="34" rx="17" fill="#E2E8F0"/><text x="1260" y="479" class="sans cell" fill="#64748B">未测</text></g>
+  <g><rect x="1382" y="462" width="96" height="34" rx="17" fill="#E2E8F0"/><text x="1430" y="479" class="sans cell" fill="#64748B">未测</text></g>
+
+  <!-- HalluSquatting -->
+  <g><rect x="652" y="536" width="96" height="34" rx="17" fill="#DCFCE7"/><text x="700" y="553" class="sans cell" fill="#047857">覆盖</text></g>
+  <g><rect x="847" y="536" width="96" height="34" rx="17" fill="#DCFCE7"/><text x="895" y="553" class="sans cell" fill="#047857">覆盖</text></g>
+  <g><rect x="1037" y="536" width="96" height="34" rx="17" fill="#DCFCE7"/><text x="1085" y="553" class="sans cell" fill="#047857">真实</text></g>
+  <g><rect x="1212" y="536" width="96" height="34" rx="17" fill="#DCFCE7"/><text x="1260" y="553" class="sans cell" fill="#047857">覆盖</text></g>
+  <g><rect x="1382" y="536" width="96" height="34" rx="17" fill="#E2E8F0"/><text x="1430" y="553" class="sans cell" fill="#64748B">非重点</text></g>
+
+  <!-- Our target -->
+  <g><rect x="642" y="610" width="116" height="34" rx="17" fill="#0F766E"/><text x="700" y="627" class="sans cell" fill="white">逐段计量</text></g>
+  <g><rect x="837" y="610" width="116" height="34" rx="17" fill="#0F766E"/><text x="895" y="627" class="sans cell" fill="white">逐段计量</text></g>
+  <g><rect x="1027" y="610" width="116" height="34" rx="17" fill="#0F766E"/><text x="1085" y="627" class="sans cell" fill="white">逐段计量</text></g>
+  <g><rect x="1202" y="610" width="116" height="34" rx="17" fill="#0F766E"/><text x="1260" y="627" class="sans cell" fill="white">逐段计量</text></g>
+  <g><rect x="1372" y="610" width="116" height="34" rx="17" fill="#0F766E"/><text x="1430" y="627" class="sans cell" fill="white">逐段计量</text></g>
+
+  <!-- Bottom callout -->
+  <rect x="70" y="705" width="1460" height="118" rx="18" fill="#0F766E" filter="url(#shadow)"/>
+  <text x="105" y="749" class="sans callout">关键综述结论：已有“真实安装”不等于已有“自主 acquisition”</text>
+  <text x="105" y="784" class="sans callout2">最可防守的 novelty = 普通任务触发 + agent 自主发起 + install 实际执行 + 后续危害/任务完成 + 全链条件概率。</text>
+
+  <rect x="72" y="853" width="18" height="18" rx="4" fill="#DCFCE7"/><text x="101" y="868" class="sans foot">论文覆盖</text>
+  <rect x="215" y="853" width="18" height="18" rx="4" fill="#FEF3C7"/><text x="244" y="868" class="sans foot">部分/单例</text>
+  <rect x="370" y="853" width="18" height="18" rx="4" fill="#FEE2E2"/><text x="399" y="868" class="sans foot">明确未执行</text>
+  <rect x="555" y="853" width="18" height="18" rx="4" fill="#E2E8F0"/><text x="584" y="868" class="sans foot">未测/不适用</text>
+  <text x="1530" y="868" text-anchor="end" class="sans foot">数字与边界见 13 / 14 / 15 文献文档</text>
+</svg>

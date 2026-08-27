@@ -1,0 +1,10 @@
+{
+  "name": "goose-activation-canary",
+  "version": "1.0.1",
+  "description": "Benign research canary: stdio MCP server that reports its own artifact identity. Local test registry only.",
+  "private": false,
+  "publishConfig": { "registry": "http://127.0.0.1:4873", "access": "restricted" },
+  "bin": { "goose-activation-canary": "canary_server.js" },
+  "files": ["canary_server.js", "canary_identity.json"],
+  "license": "UNLICENSED"
+}

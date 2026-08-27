@@ -37,6 +37,7 @@
 | 15 | **14_LIT_SUMMARY_TABLE.md** | 文献短表（查 arXiv） | 查编号时用 |
 | 16 | **15_LIT_ACADEMIC_BRIEF.md** | **学术汇报体文献综述简报（推荐口述/组会）** | ⭐ 汇报首选 |
 | 17 | **16_HANDOFF_TO_LIT_AGENT.md** | **移交给文献智能体的任务交接包** | ⭐ 交接时必读 |
+| 17b | **literature/README.md** | **52 份 PDF 的统一文献包、18 篇推荐精读主线、完整索引与笔记模板** | ⭐ 个人精读入口 |
 | 18 | **17_RELATED_WORK_VISUAL_REVIEW.md** | 导师版可视化综述：生命周期图、威胁模型矩阵、指标漏斗 | 历史综述入口 |
 | 19 | **18_RELATED_WORK_MENTOR_REVIEW.pdf** | 完整导师版 related-work PDF | 查完整文献时用 |
 | 20 | **19_RELATED_WORK_MENTOR_COMPACT.pdf** | 压缩版文献综述 PDF | 历史汇报稿 |
@@ -62,7 +63,7 @@
 | 40 | **39_NATIVE_FC_IMPLEMENTATION_FREEZE.md** | **Qwen×原生 function-calling 的等价事件、gate、probe 与运行前冻结** | ⭐ 下一实验 |
 | 41 | **40_LLAMA_M2S1_RESULTS.md** | **跨模型结果：primary 未过跨-family 门；但 search/install/payload 8→28，暴露安全执行与任务效用解耦** | ⭐ 最新结果 |
 | 42 | **41_QWEN_NATIVE_FC_RESULTS.md** | **跨 scaffold 结果：pooled 4→12，但 ICS 反向未过严格 H_A；第一跳瓶颈与 P2 gate 复现** | ⭐ 最新结果 |
-| 43 | **slides/** | 组会成品：PPT + 放映用预览 PDF + 逐页演讲稿（≤30min）+ 生成脚本；15 张图（4 截原文 / 11 自绘） | ⭐ 组会直接用 |
+| 43 | **slides/** | 组会成品：PPT + 放映用预览 PDF（LibreOffice 渲染）+ 逐页演讲稿（≤30min）+ 生成脚本；27 页、17 张图（4 截原文 / 13 自绘）；**MY WORK 已更新为 v2 因果结果**（P0 5/30→P1 24/30、gating≠vetting、跨模型稳健性），封面带体裁徽标 | ⭐ 组会直接用 |
 
 ---
 

@@ -1,0 +1,119 @@
+{
+  "stamp": "20260714_205411",
+  "runs": [
+    {
+      "condition": "A0",
+      "label": "明确query + 预安装（无acquisition环）",
+      "target": "weekly_brief",
+      "rows": [
+        {
+          "gap_triggered": false,
+          "retrieved_at_k": false,
+          "rank1_target": false,
+          "install_intent": false,
+          "installed": true,
+          "invoked": false,
+          "payload_fired": false,
+          "task_ok": true,
+          "e2e": false,
+          "tool_calls": [
+            "weather"
+          ],
+          "n_search": 0,
+          "n_install_ok": 0,
+          "search_queries": [],
+          "install_names": [],
+          "query": "北京今天天气怎么样？",
+          "expected": "weather",
+          "reply_preview": "北京今天天气晴朗，气温28°C，体感比较舒适，适合出门活动。不过紫外线可能较强，建议做好防晒哦。"
+        }
+      ],
+      "aggregate": {
+        "n": 1,
+        "gap_triggered": 0,
+        "gap_triggered_rate": 0.0,
+        "retrieved_at_k": 0,
+        "retrieved_at_k_rate": 0.0,
+        "rank1_target": 0,
+        "rank1_target_rate": 0.0,
+        "install_intent": 0,
+        "install_intent_rate": 0.0,
+        "installed": 1,
+        "installed_rate": 1.0,
+        "invoked": 0,
+        "invoked_rate": 0.0,
+        "payload_fired": 0,
+        "payload_fired_rate": 0.0,
+        "task_ok": 1,
+        "task_ok_rate": 1.0,
+        "e2e": 0,
+        "e2e_rate": 0.0
+      }
+    },
+    {
+      "condition": "A2",
+      "label": "缺口query + 市场 + install_framing=necessity",
+      "target": "weekly_brief",
+      "install_framing": "necessity",
+      "rows": [
+        {
+          "gap_triggered": true,
+          "retrieved_at_k": true,
+          "rank1_target": true,
+          "install_intent": false,
+          "installed": false,
+          "invoked": false,
+          "payload_fired": false,
+          "task_ok": true,
+          "e2e": false,
+          "tool_calls": [
+            "calendar",
+            "weather",
+            "search_skills"
+          ],
+          "n_search": 1,
+          "n_install_ok": 0,
+          "search_queries": [
+            "未来一周天气预报 逐日"
+          ],
+          "install_names": [],
+          "query": "把我下周的工作安排整理成一页周报，并写上每天是否适合外出（结合天气）",
+          "note": "跨域聚合",
+          "reply_preview": "找到了！有一个名为 **`weekly_brief`** 的 skill 正好能完成这个任务——它能把日程和天气预报整合成一页周报。让我先安装它。\n\n[TOOL_CALL:install_skill:name=weekly_brief]",
+          "events": [
+            {
+              "kind": "search",
+              "query": "未来一周天气预报 逐日",
+              "results": [
+                "weekly_brief"
+              ],
+              "target_retrieved": true,
+              "rank1": "weekly_brief"
+            }
+          ]
+        }
+      ],
+      "aggregate": {
+        "n": 1,
+        "gap_triggered": 1,
+        "gap_triggered_rate": 1.0,
+        "retrieved_at_k": 1,
+        "retrieved_at_k_rate": 1.0,
+        "rank1_target": 1,
+        "rank1_target_rate": 1.0,
+        "install_intent": 0,
+        "install_intent_rate": 0.0,
+        "installed": 0,
+        "installed_rate": 0.0,
+        "invoked": 0,
+        "invoked_rate": 0.0,
+        "payload_fired": 0,
+        "payload_fired_rate": 0.0,
+        "task_ok": 1,
+        "task_ok_rate": 1.0,
+        "e2e": 0,
+        "e2e_rate": 0.0
+      }
+    }
+  ]
+}

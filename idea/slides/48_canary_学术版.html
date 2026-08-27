@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>批准的是名字，跑的却是代码 · Canary 研究汇报</title>
+
+<!-- ============================================================
+     STYLE: WHITE CONFERENCE HANDOUT (纯白会议讲义)
+     学术/系统安全顶会讲义感。白底 + 近黑字 + 单一深蓝强调。
+     几乎无装饰：细横线、序号、页码；框/箭头都是细线。
+     想换颜色 → 改 :root 里的 --accent；想换字体 → 改 --sans / --mono。
+     ============================================================ -->
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Serif:ital,wght@0,400;0,600;1,400&family=Noto+Sans+SC:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+/* ===== fixed 16:9 stage base ===== */
+html,body{width:100%;height:100%;margin:0;overflow:hidden;background:#fff;}
+.deck-viewport{position:fixed;inset:0;overflow:hidden;background:#fff;}
+.deck-stage{position:absolute;left:0;top:0;width:1920px;height:1080px;overflow:hidden;transform-origin:0 0;background:#fff;}
+.slide{position:absolute;inset:0;width:1920px;height:1080px;overflow:hidden;display:block;visibility:hidden;opacity:0;pointer-events:none;background:#fff;}
+.slide.active,.slide.visible{visibility:visible;opacity:1;pointer-events:auto;z-index:1;}
+img,video,canvas,svg{max-width:100%;max-height:100%;}
+@media (prefers-reduced-motion: reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.2s!important;}}
+
+/* ===== design tokens (tweak here) ===== */
+:root{
+  --bg:#ffffff;
+  --ink:#14161b;          /* near-black text */
+  --muted:#5b6470;        /* secondary text */
+  --faint:#8b939e;        /* tertiary */
+  --accent:#1c4e80;       /* ONE deep blue */
+  --accent-soft:#eaf1f8;  /* light blue fill */
+  --rule:#dfe3ea;         /* hairline grey */
+  --rule-ink:#14161b;     /* dark hairline (titles) */
+  --sans:'IBM Plex Sans','Noto Sans SC',system-ui,sans-serif;
+  --mono:'IBM Plex Mono','Noto Sans SC',monospace;
+  --serif:'IBM Plex Serif','Noto Sans SC',Georgia,serif;
+}
+
+*{box-sizing:border-box;}
+.slide{color:var(--ink); font-family:var(--sans);}
+
+/* ===== type scale (authored at 1920×1080) ===== */
+.display{font-family:var(--sans); font-weight:600; font-size:118px; line-height:1.02; letter-spacing:-.02em;}
+.h1{font-family:var(--sans); font-weight:600; font-size:68px; line-height:1.08; letter-spacing:-.015em;}
+.h2{font-family:var(--sans); font-weight:600; font-size:46px; line-height:1.14; letter-spacing:-.01em;}
+.h3{font-family:var(--sans); font-weight:600; font-size:28px; line-height:1.25;}
+.lead{font-weight:400; font-size:26px; line-height:1.5;}
+.body{font-weight:400; font-size:22px; line-height:1.65;}
+.small{font-weight:400; font-size:17px; line-height:1.5;}
+.mono{font-family:var(--mono);}
+
+em.acc{font-style:normal; color:var(--accent); font-weight:600;}
+code{font-family:var(--mono); font-size:.92em; color:var(--accent); background:var(--accent-soft); padding:1px 7px; border-radius:3px;}
+
+/* ===== page frame ===== */
+.frame{position:absolute; inset:0; padding:78px 112px;}
+.body-area{position:absolute; left:112px; right:112px; top:150px; bottom:96px;}
+
+/* running header (content slides) */
+.runhead{position:absolute; left:112px; right:112px; top:64px; display:flex; justify-content:space-between; align-items:baseline;
+  padding-bottom:14px; border-bottom:1px solid var(--rule); font-family:var(--mono); font-size:15px; letter-spacing:.04em; color:var(--faint);}
+.runhead .sec{color:var(--accent); font-weight:500;}
+.runhead .sec .n{color:var(--faint); margin-right:10px;}
+.runhead .pg{color:var(--faint);}
+
+/* footer */
+.foot{position:absolute; left:112px; right:112px; bottom:46px; display:flex; justify-content:space-between; align-items:center;
+  font-family:var(--mono); font-size:13px; letter-spacing:.04em; color:var(--faint);}
+
+/* short blue rule under a title */
+.rule{width:54px; height:3px; background:var(--accent); display:block;}
+
+/* simple bullet list */
+ul.clean{list-style:none; margin:0; padding:0;}
+ul.clean li{position:relative; padding-left:30px; margin-bottom:18px; font-size:22px; line-height:1.6;}
+ul.clean li::before{content:""; position:absolute; left:0; top:13px; width:14px; height:2px; background:var(--accent);}
+
+/* numbered blocks (three-up / two-up) */
+.blocks{display:grid; gap:48px; align-content:center;}
+.blocks.c3{grid-template-columns:repeat(3,1fr);}
+.blocks.c2{grid-template-columns:repeat(2,1fr);}
+.blk{border-top:2px solid var(--ink); padding:22px 6px 0;}
+.blk .num{font-family:var(--mono); font-size:16px; font-weight:600; color:var(--accent); letter-spacing:.06em;}
+.blk h3{font-family:var(--sans); font-weight:600; font-size:30px; line-height:1.2; margin:12px 0 12px;}
+.blk p{font-size:20px; line-height:1.6; color:var(--muted); margin:0;}
+.blk .tag{font-family:var(--mono); font-size:14px; color:var(--faint); display:block; margin-bottom:10px;}
+
+/* two-column compare */
+.cmp{display:grid; grid-template-columns:1fr 1px 1fr; gap:0;}
+.cmp .panel{padding:0 44px;}
+.cmp .vrule{width:1px; background:var(--rule); align-self:stretch;}
+.cmp .lab{font-family:var(--mono); font-size:14px; letter-spacing:.08em; color:var(--accent); margin-bottom:18px; text-transform:uppercase;}
+.cmp .big{font-weight:600; font-size:34px; line-height:1.2;}
+.cmp .arrow{color:var(--faint); font-size:20px; margin:12px 0;}
+
+/* flow diagram (boxes + arrows) */
+.flow{display:flex; align-items:stretch; gap:0;}
+.flow .step{flex:1; border:1px solid var(--rule); border-radius:4px; padding:20px 18px; background:#fff;}
+.flow .step.hl{border-color:var(--accent); background:var(--accent-soft);}
+.flow .step .n{font-family:var(--mono); font-size:14px; color:var(--accent);}
+.flow .step .t{font-weight:600; font-size:21px; line-height:1.25; margin-top:8px;}
+.flow .arr{display:flex; align-items:center; padding:0 14px; color:var(--faint); font-family:var(--mono); font-size:22px;}
+
+/* vertical sequence */
+.seq{display:flex; flex-direction:column; gap:0;}
+.seq .row{display:flex; align-items:center; gap:22px; padding:18px 0; border-top:1px solid var(--rule);}
+.seq .row:first-child{border-top:none;}
+.seq .row .k{font-family:var(--mono); font-size:15px; color:var(--accent); width:46px; flex:0 0 46px;}
+.seq .row .t{font-size:25px; line-height:1.3;}
+.seq .row.late .t{color:var(--muted);}
+.seq .down{text-align:center; color:var(--faint); font-family:var(--mono); font-size:18px; padding:2px 0;}
+
+/* ===== entrance ===== */
+.r{opacity:0; transform:translateY(16px); transition:opacity .6s cubic-bezier(.2,.7,.2,1), transform .6s cubic-bezier(.2,.7,.2,1);}
+.slide.visible .r{opacity:1; transform:none;}
+.r.d1{transition-delay:.08s}.r.d2{transition-delay:.18s}.r.d3{transition-delay:.28s}
+.r.d4{transition-delay:.38s}.r.d5{transition-delay:.48s}.r.d6{transition-delay:.58s}.r.d7{transition-delay:.68s}
+
+/* ===== deck controls ===== */
+.deck-controls{position:fixed; left:50%; bottom:18px; transform:translateX(-50%); z-index:1000;
+  display:flex; align-items:center; gap:12px; background:#fff; border:1px solid var(--rule);
+  padding:7px 14px; font-family:var(--mono); color:var(--ink);}
+.deck-controls button{background:#fff; border:1px solid var(--rule); color:var(--accent); width:30px; height:30px; cursor:pointer; font-family:var(--mono); font-size:15px; line-height:1;}
+.deck-controls button:hover{background:var(--accent-soft);}
+.deck-controls .count{font-size:13px; color:var(--faint); min-width:70px; text-align:center;}
+.deck-controls .count b{color:var(--accent);}
+
+/* ===== inline editing ===== */
+.edit-hotzone{position:fixed; top:0; left:0; width:84px; height:84px; z-index:10000; cursor:pointer;}
+.edit-toggle{position:fixed; top:16px; left:16px; z-index:10001; opacity:0; pointer-events:none; transition:opacity .3s ease;
+  background:#fff; border:1px solid var(--accent); color:var(--accent); width:40px; height:40px; font-size:17px; cursor:pointer; font-family:var(--mono);}
+.edit-toggle.show,.edit-toggle.active{opacity:1; pointer-events:auto;}
+.edit-banner{position:fixed; top:16px; left:50%; transform:translateX(-50%); z-index:10001;
+  font-family:var(--mono); font-size:13px; color:var(--accent); background:#fff; border:1px solid var(--accent); padding:7px 14px; display:none;}
+.edit-banner.on{display:block;}
+[contenteditable="true"]{outline:2px dashed var(--accent); outline-offset:4px;}
+</style>
+</head>
+<body>
+<div class="deck-viewport">
+  <main class="deck-stage" id="deckStage">
+
+    <!-- ============ SLIDE 1 · COVER ============ -->
+    <section class="slide active" data-title="封面">
+      <div class="frame">
+        <div style="position:absolute; left:112px; right:112px; top:78px;">
+          <div style="display:flex; align-items:center; gap:18px; font-family:var(--mono); font-size:15px; color:var(--faint);">
+            <span style="width:48px; height:3px; background:var(--accent); display:inline-block;"></span>
+            <span style="color:var(--accent); font-weight:500;">组会 · 安全研究汇报</span>
+            <span style="margin-left:auto;">2026.08.12</span>
+          </div>
+        </div>
+
+        <div class="body-area" style="top:200px; display:flex; flex-direction:column; justify-content:center;">
+          <p class="r d1" style="font-family:var(--serif); font-style:italic; font-size:26px; color:var(--accent); margin:0 0 24px;">一条用大白话讲的安全发现</p>
+          <h1 class="display r d2" style="margin:0; max-width:1500px;">
+            批准的是<em class="acc">名字</em>，<br>跑的却是<em class="acc">代码</em>。
+          </h1>
+          <p class="lead r d4" style="margin-top:42px; max-width:1080px; color:var(--muted);">
+            你当初点「同意」时，同意的可能只是一个名字；几天后 Agent 替你启动它时——那个名字指向的代码，可能已经不是你当初批准的那一份。
+          </p>
+        </div>
+
+        <div style="position:absolute; left:112px; right:112px; bottom:60px; display:flex; justify-content:space-between; align-items:center;
+          padding-top:16px; border-top:1px solid var(--rule); font-family:var(--mono); font-size:14px; color:var(--faint);">
+          <div>第 48 期想法 · <span style="color:var(--ink);">Goose Canary 协议冻结</span></div>
+          <div>1 / 13</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ SLIDE 2 · 普通的一天 ============ -->
+    <section class="slide" data-title="普通的一天">
+      <div class="runhead"><div class="sec"><span class="n">§ 1</span>背景</div><div class="pg">02 / 13</div></div>
+      <div class="body-area" style="display:flex; flex-direction:column; justify-content:center;">
+        <span class="rule r d1"></span>
+        <h2 class="h1 r d2" style="margin:24px 0 0; max-width:1550px;">
+          几天前，你只是同意了「以后可以让 Agent 用 <em class="acc">PostgreSQL</em> 扩展」。
+        </h2>
+        <p class="lead r d4" style="margin-top:38px; max-width:1280px; color:var(--muted);">
+          今天你对它说一句很普通的话——<em class="acc">「帮我查一下数据库里的订单。」」</em><br>
+          它发现缺这个能力，于是自己去配置里找到那个扩展，启动它，继续干活。
+        </p>
+        <p class="small r d5" style="margin-top:36px; color:var(--faint);">看起来一切正常。问题藏在你当时到底「同意了什么」里。</p>
+      </div>
+      <div class="foot"><div>Canary 研究汇报</div><div>背景 · The Setup</div></div>
+    </section>
+
+    <!-- ============ SLIDE 3 · 谁按下启动键 ============ -->
+    <section class="slide" data-title="谁按下启动键">
+      <div class="runhead"><div class="sec"><span class="n">§ 1</span>背景</div><div class="pg">03 / 13</div></div>
+      <div class="body-area">
+        <span class="rule r d1"></span>
+        <h2 class="h2 r d2" style="margin:22px 0 14px; max-width:1400px;">过去，<em class="acc">人</em>决定什么时候启动哪个插件；现在，<em class="acc">Agent</em> 替你按下启动键。</h2>
+        <p class="body r d3" style="color:var(--muted); max-width:1300px; margin:0 0 44px;">一个普通任务，就能触发一串自主决定，最终跑起一段第三方代码。</p>
+
+        <div class="flow r d4">
+          <div class="step"><div class="n">01</div><div class="t">曾配置过若干扩展</div></div>
+          <div class="arr">→</div>
+          <div class="step"><div class="n">02</div><div class="t">提出普通任务</div></div>
+          <div class="arr">→</div>
+          <div class="step"><div class="n">03</div><div class="t">自主选择一个扩展</div></div>
+          <div class="arr">→</div>
+          <div class="step hl"><div class="n">04</div><div class="t">启动它：第三方代码开始运行</div></div>
+        </div>
+
+        <p class="small r d6" style="margin-top:40px; color:var(--muted); max-width:1300px;">于是「做授权决定的时间」和「代码真正执行的时间」被拉开了——中间还多了 Agent 的自主选择，和包管理器的动态解析。</p>
+      </div>
+      <div class="foot"><div>Canary 研究汇报</div><div>背景 · 谁在启动</div></div>
+    </section>
+
+    <!-- ============ SLIDE 4 · 真正的问题 ============ -->
+    <section class="slide" data-title="真正的问题">
+      <div class="runhead"><div class="sec"><span class="n">§ 2</span>问题</div><div class="pg">04 / 13</div></div>
+      <div class="body-area" style="display:flex; flex-direction:column; justify-content:center;">
+        <span class="rule r d1"></span>
+        <p class="h2 r d2" style="margin:24px 0 0; color:var(--muted); max-width:1500px;">
+          大家以为在问：Agent 会不会<em style="font-style:normal; color:var(--faint);">偷偷安装恶意插件</em>？
+        </p>
+        <p class="body r d3" style="color:var(--faint); margin:20px 0 0;">其实该问的是——</p>
+        <h2 class="h1 r d4" style="margin:18px 0 0; max-width:1550px;">
+          你当初批准的那个扩展，<em class="acc">究竟批准了什么？</em>
+        </h2>
+        <p class="lead r d6" style="margin-top:34px; max-width:1280px; color:var(--muted);">是一段确定不变的代码，还是一个<em class="acc">未来可能指向别处</em>的名字？</p>
+      </div>
+      <div class="foot"><div>Canary 研究汇报</div><div>问题 · The Real Question</div></div>
+    </section>
+
+    <!-- ============ SLIDE 5 · 名字 vs 代码 ============ -->
+    <section class="slide" data-title="名字 vs 代码">
+      <div class="runhead"><div class="sec"><span class="n">§ 2</span>问题</div><div class="pg">05 / 13</div></div>
+      <div class="body-area">
+        <span class="rule r d1"></span>
+        <h2 class="h2 r d2" style="margin:22px 0 30px; max-width:1400px;">同一个名字，两次解析，可能是<em class="acc">两段不同的代码</em>。</h2>
+        <div class="cmp r d3">
+          <div class="panel">
+            <div class="lab">配置时 · 准入</div>
+            <div class="big">你保存了一条命令</div>
+            <div class="arrow">它被解析成 →</div>
+            <div><code>package@latest</code></div>
+            <div class="arrow" style="margin-top:18px;">↓ 此时指向</div>
+            <div class="big" style="font-size:30px;"><em class="acc">代码 A</em></div>
+          </div>
+          <div class="vrule"></div>
+          <div class="panel">
+            <div class="lab">任务触发时 · 激活</div>
+            <div class="big">Agent 再次启动它</div>
+            <div class="arrow">同一条命令 →</div>
+            <div><code>package@latest</code></div>
+            <div class="arrow" style="margin-top:18px;">↓ 此时指向</div>
+            <div class="big" style="font-size:30px;"><em class="acc">代码 B</em></div>
+          </div>
+        </div>
+        <p class="small r d5" style="margin-top:24px; color:var(--muted); max-width:1400px;">包更新、tag 被移动、发布者账号被入侵——都可能让「同一个名字」在几天后指向完全不同的代码。系统却仍认为：这个扩展「已经被批准过了」。</p>
+      </div>
+      <div class="foot"><div>Canary 研究汇报</div><div>问题 · 名字稳定 ≠ 代码稳定</div></div>
+    </section>
+
+    <!-- ============ SLIDE 6 · 核心发现：漂移 ============ -->
+    <section class="slide" data-title="授权漂移">
+      <div class="runhead"><div class="sec"><span class="n">§ 3</span>发现</div><div class="pg">06 / 13</div></div>
+      <div class="body-area" style="display:flex; flex-direction:column; justify-content:center;">
+        <span class="rule r d1"></span>
+        <h2 class="h1 r d2" style="margin:24px 0 0; max-width:1550px;">
+          授权<em class="acc">没有消失</em>，但它绑定的代码<em class="acc">已经变了</em>。
+        </h2>
+        <p class="lead r d4" style="margin-top:40px; max-width:1200px; color:var(--muted);">
+          我们把这件事叫作 <em class="acc" style="font-family:var(--mono); font-size:.9em;">authorization-reference drift</em>——授权引用的漂移。<br>
+          一句话：批准还在，但它指向的东西，可能已经不是你当初批准的那个。
+        </p>
+      </div>
+      <div class="foot"><div>Canary 研究汇报</div><div>发现 · Authorization-Reference Drift</div></div>
+    </section>
+
+    <!-- ============ SLIDE 7 · 为什么变重要 ============ -->
+    <section class="slide" data-title="为什么变重要">
+      <div class="runhead"><div class="sec"><span class="n">§ 3</span>发现</div><div class="pg">07 / 13</div></div>
+      <div class="body-area">
+        <span class="rule r d1"></span>
+        <h2 class="h2 r d2" style="margin:22px 0 40px; max-width:1400px;">为什么 <em class="acc">Agent</em> 让这个老问题变得更要命？</h2>
+        <div class="blocks c2 r d3" style="height:auto;">
+          <div class="blk">
+            <span class="tag">过去 · 准入</span>
+            <h3>用户把扩展加进配置</h3>
+            <p>人，决定谁能进候选名单。这一刻保存的，往往只是名字和一条会变的命令。</p>
+          </div>
+          <div class="blk">
+            <span class="tag">现在 · 激活与执行</span>
+            <h3>Agent 自主选择并启动</h3>
+            <p>模型决定这次跑哪一个；包管理器在运行时才实时取代码——真正跑的，是刚刚才解析出来的那份。</p>
+          </div>
+        </div>
+        <p class="small r d5" style="margin-top:44px; color:var(--muted); max-width:1400px;">中间隔了数天：包可能已更新、tag 可能被移动，引用在悄悄漂移。新风险就出现在「模型选择 + 动态解析」这道缝里。</p>
+      </div>
+      <div class="foot"><div>Canary 研究汇报</div><div>发现 · 风险出现在哪</div></div>
+    </section>
+
+    <!-- ============ SLIDE 8 · 三个边界 ============ -->
+    <section class="slide" data-title="三个边界">
+      <div class="runhead"><div class="sec"><span class="n">§ 4</span>拆解</div><div class="pg">08 / 13</div></div>
+      <div class="body-area">
+        <span class="rule r d1"></span>
+        <h2 class="h2 r d2" style="margin:22px 0 30px; max-width:1400px;">把整个过程，拆成<em class="acc">三个边界</em>。</h2>
+        <div class="blocks c3">
+          <div class="blk r d3"><div class="num">01 · ADMISSION</div><h3>谁可以进候选名单？</h3><p>你把 PostgreSQL 扩展加进配置。问题：你准入的是名字、命令、固定版本，还是不可变的代码哈希？</p></div>
+          <div class="blk r d4"><div class="num">02 · ACTIVATION</div><h3>这次任务启动谁？</h3><p>你说「查订单」，Agent 自己决定启用它。问题：启动前会重新确认吗？确认框给的是名字、命令，还是真实代码？</p></div>
+          <div class="blk r d5"><div class="num">03 · INVOCATION</div><h3>启动后调用什么功能？</h3><p>很多系统在「调用工具」时才弹批准。但这时 server 进程已经启动了——初始化代码是不是早就能写文件、联网了？</p></div>
+        </div>
+        <p class="small r d6" style="margin-top:36px; color:var(--accent); max-width:1400px;">论文测的就是这道缝：有 invocation 授权，却缺 activation 授权。</p>
+      </div>
+      <div class="foot"><div>Canary 研究汇报</div><div>拆解 · 三个边界</div></div>
+    </section>
+
+    <!-- ============ SLIDE 9 · 批准来得太晚 ============ -->
+    <section class="slide" data-title="批准来得太晚">
+      <div class="runhead"><div class="sec"><span class="n">§ 4</span>拆解</div><div class="pg">09 / 13</div></div>
+      <div class="body-area" style="display:flex; gap:80px; align-items:center;">
+        <div style="flex:1.05;">
+          <span class="rule r d1"></span>
+          <h2 class="h1 r d2" style="margin:24px 0 0; max-width:900px;">漂亮的批准框，可能<em class="acc">来得太晚</em>。</h2>
+          <p class="body r d4" style="margin-top:30px; color:var(--muted); max-width:820px;">本地 MCP server 必须先作为进程启动，才能初始化、才能报告工具列表。这是不是普遍现象，得逐系统审计，不能拍脑袋。</p>
+        </div>
+        <div class="seq r d5" style="flex:1; max-width:620px;">
+          <div class="row"><div class="k">①</div><div class="t">第三方代码作为进程启动</div></div>
+          <div class="down">↓</div>
+          <div class="row"><div class="k">②</div><div class="t">初始化代码可能已写文件 / 联网</div></div>
+          <div class="down">↓</div>
+          <div class="row late"><div class="k">③</div><div class="t">这时系统才问：是否允许调用这个工具？</div></div>
+        </div>
+      </div>
+      <div class="foot"><div>Canary 研究汇报</div><div>拆解 · 批准来得太晚</div></div>
+    </section>
+
+    <!-- ============ SLIDE 10 · Canary 两个问题 ============ -->
+    <section class="slide" data-title="Canary 两个问题">
+      <div class="runhead"><div class="sec"><span class="n">§ 5</span>实验</div><div class="pg">10 / 13</div></div>
+      <div class="body-area">
+        <span class="rule r d1"></span>
+        <h2 class="h2 r d2" style="margin:22px 0 36px; max-width:1400px;">用两个完全无害的测试包，回答<em class="acc">两个关键问题</em>。</h2>
+        <div class="blocks c2">
+          <div class="blk r d3"><div class="num">问题一</div><h3>代码有没有发生漂移？</h3><p>先让 <code>package@latest</code> 指向包 A，记录你准入时看到的对象；再把 latest 改成 B，用一个普通任务触发 Goose 启动它。看最后跑的是 A 还是 B，以及有没有针对 B 的新批准。</p></div>
+          <div class="blk r d4"><div class="num">问题二</div><h3>代码效果是否早于工具批准？</h3><p>让测试包在 MCP 初始化阶段就写一个隔离测试文件，然后比较两个时间点：测试文件何时产生，工具批准框何时出现。文件先出现，就说明初始化代码已经跑过了。</p></div>
+        </div>
+        <p class="small r d6" style="margin-top:40px; color:var(--muted);">现实系统：Goose。目的：把一个合理猜想，升级成有现实证据支撑的安全发现。</p>
+      </div>
+      <div class="foot"><div>Canary 研究汇报</div><div>实验 · 两个关键问题</div></div>
+    </section>
+
+    <!-- ============ SLIDE 11 · 三种实验臂 ============ -->
+    <section class="slide" data-title="三种实验臂">
+      <div class="runhead"><div class="sec"><span class="n">§ 5</span>实验</div><div class="pg">11 / 13</div></div>
+      <div class="body-area">
+        <span class="rule r d1"></span>
+        <h2 class="h2 r d2" style="margin:22px 0 14px; max-width:1450px;">为了证明：决定结果的是<em class="acc">绑定强度</em>，不是 Goose 偶然有个 bug。</h2>
+        <p class="small r d3" style="color:var(--muted); margin:0 0 30px;">三组对照，从最松到最紧。</p>
+        <div class="blocks c3">
+          <div class="blk r d4"><div class="num">臂 A · 最松</div><h3>可变引用</h3><p>命令写成 <code>package@latest</code>。测 A 能不能漂移成 B——这是用户最常写、也最危险的形态。</p></div>
+          <div class="blk r d5"><div class="num">臂 B · 较紧</div><h3>固定版本</h3><p>命令写成 <code>package@1.0.0</code>。固定版本比 tag 稳定，但它仍不等于内容哈希绑定。</p></div>
+          <div class="blk r d6"><div class="num">臂 C · 最紧</div><h3>内容绑定</h3><p>启动前比对实际 <code>SHA-256</code> 与批准的 digest，对不上就直接拒绝运行。</p></div>
+        </div>
+        <p class="small r d7" style="margin-top:32px; color:var(--accent); max-width:1450px;">若只有臂 A 漂移、而臂 C 能挡住替换——就说明：问题确实出在「授权绑到了一个可变名字」，而不是不可变的代码。</p>
+      </div>
+      <div class="foot"><div>Canary 研究汇报</div><div>实验 · 三种实验臂</div></div>
+    </section>
+
+    <!-- ============ SLIDE 12 · 成功与失败 ============ -->
+    <section class="slide" data-title="成功与失败">
+      <div class="runhead"><div class="sec"><span class="n">§ 6</span>结果</div><div class="pg">12 / 13</div></div>
+      <div class="body-area">
+        <span class="rule r d1"></span>
+        <h2 class="h2 r d2" style="margin:22px 0 30px; max-width:1450px;">这次实验，成功和失败分别意味着什么？<em class="acc">两种都要诚实面对。</em></h2>
+        <div class="cmp r d3">
+          <div class="panel">
+            <div class="lab">如果观察到漂移 · 成功</div>
+            <div class="big">一个很硬的现实发现。</div>
+            <ul class="clean" style="margin-top:20px;">
+              <li style="font-size:19px;">已存在的 Agent 产品，允许旧准入在任务时刻授权<em class="acc">后来才解析出的不同代码</em>。</li>
+              <li style="font-size:19px;">若初始化文件早于工具批准——证明<em class="acc">仅靠 per-tool approval 太晚</em>，激活本身就是代码执行边界。</li>
+            </ul>
+          </div>
+          <div class="vrule"></div>
+          <div class="panel">
+            <div class="lab" style="color:var(--faint);">如果没观察到漂移 · 失败</div>
+            <div class="big" style="color:var(--muted);">不藏结果，诚实降级。</div>
+            <ul class="clean" style="margin-top:20px;">
+              <li style="font-size:19px; color:var(--muted);">Goose 可能已有足够保护，或 resolver 缓存挡住了漂移。</li>
+              <li style="font-size:19px; color:var(--muted);">论文降级为<em class="acc">十系统生态测量 + 设计空间分析</em>——不能把现实漏洞写进 Thesis B。</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div class="foot"><div>Canary 研究汇报</div><div>结果 · 负面结果也是结果</div></div>
+    </section>
+
+    <!-- ============ SLIDE 13 · 一句话总结 ============ -->
+    <section class="slide" data-title="一句话总结">
+      <div class="runhead"><div class="sec"><span class="n">§ 7</span>总结</div><div class="pg">13 / 13</div></div>
+      <div class="body-area" style="display:flex; flex-direction:column; justify-content:center;">
+        <span class="rule r d1"></span>
+        <p class="h2 r d2" style="margin:24px 0 0; color:var(--muted); max-width:1550px;">
+          这篇论文研究的，<em class="acc">不是</em> Agent 会不会偷偷装恶意插件——
+        </p>
+        <h2 class="h1 r d4" style="margin:24px 0 0; max-width:1600px;">
+          而是：用户<em class="acc">过去批准</em>的扩展，在未来被 Agent 自主启动时，那份旧授权，是否<em class="acc">仍然约束着同一份代码、同一种用途</em>？
+        </h2>
+        <p class="small r d6" style="margin-top:42px; color:var(--muted); max-width:1400px;">Goose Canary 这一步，就是在验证——上面这句话，能不能从一个合理猜想，升级成一个有现实证据支撑的安全发现。</p>
+      </div>
+      <div class="foot"><div>Canary 研究汇报 · 谢谢</div><div>— fin —</div></div>
+    </section>
+
+  </main>
+</div>
+
+<div class="deck-controls">
+  <button id="prevBtn" title="上一页 (←)">‹</button>
+  <div class="count"><b id="curN">01</b> / <span id="totN">13</span></div>
+  <button id="nextBtn" title="下一页 (→)">›</button>
+</div>
+
+<div class="edit-hotzone" id="editHotzone" title="编辑模式 (E)"></div>
+<button class="edit-toggle" id="editToggle" title="编辑模式 (E)">✎</button>
+<div class="edit-banner" id="editBanner">编辑模式 · 点击文字修改 · Ctrl+S 保存</div>
+
+<script>
+class SlidePresentation{
+  constructor(){
+    this.slides=[...document.querySelectorAll('.slide')];
+    this.current=0;
+    this.stage=document.getElementById('deckStage');
+    this.curN=document.getElementById('curN');
+    this.totN=document.getElementById('totN');
+    this.totN.textContent=String(this.slides.length).padStart(2,'0');
+    this.fit(); window.addEventListener('resize',()=>this.fit());
+    this.bindKeys(); this.bindButtons(); this.bindWheel(); this.bindTouch();
+    this.show(0);
+  }
+  fit(){const f=Math.min(innerWidth/1920,innerHeight/1080);this.stage.style.transform=`translate(${(innerWidth-1920*f)/2}px,${(innerHeight-1080*f)/2}px) scale(${f})`;}
+  show(i){this.current=Math.max(0,Math.min(i,this.slides.length-1));this.slides.forEach((s,k)=>{s.classList.toggle('active',k===this.current);s.classList.toggle('visible',k===this.current);});this.curN.textContent=String(this.current+1).padStart(2,'0');}
+  next(){if(this.current<this.slides.length-1)this.show(this.current+1);}
+  prev(){if(this.current>0)this.show(this.current-1);}
+  bindKeys(){document.addEventListener('keydown',(e)=>{if(this.editor&&this.editor.isActive)return;if(e.key==='ArrowRight'||e.key==='PageDown')this.next();else if(e.key==='ArrowLeft'||e.key==='PageUp')this.prev();else if(e.key===' '){e.preventDefault();this.next();}else if(e.key==='Home')this.show(0);else if(e.key==='End')this.show(this.slides.length-1);});}
+  bindButtons(){document.getElementById('nextBtn').addEventListener('click',()=>this.next());document.getElementById('prevBtn').addEventListener('click',()=>this.prev());}
+  bindWheel(){let lock=false;document.addEventListener('wheel',(e)=>{if(lock)return;if(Math.abs(e.deltaY)<24)return;lock=true;if(e.deltaY>0)this.next();else this.prev();setTimeout(()=>lock=false,650);},{passive:true});}
+  bindTouch(){let sx=0,sy=0;document.addEventListener('touchstart',(e)=>{sx=e.touches[0].clientX;sy=e.touches[0].clientY;},{passive:true});document.addEventListener('touchend',(e)=>{const dx=e.changedTouches[0].clientX-sx,dy=e.changedTouches[0].clientY-sy;if(Math.abs(dx)>50&&Math.abs(dx)>Math.abs(dy)){if(dx<0)this.next();else this.prev();}},{passive:true});}
+}
+class InlineEditor{
+  constructor(app){this.app=app;this.isActive=false;this.toggle=document.getElementById('editToggle');this.banner=document.getElementById('editBanner');this.hotzone=document.getElementById('editHotzone');this.bind();this.load();}
+  toggleEditMode(){this.isActive=!this.isActive;this.toggle.classList.toggle('active',this.isActive);this.banner.classList.toggle('on',this.isActive);this.setEditable(this.isActive);}
+  setEditable(on){const sel='h1,h2,h3,h4,p,span,li,div,code';this.app.slides.forEach(s=>{s.querySelectorAll(sel).forEach(el=>{if(on)el.setAttribute('contenteditable','true');else el.removeAttribute('contenteditable');});});}
+  save(){const data={};this.app.slides.forEach((s,i)=>{const f=s.querySelector('.frame')||(s.querySelector('.body-area')?s:null);data[i]={html:s.innerHTML};});try{localStorage.setItem('canary_academic_edits',JSON.stringify(data));}catch(e){}this.flash('已保存到本地');}
+  load(){let d;try{d=JSON.parse(localStorage.getItem('canary_academic_edits'));}catch(e){}if(!d)return;this.app.slides.forEach((s,i)=>{if(d[i])s.innerHTML=d[i].html;});}
+  flash(m){const o=this.banner.textContent;this.banner.textContent=m;this.banner.classList.add('on');setTimeout(()=>{this.banner.textContent=o;if(!this.isActive)this.banner.classList.remove('on');},1200);}
+  bind(){this.toggle.addEventListener('click',()=>this.toggleEditMode());this.hotzone.addEventListener('click',()=>this.toggleEditMode());let h=null;const show=()=>{clearTimeout(h);this.toggle.classList.add('show');};const hide=()=>{h=setTimeout(()=>{if(!this.isActive)this.toggle.classList.remove('show');},400);};this.hotzone.addEventListener('mouseenter',show);this.hotzone.addEventListener('mouseleave',hide);this.toggle.addEventListener('mouseenter',show);this.toggle.addEventListener('mouseleave',hide);document.addEventListener('keydown',(e)=>{if((e.key==='e'||e.key==='E')&&!e.target.isContentEditable&&!e.target.matches('input,textarea'))this.toggleEditMode();if(e.ctrlKey&&(e.key==='s'||e.key==='S')){e.preventDefault();this.save();}});}
+}
+const app=new SlidePresentation(); app.editor=new InlineEditor(app);
+</script>
+</body>
+</html>

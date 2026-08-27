@@ -2,8 +2,8 @@
 
 > 日期：2026-07-26
 > 设计 ID：`policy_hardgap_causal_v2`
-> 状态：代码、本地/远端 15 项离线测试和 15-trial 模型验收均通过；
-> v2 150-trial main run 已在 L40 启动。
+> 状态：代码、本地/远端测试和 15-trial 模型验收均通过；
+> v2 150-trial main run 已完成，正式结果见 **33**；P2-approved benign 臂运行中。
 > 目的：修复 v1 的 P0 多重混淆、G1 target 名泄漏和 hard-family 伪重复。
 
 ## 1. v1 如何定性

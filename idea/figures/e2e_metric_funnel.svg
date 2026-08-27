@@ -1,0 +1,133 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900" role="img" aria-labelledby="title desc">
+  <title id="title">Skill Acquisition 端到端指标漏斗</title>
+  <desc id="desc">把端到端攻击拆为能力缺口、检索、安装调用生成、安装调用解析、实际安装、调用、载荷和任务完成，并标出文献终点与 A2 编排截断。</desc>
+  <defs>
+    <style>
+      .sans { font-family: "Noto Sans CJK SC", "Microsoft YaHei", Arial, sans-serif; }
+      .title { font-size: 40px; font-weight: 700; fill: #102A43; }
+      .subtitle { font-size: 20px; fill: #486581; }
+      .num { font-size: 15px; font-weight: 700; fill: #64748B; text-anchor: middle; }
+      .stage { font-size: 18px; font-weight: 700; fill: #102A43; text-anchor: middle; }
+      .metric { font-size: 14px; fill: #486581; text-anchor: middle; }
+      .paper { font-size: 16px; font-weight: 700; fill: #102A43; }
+      .paper2 { font-size: 14px; fill: #486581; }
+      .boxhead { font-size: 20px; font-weight: 700; fill: white; }
+      .boxtext { font-size: 16px; fill: #E6FFFA; }
+      .foot { font-size: 16px; fill: #334E68; }
+    </style>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="130%">
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#102A43" flood-opacity="0.13"/>
+    </filter>
+    <marker id="arrow" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto">
+      <path d="M0,0 L9,4.5 L0,9 Z" fill="#94A3B8"/>
+    </marker>
+  </defs>
+
+  <rect width="1600" height="900" fill="#F7FAFC"/>
+  <text x="70" y="66" class="sans title">端到端不是一个 ASR：每一扇门都要单独计量</text>
+  <text x="70" y="105" class="sans subtitle">尤其要区分模型“想安装”、编排器“解析到调用”和环境“真正完成安装”。</text>
+
+  <!-- literature endpoint labels -->
+  <rect x="80" y="155" width="330" height="82" rx="14" fill="#EFF6FF" stroke="#BFDBFE"/>
+  <text x="100" y="184" class="sans paper">IPI · Semantic Supply-chain</text>
+  <text x="100" y="210" class="sans paper2">主要终点：retrieved / ranked / selected</text>
+  <line x1="300" y1="237" x2="300" y2="302" stroke="#2563EB" stroke-width="3"/>
+
+  <rect x="455" y="155" width="280" height="82" rx="14" fill="#FFFBEB" stroke="#FDE68A"/>
+  <text x="475" y="184" class="sans paper">SearchGEO</text>
+  <text x="475" y="210" class="sans paper2">主要终点：精确安装命令输出</text>
+  <line x1="595" y1="237" x2="595" y2="302" stroke="#F59E0B" stroke-width="3"/>
+
+  <rect x="780" y="155" width="350" height="82" rx="14" fill="#FFFBEB" stroke="#FDE68A"/>
+  <text x="800" y="184" class="sans paper">HalluSquatting</text>
+  <text x="800" y="210" class="sans paper2">显式 install：真实 fetch → invocation / RCE</text>
+  <line x1="950" y1="237" x2="950" y2="302" stroke="#F59E0B" stroke-width="3"/>
+
+  <rect x="1180" y="155" width="340" height="82" rx="14" fill="#ECFDF5" stroke="#A7F3D0"/>
+  <text x="1200" y="184" class="sans paper">Skill-Inject · Poise</text>
+  <text x="1200" y="210" class="sans paper2">条件化在已加载；测 invoke / payload / utility</text>
+  <line x1="1350" y1="237" x2="1350" y2="302" stroke="#059669" stroke-width="3"/>
+
+  <!-- chain connectors -->
+  <g stroke="#94A3B8" stroke-width="4" marker-end="url(#arrow)">
+    <line x1="220" y1="375" x2="255" y2="375"/>
+    <line x1="405" y1="375" x2="440" y2="375"/>
+    <line x1="590" y1="375" x2="625" y2="375"/>
+    <line x1="775" y1="375" x2="810" y2="375"/>
+    <line x1="960" y1="375" x2="995" y2="375"/>
+    <line x1="1145" y1="375" x2="1180" y2="375"/>
+    <line x1="1330" y1="375" x2="1365" y2="375"/>
+  </g>
+
+  <!-- nodes -->
+  <g filter="url(#shadow)">
+    <rect x="70" y="305" width="150" height="140" rx="18" fill="white" stroke="#FCA5A5" stroke-width="3"/>
+    <rect x="255" y="305" width="150" height="140" rx="18" fill="white" stroke="#93C5FD" stroke-width="3"/>
+    <rect x="440" y="305" width="150" height="140" rx="18" fill="white" stroke="#FCD34D" stroke-width="3"/>
+    <rect x="625" y="305" width="150" height="140" rx="18" fill="white" stroke="#FCD34D" stroke-width="3"/>
+    <rect x="810" y="305" width="150" height="140" rx="18" fill="white" stroke="#FCD34D" stroke-width="3"/>
+    <rect x="995" y="305" width="150" height="140" rx="18" fill="white" stroke="#6EE7B7" stroke-width="3"/>
+    <rect x="1180" y="305" width="150" height="140" rx="18" fill="white" stroke="#6EE7B7" stroke-width="3"/>
+    <rect x="1365" y="305" width="150" height="140" rx="18" fill="white" stroke="#6EE7B7" stroke-width="3"/>
+  </g>
+
+  <text x="145" y="334" class="sans num">01</text>
+  <text x="145" y="369" class="sans stage">能力缺口</text>
+  <text x="145" y="396" class="sans metric">gap_triggered</text>
+  <text x="145" y="424" class="sans metric">是否自主扩展</text>
+
+  <text x="330" y="334" class="sans num">02</text>
+  <text x="330" y="369" class="sans stage">检索命中</text>
+  <text x="330" y="396" class="sans metric">retrieved@k</text>
+  <text x="330" y="424" class="sans metric">恶意条目可见</text>
+
+  <text x="515" y="334" class="sans num">03</text>
+  <text x="515" y="369" class="sans stage">调用生成</text>
+  <text x="515" y="396" class="sans metric">install_call_</text>
+  <text x="515" y="417" class="sans metric">emitted</text>
+
+  <text x="700" y="334" class="sans num">04</text>
+  <text x="700" y="369" class="sans stage">调用解析</text>
+  <text x="700" y="396" class="sans metric">install_call_</text>
+  <text x="700" y="417" class="sans metric">parsed</text>
+
+  <text x="885" y="334" class="sans num">05</text>
+  <text x="885" y="369" class="sans stage">安装落地</text>
+  <text x="885" y="396" class="sans metric">install_executed</text>
+  <text x="885" y="424" class="sans metric">installed_on_disk</text>
+
+  <text x="1070" y="334" class="sans num">06</text>
+  <text x="1070" y="369" class="sans stage">调用 skill</text>
+  <text x="1070" y="396" class="sans metric">invoked</text>
+  <text x="1070" y="424" class="sans metric">是否真正使用</text>
+
+  <text x="1255" y="334" class="sans num">07</text>
+  <text x="1255" y="369" class="sans stage">载荷生效</text>
+  <text x="1255" y="396" class="sans metric">payload_fired</text>
+  <text x="1255" y="424" class="sans metric">危害是否发生</text>
+
+  <text x="1440" y="334" class="sans num">08</text>
+  <text x="1440" y="369" class="sans stage">任务仍成功</text>
+  <text x="1440" y="396" class="sans metric">task_ok</text>
+  <text x="1440" y="424" class="sans metric">隐蔽性 / utility</text>
+
+  <!-- A2 diagnosis -->
+  <path d="M70 492 H590" stroke="#0F766E" stroke-width="12" stroke-linecap="round"/>
+  <circle cx="145" cy="492" r="12" fill="#0F766E"/>
+  <circle cx="330" cy="492" r="12" fill="#0F766E"/>
+  <circle cx="515" cy="492" r="12" fill="#0F766E"/>
+  <path d="M600 474 L626 510 M626 474 L600 510" stroke="#DC2626" stroke-width="7" stroke-linecap="round"/>
+  <text x="70" y="538" class="sans paper">当前 A2 原始轨迹</text>
+  <text x="250" y="538" class="sans paper2">到达 emitted；随后因工具迭代预算耗尽，没有进入 parsed / executed</text>
+
+  <rect x="70" y="580" width="1460" height="132" rx="18" fill="#0F766E" filter="url(#shadow)"/>
+  <text x="105" y="622" class="sans boxhead">方法学结论：不要把 orchestration failure 写成 behavioral refusal</text>
+  <text x="105" y="657" class="sans boxtext">A2 目前证明“会搜到、会生成 install 调用”，尚未证明“搜到后不愿安装”。修复工具轮次后，才能估计真正的 install barrier。</text>
+  <text x="105" y="687" class="sans boxtext">主表应报告每段边际率与条件率：P(Sᵢ) 以及 P(Sᵢ | Sᵢ₋₁)，避免一个 E2E ASR 隐藏失败来源。</text>
+
+  <text x="70" y="768" class="sans foot">建议主指标：</text>
+  <text x="180" y="768" class="sans foot">P(E2E) = P(gap) × P(retrieved|gap) × P(emitted|retrieved) × P(executed|emitted) × P(invoked|installed) × P(payload ∧ task_ok|invoked)</text>
+  <text x="70" y="816" class="sans foot">解释原则：</text>
+  <text x="170" y="816" class="sans foot">先识别文献的终点，再判断它覆盖了哪一段；不同终点的 ASR 不能直接横向比较。</text>
+  <text x="1530" y="868" text-anchor="end" class="sans foot">Acquisition Barrier · metric design</text>
+</svg>

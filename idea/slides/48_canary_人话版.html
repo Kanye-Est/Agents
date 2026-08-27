@@ -1,0 +1,835 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>批准的是名字，跑的却是代码 · Canary 研究汇报</title>
+
+<!-- ============================================================
+     STYLE: SIGNAL (literary editorial / intelligence-briefing)
+     - Dual surface: deep navy #1C2644  +  warm cream #F0ECE3
+     - Single accent: antique gold #C8A870 (rules, <em> in headlines, numerals)
+     - Source Serif 4 (voice) + DM Sans (substance) + IBM Plex Mono (metadata)
+     - Flat + hairline. No shadows, no rounded chrome.
+     - 80px grid fingerprint on dark slides.
+     - CJK: Noto Sans SC, gold <em> is color-only (no italic on Chinese),
+       letter-spacing 0, body line-height ~1.8.
+     Plain-language summary of idea #48 (Goose canary / 授权漂移).
+     ============================================================ -->
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,500;0,8..60,600;0,8..60,700;1,8..60,400;1,8..60,600&family=DM+Sans:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+SC:wght@400;500;700;900&display=swap" rel="stylesheet">
+
+<style>
+/* ===========================================================
+   MANDATORY VIEWPORT BASE — fixed 16:9 stage (DO NOT REMOVE)
+   =========================================================== */
+html, body { width:100%; height:100%; margin:0; overflow:hidden; background:var(--navy); }
+.deck-viewport { position:fixed; inset:0; overflow:hidden; background:var(--navy); }
+.deck-stage { position:absolute; left:0; top:0; width:1920px; height:1080px; overflow:hidden; transform-origin:0 0; background:var(--navy); }
+.slide { position:absolute; inset:0; width:1920px; height:1080px; overflow:hidden; display:block; visibility:hidden; opacity:0; pointer-events:none; }
+.slide.active, .slide.visible { visibility:visible; opacity:1; pointer-events:auto; z-index:1; }
+img, video, canvas, svg { max-width:100%; max-height:100%; }
+@media (prefers-reduced-motion: reduce) { *,*::before,*::after{ animation-duration:.01ms!important; transition-duration:.2s!important; } }
+
+/* ===========================================================
+   DESIGN TOKENS — SIGNAL
+   =========================================================== */
+:root{
+  --navy:#1C2644;
+  --navy-alt:#232F55;
+  --cream:#F0ECE3;
+  --cream-alt:#E6E0D4;
+  --text-warm:#E2DCD0;
+  --text-muted-dark:#8A96A8;
+  --text-hint-dark:#4E5A6E;
+  --ink:#1A2030;
+  --text-muted-light:#5A6270;
+  --text-hint-light:#9AA0A8;
+  --gold:#C8A870;
+  --border-dark:#2E3D5C;
+  --border-light:#CAC4B4;
+
+  /* font ladders — CJK collapses to Noto Sans SC */
+  --serif:'Source Serif 4','Noto Sans SC',Georgia,serif;
+  --sans:'DM Sans','Noto Sans SC',system-ui,sans-serif;
+  --mono:'IBM Plex Mono','Noto Sans SC',monospace;
+
+  --ease:cubic-bezier(.16,1,.3,1);
+}
+
+/* ===========================================================
+   SURFACES — dual navy/cream, grid fingerprint on dark
+   =========================================================== */
+.slide.dark{ background:var(--navy); color:var(--text-warm); }
+.slide.dark::before{
+  content:""; position:absolute; inset:0; pointer-events:none; z-index:0;
+  background:
+    linear-gradient(rgba(244,240,231,.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(244,240,231,.035) 1px, transparent 1px);
+  background-size:80px 80px;
+}
+.slide.light{ background:var(--cream); color:var(--ink); }
+
+/* content sits above the grid fingerprint */
+.frame{ position:absolute; inset:0; z-index:1; }
+
+/* ===========================================================
+   CHROME — top bar + foot bar (mono, hairline beneath/above)
+   Chromeless on cover / statement / quote slides.
+   =========================================================== */
+.chrome{
+  position:absolute; left:104px; right:104px; top:60px;
+  display:flex; justify-content:space-between; align-items:baseline;
+  padding-bottom:20px; border-bottom:1px solid var(--bd);
+  font-family:var(--mono); font-size:15px; letter-spacing:.16em;
+  text-transform:uppercase;
+}
+.slide.dark .chrome, .slide.dark .foot{ --bd:var(--border-dark); --fg:var(--text-muted-dark); }
+.slide.light .chrome, .slide.light .foot{ --bd:var(--border-light); --fg:var(--text-muted-light); }
+.chrome .k{ color:var(--gold); }
+.chrome .k .dash{ display:inline-block; width:30px; height:1px; background:var(--gold); margin:0 14px 5px; vertical-align:middle; }
+.chrome .r{ color:var(--fg); }
+
+.foot{
+  position:absolute; left:104px; right:104px; bottom:52px;
+  display:flex; justify-content:space-between; align-items:flex-end;
+  padding-top:18px; border-top:1px solid var(--bd);
+  font-family:var(--mono); font-size:15px; letter-spacing:.16em; text-transform:uppercase;
+}
+.foot .tags{ display:flex; gap:46px; color:var(--fg); }
+.foot .tags b{ display:block; color:inherit; opacity:.95; font-weight:500; letter-spacing:.10em; margin-top:6px; font-size:16px; }
+.slide.dark .foot .tags b{ color:var(--text-warm); }
+.slide.light .foot .tags b{ color:var(--ink); }
+.foot .pager{ color:var(--gold); font-size:16px; letter-spacing:.12em; }
+
+/* ===========================================================
+   TYPOGRAPHY — scale authored at 1920×1080
+   =========================================================== */
+.display{ font-family:var(--serif); font-weight:700; font-size:150px; line-height:.98; letter-spacing:-.012em; }
+.h1{ font-family:var(--serif); font-weight:600; font-size:92px; line-height:1.06; letter-spacing:-.01em; }
+.h2{ font-family:var(--serif); font-weight:600; font-size:60px; line-height:1.14; }
+.h3{ font-family:var(--serif); font-weight:500; font-size:36px; line-height:1.26; }
+.lead{ font-family:var(--sans); font-weight:400; font-size:27px; line-height:1.55; }
+.body{ font-family:var(--sans); font-weight:400; font-size:21px; line-height:1.78; }
+.cap{ font-family:var(--sans); font-weight:400; font-size:17px; line-height:1.5; }
+.stat{ font-family:var(--serif); font-weight:600; font-size:108px; line-height:1; letter-spacing:-.02em; color:var(--gold); }
+.quote{ font-family:var(--serif); font-weight:400; font-size:66px; line-height:1.26; letter-spacing:-.005em; }
+
+.slide.light .display, .slide.light .h1, .slide.light .h2, .slide.light .h3, .slide.light .quote{ color:var(--ink); }
+.slide.dark  .display, .slide.dark  .h1, .slide.dark  .h2, .slide.dark  .h3, .slide.dark  .quote{ color:var(--text-warm); }
+
+/* the Signal moment: <em> = gold. Latin can be italic; CJK color-only. */
+em.gold{ font-style:normal; color:var(--gold); font-weight:600; }            /* CJK-safe */
+em.gold.lat{ font-style:italic; }                                            /* Latin word */
+.slide.light .lead em.gold, .slide.light .body em.gold{ font-style:italic; }
+
+/* kicker = mono uppercase gold */
+.kicker{ font-family:var(--mono); font-size:16px; letter-spacing:.20em; text-transform:uppercase; color:var(--gold); }
+.shortrule{ width:46px; height:1px; background:var(--gold); }
+
+/* ===========================================================
+   LAYOUT HELPERS
+   =========================================================== */
+.body-area{ position:absolute; left:104px; right:104px; top:178px; bottom:128px; }
+.left-pad{ padding-left:0; }
+.muted-d{ color:var(--text-muted-dark); }
+.muted-l{ color:var(--text-muted-light); }
+.col2{ display:grid; grid-template-columns:1.15fr .85fr; gap:72px; height:100%; align-items:center; }
+.col2-even{ display:grid; grid-template-columns:1fr 1fr; gap:0; height:100%; align-items:stretch; }
+
+/* briefing card (cream tile on navy) */
+.brief{ background:var(--cream); color:var(--ink); padding:40px 40px 34px; border-top:3px solid var(--gold); }
+.brief .kicker{ color:#8a6d2f; }
+.brief h3{ font-family:var(--serif); font-weight:600; font-size:31px; line-height:1.2; margin:16px 0 20px; color:var(--ink); }
+.brief ul{ margin:0; padding:0; list-style:none; }
+.brief li{ font-family:var(--sans); font-size:19px; line-height:1.5; color:#2a2f3e; padding:12px 0; border-top:1px solid rgba(28,38,68,.12); display:flex; gap:16px; }
+.brief li:first-of-type{ border-top:none; }
+.brief li b{ font-family:var(--mono); font-weight:500; color:#8a6d2f; min-width:46px; }
+
+/* em-dash gold mono bullet list (editorial) */
+.dashlist{ list-style:none; margin:0; padding:0; }
+.dashlist li{ position:relative; padding-left:42px; margin-bottom:20px; font-family:var(--sans); font-size:23px; line-height:1.6; }
+.dashlist li::before{ content:"—"; position:absolute; left:0; top:0; font-family:var(--mono); color:var(--gold); }
+
+/* numbered tiles (Admission/Activation/Invocation, three arms) */
+.tiles3{ display:grid; grid-template-columns:repeat(3,1fr); gap:40px; height:auto; }
+.tile{ border-top:1px solid var(--bd2); padding:30px 28px 0; }
+.slide.dark .tile{ --bd2:var(--border-dark); }
+.slide.light .tile{ --bd2:var(--border-light); }
+.tile .num{ font-family:var(--serif); font-weight:600; font-size:64px; line-height:1; color:var(--gold); letter-spacing:-.02em; }
+.tile h3{ font-family:var(--serif); font-weight:600; font-size:38px; line-height:1.14; margin:18px 0 6px; }
+.tile .en{ font-family:var(--mono); font-size:14px; letter-spacing:.16em; text-transform:uppercase; color:var(--gold); margin-bottom:18px; display:block; }
+.tile p{ font-family:var(--sans); font-size:19px; line-height:1.6; margin:0; }
+.slide.dark .tile p{ color:var(--text-muted-dark); }
+.slide.light .tile p{ color:var(--text-muted-light); }
+
+/* compare panel divider */
+.cmp{ display:grid; grid-template-columns:1fr 1px 1fr; height:auto; align-items:center; }
+.cmp .panel{ padding:0 56px; }
+.cmp .vrule{ width:1px; height:62%; background:var(--border-dark); align-self:center; }
+.slide.light .cmp .vrule{ background:var(--border-light); }
+.cmp .lab{ font-family:var(--mono); font-size:15px; letter-spacing:.18em; text-transform:uppercase; color:var(--gold); margin-bottom:22px; }
+.cmp .big{ font-family:var(--serif); font-weight:600; font-size:46px; line-height:1.16; }
+.cmp .arrow{ font-family:var(--sans); font-size:22px; color:var(--text-muted-dark); margin:14px 0; }
+.slide.light .cmp .arrow{ color:var(--text-muted-light); }
+.cmp code{ font-family:var(--mono); font-size:20px; color:var(--gold); background:transparent; }
+
+/* timeline (split of decision time / exec time) */
+.tl{ display:grid; grid-template-columns:1fr 1fr; gap:0; height:auto; align-items:start; }
+.tl .col{ padding:0 24px; position:relative; }
+.tl .vspine{ position:absolute; right:0; top:12%; bottom:12%; width:1px; background:var(--border-dark); }
+.slide.light .tl .vspine{ background:var(--border-light); }
+.tl .step{ display:flex; gap:22px; align-items:flex-start; padding:18px 0; }
+.tl .dot{ width:11px; height:11px; border-radius:50%; background:var(--gold); margin-top:12px; flex:0 0 11px; }
+.tl .when{ font-family:var(--mono); font-size:14px; letter-spacing:.16em; text-transform:uppercase; color:var(--gold); }
+.tl .what{ font-family:var(--serif); font-weight:500; font-size:30px; line-height:1.22; margin-top:4px; }
+.tl .sub{ font-family:var(--sans); font-size:18px; line-height:1.5; margin-top:6px; }
+.slide.dark .tl .sub{ color:var(--text-muted-dark); }
+.slide.light .tl .sub{ color:var(--text-muted-light); }
+
+/* ===========================================================
+   REVEAL ANIMATION — staggered fade-up on .visible
+   =========================================================== */
+.r{ opacity:0; transform:translateY(26px); transition:opacity .7s var(--ease), transform .7s var(--ease); }
+.slide.visible .r{ opacity:1; transform:none; }
+.r.d1{ transition-delay:.10s } .r.d2{ transition-delay:.22s } .r.d3{ transition-delay:.34s }
+.r.d4{ transition-delay:.46s } .r.d5{ transition-delay:.58s } .r.d6{ transition-delay:.70s }
+.r.d7{ transition-delay:.82s }
+
+/* ===========================================================
+   DECK CONTROLS (outside the stage)
+   =========================================================== */
+.deck-controls{
+  position:fixed; left:50%; bottom:18px; transform:translateX(-50%); z-index:1000;
+  display:flex; align-items:center; gap:14px;
+  background:rgba(28,38,68,.55); border:1px solid rgba(200,168,112,.35);
+  padding:8px 16px; border-radius:0; backdrop-filter:blur(6px);
+  font-family:var(--mono); color:var(--text-warm);
+}
+.deck-controls button{
+  background:transparent; border:1px solid rgba(200,168,112,.4); color:var(--gold);
+  width:30px; height:30px; cursor:pointer; font-family:var(--mono); font-size:15px; line-height:1;
+}
+.deck-controls button:hover{ background:rgba(200,168,112,.15); }
+.deck-controls .count{ font-size:13px; letter-spacing:.14em; color:var(--text-muted-dark); min-width:74px; text-align:center; }
+.deck-controls .count b{ color:var(--gold); }
+
+/* ===========================================================
+   INLINE EDITING (post-draft affordance, default on)
+   =========================================================== */
+.edit-hotzone{ position:fixed; top:0; left:0; width:84px; height:84px; z-index:10000; cursor:pointer; }
+.edit-toggle{
+  position:fixed; top:18px; left:18px; z-index:10001;
+  opacity:0; pointer-events:none; transition:opacity .3s ease;
+  background:rgba(28,38,68,.7); border:1px solid var(--gold); color:var(--gold);
+  width:42px; height:42px; font-size:18px; cursor:pointer; font-family:var(--mono);
+}
+.edit-toggle.show, .edit-toggle.active{ opacity:1; pointer-events:auto; }
+[contenteditable="true"]{ outline:2px dashed var(--gold); outline-offset:4px; }
+.edit-banner{ position:fixed; top:18px; left:50%; transform:translateX(-50%); z-index:10001;
+  font-family:var(--mono); font-size:13px; letter-spacing:.14em; text-transform:uppercase; color:var(--gold);
+  background:rgba(28,38,68,.8); border:1px solid var(--gold); padding:8px 16px; display:none; }
+.edit-banner.on{ display:block; }
+</style>
+</head>
+<body>
+<div class="deck-viewport">
+  <main class="deck-stage" id="deckStage">
+
+    <!-- =======================================================
+         SLIDE 1 · COVER (chromeless, navy)
+         ======================================================= -->
+    <section class="slide dark active" data-title="封面">
+      <div class="frame">
+        <div style="position:absolute; left:104px; right:104px; top:72px; display:flex; justify-content:space-between; align-items:baseline; padding-bottom:20px; border-bottom:1px solid var(--border-dark); font-family:var(--mono); font-size:15px; letter-spacing:.20em; text-transform:uppercase;">
+          <span style="color:var(--gold)">研究简报<span style="display:inline-block;width:30px;height:1px;background:var(--gold);margin:0 14px 5px;vertical-align:middle;"></span>Security Research Brief</span>
+          <span style="color:var(--text-muted-dark)">No.48 · 2026.08.12 · 组会</span>
+        </div>
+
+        <div class="body-area" style="display:grid; grid-template-columns:1.18fr .82fr; gap:64px; align-items:center;">
+          <div>
+            <div class="kicker r d1" style="margin-bottom:26px;">用人话讲 · 一条安全发现</div>
+            <h1 class="display r d2" style="margin:0;">
+              批准的是<em class="gold">名字</em>，<br>跑的却是<em class="gold">代码</em>。
+            </h1>
+            <p class="lead r d4" style="margin-top:40px; max-width:780px;">
+              你当初点「同意」时，同意的可能只是<span style="color:var(--text-warm)">一个名字和一条会变的命令</span>；
+              几天后 Agent 替你启动它时，那个名字解析出来的代码——可能已经不是你当初批准的那一份。
+            </p>
+          </div>
+
+          <aside class="brief r d5">
+            <div class="kicker">本次要回答的问题</div>
+            <h3>旧授权，还约束着原来的代码吗？</h3>
+            <ul>
+              <li><b>01</b><span>授权还在，但它指向的代码可能已经漂移。</span></li>
+              <li><b>02</b><span>由 Agent 在任务时刻才决定启动哪个扩展。</span></li>
+              <li><b>03</b><span>工具批准弹窗，可能比代码执行来得更晚。</span></li>
+            </ul>
+          </aside>
+        </div>
+
+        <div style="position:absolute; left:104px; right:104px; bottom:52px; display:flex; justify-content:space-between; align-items:flex-end; padding-top:18px; border-top:1px solid var(--border-dark); font-family:var(--mono); font-size:15px; letter-spacing:.16em; text-transform:uppercase; color:var(--text-muted-dark);">
+          <div style="display:flex; gap:46px;">
+            <div>主题<b style="display:block;color:var(--text-warm);font-weight:500;letter-spacing:.10em;margin-top:6px;font-size:16px;">Agent 授权漂移</b></div>
+            <div>阶段<b style="display:block;color:var(--text-warm);font-weight:500;letter-spacing:.10em;margin-top:6px;font-size:16px;">Goose Canary 冻结</b></div>
+          </div>
+          <div style="color:var(--gold)">01 — 13</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- =======================================================
+         SLIDE 2 · 普通的一天 (statement, chromeless, cream)
+         ======================================================= -->
+    <section class="slide light" data-title="普通的一天">
+      <div class="frame">
+        <div class="body-area" style="display:flex; flex-direction:column; justify-content:center;">
+          <div class="kicker r d1" style="margin-bottom:30px;"><span class="shortrule" style="display:inline-block;vertical-align:middle;margin-right:16px;"></span>场景 · The Setup</div>
+          <h2 class="h1 r d2" style="max-width:1500px;">
+            几天前，你只是同意了「以后可以让 <em class="gold lat">Agent</em> 用 <em class="gold">PostgreSQL</em> 扩展」。
+          </h2>
+          <p class="lead r d4" style="margin-top:40px; max-width:1280px; color:var(--text-muted-light);">
+            今天你对它说一句很普通的话——<em class="gold" style="font-style:italic">「帮我查一下数据库里的订单。」</em><br>
+            它发现缺这个能力，于是自己去配置里找到那个扩展，启动它，继续干活。
+          </p>
+          <p class="cap r d5" style="margin-top:46px; color:var(--text-hint-light);">看起来一切正常。问题藏在你当时到底「同意了什么」里。</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- =======================================================
+         SLIDE 3 · Agent 接管启动决定 (standard, navy)
+         ======================================================= -->
+    <section class="slide dark" data-title="Agent 接管启动">
+      <div class="frame">
+        <div class="chrome">
+          <div class="k">第一章<span class="dash"></span>变化在哪</div>
+          <div class="r">03 / 13</div>
+        </div>
+        <div class="body-area">
+          <div class="kicker r d1" style="margin-bottom:18px;">一个现实的产品设计</div>
+          <h2 class="h2 r d2" style="max-width:1300px; margin-bottom:44px;">
+            过去，<em class="gold">人</em>决定什么时候启动哪个插件。<br>现在，<em class="gold">Agent</em> 替你按下启动键。
+          </h2>
+
+          <div class="r d4" style="display:grid; grid-template-columns:repeat(6,1fr); gap:18px; align-items:center;">
+            <div style="border-top:2px solid var(--gold); padding-top:18px;"><div class="kicker" style="font-size:13px;">01</div><div class="h3" style="font-size:24px; margin-top:8px;">曾配置过若干扩展</div></div>
+            <div style="font-family:var(--mono); color:var(--text-hint-dark); text-align:center; font-size:22px; padding-top:18px;">→</div>
+            <div style="border-top:1px solid var(--border-dark); padding-top:18px;"><div class="kicker" style="font-size:13px; color:var(--text-muted-dark);">02</div><div class="h3" style="font-size:24px; margin-top:8px;">提出普通任务</div></div>
+            <div style="font-family:var(--mono); color:var(--text-hint-dark); text-align:center; font-size:22px; padding-top:18px;">→</div>
+            <div style="border-top:1px solid var(--border-dark); padding-top:18px;"><div class="kicker" style="font-size:13px; color:var(--text-muted-dark);">03</div><div class="h3" style="font-size:24px; margin-top:8px;">自主选择一个扩展</div></div>
+            <div style="font-family:var(--mono); color:var(--gold); text-align:center; font-size:22px; padding-top:18px;">→</div>
+          </div>
+          <div class="r d5" style="margin-top:30px; border-top:2px solid var(--gold); padding-top:18px; max-width:560px;">
+            <div class="kicker" style="font-size:13px;">04 · 启动它</div>
+            <div class="h3" style="font-size:26px; margin-top:8px;">第三方代码，开始运行。</div>
+          </div>
+          <p class="cap r d6" style="margin-top:40px; color:var(--text-muted-dark); max-width:1200px;">
+            做授权决定的时间，和代码真正执行的时间，被拉开了——中间还多了 Agent 的自主选择，和包管理器的动态解析。
+          </p>
+        </div>
+        <div class="foot">
+          <div class="tags"><div>现实机制<b>Goose 已提供</b></div></div>
+          <div class="pager">授权决定 ↔ 代码执行，被拉开</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- =======================================================
+         SLIDE 4 · 真正的问题 (quote/statement, chromeless, navy)
+         ======================================================= -->
+    <section class="slide dark" data-title="真正的问题">
+      <div class="frame">
+        <div class="body-area" style="display:flex; flex-direction:column; justify-content:center;">
+          <div class="kicker r d1" style="margin-bottom:30px;"><span class="shortrule" style="display:inline-block;vertical-align:middle;margin-right:16px;"></span>真正的问题</div>
+          <p class="quote r d2" style="max-width:1500px;">
+            大家以为在问：<em class="gold lat">Agent</em> 会不会偷偷安装恶意插件？
+          </p>
+          <p class="quote r d4" style="max-width:1500px; margin-top:24px; color:var(--text-muted-dark);">
+            其实该问的是——
+          </p>
+          <p class="quote r d5" style="max-width:1500px; margin-top:18px;">
+            你当初批准的那个扩展，<em class="gold">究竟批准了什么？</em><br>
+            是一段确定不变的代码，还是一个<em class="gold">未来可能指向别处</em>的名字？
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- =======================================================
+         SLIDE 5 · 名字 vs 代码 (compare, navy)
+         ======================================================= -->
+    <section class="slide dark" data-title="名字 vs 代码">
+      <div class="frame">
+        <div class="chrome">
+          <div class="k">机制<span class="dash"></span>名字怎么变成两段代码</div>
+          <div class="r">05 / 13</div>
+        </div>
+        <div class="body-area">
+          <h2 class="h2 r d1" style="max-width:1300px;">同一个名字，两次解析，可能是<em class="gold">两段不同的代码</em>。</h2>
+          <div class="cmp r d3" style="margin-top:36px;">
+            <div class="panel">
+              <div class="lab">配置时 · Admission</div>
+              <div class="big">你保存了一条命令</div>
+              <div class="arrow">它被解析成 →</div>
+              <code>package@latest</code>
+              <div class="arrow" style="margin-top:18px;">↓ 此时指向</div>
+              <div class="big" style="font-size:40px;"><em class="gold">代码 A</em></div>
+            </div>
+            <div class="vrule"></div>
+            <div class="panel">
+              <div class="lab">任务触发时 · Activation</div>
+              <div class="big">Agent 再次启动它</div>
+              <div class="arrow">同一条命令 →</div>
+              <code>package@latest</code>
+              <div class="arrow" style="margin-top:18px;">↓ 此时指向</div>
+              <div class="big" style="font-size:40px;"><em class="gold">代码 B</em></div>
+            </div>
+          </div>
+          <p class="cap r d5" style="margin-top:18px; color:var(--text-muted-dark); max-width:1300px;">
+            包更新、tag 被移动、发布者账号被入侵——都可能让「同一个名字」在几天后指向完全不同的代码。系统却仍认为：这个扩展「已经被批准过了」。
+          </p>
+        </div>
+        <div class="foot">
+          <div class="tags"><div>解析时机<b>npx / uvx 在运行时才取代码</b></div></div>
+          <div class="pager">名字稳定 ≠ 代码稳定</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- =======================================================
+         SLIDE 6 · 核心发现：漂移 (statement, chromeless, cream)
+         ======================================================= -->
+    <section class="slide light" data-title="授权漂移">
+      <div class="frame">
+        <div class="body-area" style="display:flex; flex-direction:column; justify-content:center;">
+          <div class="kicker r d1" style="margin-bottom:30px;"><span class="shortrule" style="display:inline-block;vertical-align:middle;margin-right:16px;"></span>核心发现</div>
+          <h2 class="h1 r d2" style="max-width:1500px;">
+            授权<em class="gold">没有消失</em>，<br>但它绑定的代码<em class="gold">已经变了</em>。
+          </h2>
+          <p class="lead r d4" style="margin-top:42px; max-width:1180px; color:var(--text-muted-light);">
+            我们把这件事叫作 <em class="gold lat">authorization-reference drift</em>——授权引用的漂移。<br>
+            一句话：批准还在，但它指向的东西，可能已经不是你当初批准的那个。
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- =======================================================
+         SLIDE 7 · 为什么 Agent 让它变重要 (timeline, navy)
+         ======================================================= -->
+    <section class="slide dark" data-title="为什么变重要">
+      <div class="frame">
+        <div class="chrome">
+          <div class="k">第二章<span class="dash"></span>风险出现在哪里</div>
+          <div class="r">07 / 13</div>
+        </div>
+        <div class="body-area">
+          <h2 class="h2 r d1" style="max-width:1350px; margin-bottom:48px;">为什么 <em class="gold lat">Agent</em> 让这个老问题变得更要命？</h2>
+          <div class="tl">
+            <div class="col r d2">
+              <div class="step">
+                <div class="dot"></div>
+                <div>
+                  <div class="when">过去 · 准入</div>
+                  <div class="what">用户把扩展加进配置</div>
+                  <div class="sub">人，决定谁能进候选名单。</div>
+                </div>
+              </div>
+              <div class="step">
+                <div class="dot" style="background:var(--text-hint-dark);"></div>
+                <div>
+                  <div class="when" style="color:var(--text-muted-dark);">之间 · 间隔数天</div>
+                  <div class="what" style="color:var(--text-muted-dark);">包可能已更新 / tag 移动</div>
+                  <div class="sub">引用在悄悄漂移。</div>
+                </div>
+              </div>
+              <div class="vspine"></div>
+            </div>
+            <div class="col r d4">
+              <div class="step">
+                <div class="dot"></div>
+                <div>
+                  <div class="when">现在 · 激活</div>
+                  <div class="what">Agent 自主选择并启动</div>
+                  <div class="sub">模型，决定这次跑哪一个。</div>
+                </div>
+              </div>
+              <div class="step">
+                <div class="dot"></div>
+                <div>
+                  <div class="when">此刻 · 执行</div>
+                  <div class="what">包管理器实时解析取代码</div>
+                  <div class="sub">真正跑的，是刚刚才解析出来的那份。</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="foot">
+          <div class="tags"><div>关键位置<b>授权时间 ↔ 执行时间 被拉开</b></div></div>
+          <div class="pager">新风险 = 模型选择 + 动态解析</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- =======================================================
+         SLIDE 8 · 三个边界 (three tiles, cream)
+         ======================================================= -->
+    <section class="slide light" data-title="三个边界">
+      <div class="frame">
+        <div class="chrome">
+          <div class="k">拆解<span class="dash"></span>三个清楚的决定</div>
+          <div class="r">08 / 13</div>
+        </div>
+        <div class="body-area">
+          <div class="r d1" style="margin-bottom:14px;">
+            <h2 class="h2" style="max-width:1300px;">把整个过程，拆成<em class="gold">三个边界</em>。</h2>
+          </div>
+          <div class="tiles3" style="margin-top:24px;">
+            <div class="tile r d2">
+              <div class="num">01</div>
+              <span class="en">Admission</span>
+              <h3>谁可以进候选名单？</h3>
+              <p>你把 PostgreSQL 扩展加进配置。问题：你准入的是名字、命令、固定版本，还是不可变的代码哈希？</p>
+            </div>
+            <div class="tile r d3">
+              <div class="num">02</div>
+              <span class="en">Activation</span>
+              <h3>这次任务启动谁？</h3>
+              <p>你说「查订单」，Agent 自己决定启用它。问题：启动前会重新确认吗？确认框给的是名字、命令，还是真实代码？</p>
+            </div>
+            <div class="tile r d4">
+              <div class="num">03</div>
+              <span class="en">Invocation</span>
+              <h3>启动后调用什么功能？</h3>
+              <p>很多系统在「调用工具」时才弹批准。但这时 server 进程已经启动了——初始化代码是不是早就能写文件、联网了？</p>
+            </div>
+          </div>
+        </div>
+        <div class="foot">
+          <div class="tags"><div>论文测的就是这道缝<b>有 invocation 授权，却缺 activation 授权</b></div></div>
+          <div class="pager">漂亮的批准框，可能来得太晚</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- =======================================================
+         SLIDE 9 · 批准来得太晚 (quote, chromeless, navy)
+         ======================================================= -->
+    <section class="slide dark" data-title="批准来得太晚">
+      <div class="frame">
+        <div class="body-area" style="display:flex; flex-direction:column; justify-content:center;">
+          <div class="kicker r d1" style="margin-bottom:30px;"><span class="shortrule" style="display:inline-block;vertical-align:middle;margin-right:16px;"></span>第四幕 · 批准来得太晚</div>
+          <p class="quote r d2" style="max-width:1500px;">
+            本地 <em class="gold lat">MCP server</em>，必须<em class="gold">先作为进程启动</em>，<br>才能初始化、才能报告工具列表。
+          </p>
+          <p class="quote r d4" style="max-width:1500px; margin-top:34px; color:var(--text-muted-dark);">
+            于是顺序常常变成——
+          </p>
+          <p class="lead r d5" style="margin-top:20px; max-width:1300px;">
+            第三方代码已经启动 <em class="gold lat" style="font-style:italic">→</em> 初始化代码可能已经产生效果 <em class="gold lat" style="font-style:italic">→</em> 这时系统才问：是否允许调用这个工具？
+          </p>
+          <p class="cap r d6" style="margin-top:40px; color:var(--text-muted-dark);">这正是我们要测的：per-tool approval 之上，是否还有一道 activation 的闸。这是不是普遍现象，得逐系统审计，不能拍脑袋。</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- =======================================================
+         SLIDE 10 · Goose Canary：两个问题 (standard, cream)
+         ======================================================= -->
+    <section class="slide light" data-title="Canary 两个问题">
+      <div class="frame">
+        <div class="chrome">
+          <div class="k">实验<span class="dash"></span>Goose Canary 在测什么</div>
+          <div class="r">10 / 13</div>
+        </div>
+        <div class="body-area">
+          <div class="kicker r d1" style="margin-bottom:16px;">当前正在执行</div>
+          <h2 class="h2 r d2" style="max-width:1300px; margin-bottom:42px;">用两个完全无害的测试包，回答<em class="gold">两个关键问题</em>。</h2>
+          <div class="tiles3" style="grid-template-columns:1fr 1fr; gap:56px;">
+            <div class="tile r d3">
+              <div class="num">问题一</div>
+              <h3 style="margin-top:26px;">代码有没有发生漂移？</h3>
+              <p style="margin-top:14px;">先让 <em class="gold lat" style="font-style:italic">package@latest</em> 指向包 A，记录你准入时看到的对象；再把 latest 改成 B，用一个普通任务触发 Goose 启动它。看最后跑的是 A 还是 B，以及有没有针对 B 的新批准。</p>
+            </div>
+            <div class="tile r d4">
+              <div class="num">问题二</div>
+              <h3 style="margin-top:26px;">代码效果是否早于工具批准？</h3>
+              <p style="margin-top:14px;">让测试包在 MCP 初始化阶段就写一个隔离测试文件，然后比较两个时间点：测试文件<em class="gold">何时产生</em>，工具批准框<em class="gold">何时出现</em>。文件先出现，就说明初始化代码已经跑过了。</p>
+            </div>
+          </div>
+        </div>
+        <div class="foot">
+          <div class="tags"><div>测试包<b>两个无害包 A / B</b></div><div>现实系统<b>Goose</b></div></div>
+          <div class="pager">把猜想升级成有证据的发现</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- =======================================================
+         SLIDE 11 · 三种实验臂 (three tiles, navy)
+         ======================================================= -->
+    <section class="slide dark" data-title="三种实验臂">
+      <div class="frame">
+        <div class="chrome">
+          <div class="k">实验设计<span class="dash"></span>为什么要三种臂</div>
+          <div class="r">11 / 13</div>
+        </div>
+        <div class="body-area">
+          <h2 class="h2 r d1" style="max-width:1400px; margin-bottom:14px;">为了证明：决定结果的是<em class="gold">绑定强度</em>，不是 Goose 偶然有个 bug。</h2>
+          <p class="cap r d2" style="color:var(--text-muted-dark); margin-bottom:30px;">三组对照，从最松到最紧。</p>
+          <div class="tiles3">
+            <div class="tile r d3">
+              <div class="num">A</div>
+              <span class="en">可变引用</span>
+              <h3>package@latest</h3>
+              <p>最松。测 A 能不能漂移成 B。这是用户最常写、也最危险的形态。</p>
+            </div>
+            <div class="tile r d4">
+              <div class="num">B</div>
+              <span class="en">固定版本</span>
+              <h3>package@1.0.0</h3>
+              <p>较紧。固定版本比 tag 稳定——但它仍不等于内容哈希绑定。</p>
+            </div>
+            <div class="tile r d5">
+              <div class="num">C</div>
+              <span class="en">内容绑定</span>
+              <h3>SHA-256 校验</h3>
+              <p>最紧。启动前比对实际 digest 与批准的 digest，对不上就直接拒绝运行。</p>
+            </div>
+          </div>
+          <p class="cap r d6" style="margin-top:28px; color:var(--text-muted-dark); max-width:1400px;">
+            如果只有第一臂漂移、而内容绑定臂能挡住替换——就说明：问题确实出在「授权绑到了一个可变名字」，而不是不可变的代码。
+          </p>
+        </div>
+        <div class="foot">
+          <div class="tags"><div>自变量<b>绑定强度</b></div></div>
+          <div class="pager">A 漂移 / C 阻断 ⇒ 机理成立</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- =======================================================
+         SLIDE 12 · 成功 vs 失败 (compare, cream)
+         ======================================================= -->
+    <section class="slide light" data-title="成功与失败">
+      <div class="frame">
+        <div class="chrome">
+          <div class="k">结果含义<span class="dash"></span>两种可能都要诚实面对</div>
+          <div class="r">12 / 13</div>
+        </div>
+        <div class="body-area">
+          <h2 class="h2 r d1" style="max-width:1400px; margin-bottom:34px;">这次实验，成功和失败分别意味着什么？</h2>
+          <div class="cmp" style="height:auto;">
+            <div class="panel r d2">
+              <div class="lab">如果观察到漂移 · 成功</div>
+              <div class="big">一个很硬的现实发现。</div>
+              <ul class="dashlist" style="margin-top:22px;">
+                <li style="font-size:20px;">已存在的 Agent 产品，允许旧 admission 在任务时刻授权<em class="gold">后来才解析出的不同代码</em>。</li>
+                <li style="font-size:20px;">若初始化文件早于工具批准——证明<em class="gold">仅靠 per-tool approval 太晚</em>，activation 本身就是代码执行边界。</li>
+              </ul>
+            </div>
+            <div class="vrule"></div>
+            <div class="panel r d4">
+              <div class="lab">如果没观察到漂移 · 失败</div>
+              <div class="big" style="color:var(--text-muted-light);">不藏结果，诚实降级。</div>
+              <ul class="dashlist" style="margin-top:22px;">
+                <li style="font-size:20px; color:var(--text-muted-light);">Goose 可能已有足够保护，或 resolver 缓存挡住了漂移。</li>
+                <li style="font-size:20px; color:var(--text-muted-light);">论文降级为<em class="gold">十系统生态测量 + design-space 分析</em>——不能把现实漏洞写进 Thesis B。</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+        <div class="foot">
+          <div class="tags"><div>态度<b>负面结果也是结果</b></div></div>
+          <div class="pager">先有证据，再下结论</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- =======================================================
+         SLIDE 13 · 一句话总结 (statement/quote, chromeless, navy)
+         ======================================================= -->
+    <section class="slide dark" data-title="一句话总结">
+      <div class="frame">
+        <div class="body-area" style="display:flex; flex-direction:column; justify-content:center;">
+          <div class="kicker r d1" style="margin-bottom:30px;"><span class="shortrule" style="display:inline-block;vertical-align:middle;margin-right:16px;"></span>一句话总结</div>
+          <p class="quote r d2" style="max-width:1600px;">
+            这篇论文研究的，<em class="gold">不是</em> Agent 会不会偷偷装恶意插件——
+          </p>
+          <p class="quote r d4" style="max-width:1600px; margin-top:30px;">
+            而是：用户<em class="gold">过去批准</em>的扩展，在未来被 Agent 自主启动时，<br>
+            那份旧授权，是否<em class="gold">仍然约束着同一份代码、同一种用途</em>？
+          </p>
+          <p class="cap r d6" style="margin-top:54px; color:var(--text-muted-dark); max-width:1400px;">
+            Goose Canary 这一步，就是在验证——上面这句话，能不能从一个合理猜想，升级成一个有现实证据支撑的安全发现。
+          </p>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!-- deck controls (outside stage) -->
+<div class="deck-controls">
+  <button id="prevBtn" title="上一页 (←)">‹</button>
+  <div class="count"><b id="curN">01</b> / <span id="totN">13</span></div>
+  <button id="nextBtn" title="下一页 (→)">›</button>
+</div>
+
+<!-- inline editing affordance -->
+<div class="edit-hotzone" id="editHotzone" title="编辑模式 (E)"></div>
+<button class="edit-toggle" id="editToggle" title="编辑模式 (E)">✎</button>
+<div class="edit-banner" id="editBanner">编辑模式 · 点击文字修改 · Ctrl+S 保存</div>
+
+<script>
+/* ===========================================================
+   FIXED-STAGE PRESENTATION CONTROLLER
+   =========================================================== */
+class SlidePresentation{
+  constructor(){
+    this.slides=[...document.querySelectorAll('.slide')];
+    this.current=0;
+    this.stage=document.getElementById('deckStage');
+    this.curN=document.getElementById('curN');
+    this.totN=document.getElementById('totN');
+    this.totN.textContent=String(this.slides.length).padStart(2,'0');
+    this.fit();
+    window.addEventListener('resize',()=>this.fit());
+    this.bindKeys(); this.bindButtons(); this.bindWheel(); this.bindTouch();
+    this.show(0);
+  }
+  fit(){
+    const f=Math.min(window.innerWidth/1920, window.innerHeight/1080);
+    const x=(window.innerWidth-1920*f)/2, y=(window.innerHeight-1080*f)/2;
+    this.stage.style.transform=`translate(${x}px,${y}px) scale(${f})`;
+  }
+  show(i){
+    this.current=Math.max(0,Math.min(i,this.slides.length-1));
+    this.slides.forEach((s,idx)=>{
+      const on=idx===this.current;
+      s.classList.toggle('active',on);
+      s.classList.toggle('visible',on);
+    });
+    this.curN.textContent=String(this.current+1).padStart(2,'0');
+  }
+  next(){ if(this.current<this.slides.length-1) this.show(this.current+1); }
+  prev(){ if(this.current>0) this.show(this.current-1); }
+  bindKeys(){
+    document.addEventListener('keydown',(e)=>{
+      if(this.editor && this.editor.isActive) return;     // don't nav while editing focus
+      if(e.key==='ArrowRight'||e.key==='PageDown') { this.next(); }
+      else if(e.key==='ArrowLeft'||e.key==='PageUp') { this.prev(); }
+      else if(e.key===' '){ e.preventDefault(); this.next(); }
+      else if(e.key==='Home'){ this.show(0); }
+      else if(e.key==='End'){ this.show(this.slides.length-1); }
+    });
+  }
+  bindButtons(){
+    document.getElementById('nextBtn').addEventListener('click',()=>this.next());
+    document.getElementById('prevBtn').addEventListener('click',()=>this.prev());
+  }
+  bindWheel(){
+    let t=null, acc=0;
+    this.stage.addEventListener('wheel',(e)=>{
+      acc+=e.deltaY;
+      clearTimeout(t);
+      t=setTimeout(()=>{ acc=0; return; },0);
+    },{passive:true});
+    // simpler: debounce
+    let lock=false;
+    document.addEventListener('wheel',(e)=>{
+      if(lock) return;
+      if(Math.abs(e.deltaY)<24) return;
+      lock=true;
+      if(e.deltaY>0) this.next(); else this.prev();
+      setTimeout(()=>lock=false, 650);
+    },{passive:true});
+  }
+  bindTouch(){
+    let sx=0, sy=0;
+    document.addEventListener('touchstart',(e)=>{ sx=e.touches[0].clientX; sy=e.touches[0].clientY; },{passive:true});
+    document.addEventListener('touchend',(e)=>{
+      const dx=e.changedTouches[0].clientX-sx, dy=e.changedTouches[0].clientY-sy;
+      if(Math.abs(dx)>50 && Math.abs(dx)>Math.abs(dy)){ if(dx<0) this.next(); else this.prev(); }
+    },{passive:true});
+  }
+}
+
+/* ===========================================================
+   INLINE EDITOR — toggle with E / hotzone; save with Ctrl+S
+   =========================================================== */
+class InlineEditor{
+  constructor(app){
+    this.app=app; this.isActive=false;
+    this.toggle=document.getElementById('editToggle');
+    this.banner=document.getElementById('editBanner');
+    this.hotzone=document.getElementById('editHotzone');
+    this.bind();
+    this.load();
+  }
+  toggleEditMode(){
+    this.isActive=!this.isActive;
+    this.toggle.classList.toggle('active',this.isActive);
+    this.banner.classList.toggle('on',this.isActive);
+    this.setEditable(this.isActive);
+  }
+  setEditable(on){
+    const sel='h1,h2,h3,h4,p,span,li,div';
+    this.app.slides.forEach(s=>{
+      s.querySelectorAll(sel).forEach(el=>{
+        if(on){ el.setAttribute('contenteditable','true'); }
+        else{ el.removeAttribute('contenteditable'); }
+      });
+    });
+  }
+  save(){
+    const data={};
+    this.app.slides.forEach((s,i)=>{
+      data[i]={html:s.querySelector('.frame')?s.querySelector('.frame').innerHTML:s.innerHTML};
+    });
+    try{ localStorage.setItem('canary_deck_edits',JSON.stringify(data)); }catch(e){}
+    this.flash('已保存到本地');
+  }
+  load(){
+    let data;
+    try{ data=JSON.parse(localStorage.getItem('canary_deck_edits')); }catch(e){}
+    if(!data) return;
+    this.app.slides.forEach((s,i)=>{
+      if(data[i] && s.querySelector('.frame')) s.querySelector('.frame').innerHTML=data[i].html;
+    });
+  }
+  flash(msg){
+    const old=this.banner.textContent;
+    this.banner.textContent=msg; this.banner.classList.add('on');
+    setTimeout(()=>{ this.banner.textContent=old; if(!this.isActive) this.banner.classList.remove('on'); },1200);
+  }
+  bind(){
+    this.toggle.addEventListener('click',()=>this.toggleEditMode());
+    this.hotzone.addEventListener('click',()=>this.toggleEditMode());
+    let hideT=null;
+    const show=()=>{ clearTimeout(hideT); this.toggle.classList.add('show'); };
+    const hide=()=>{ hideT=setTimeout(()=>{ if(!this.isActive) this.toggle.classList.remove('show'); },400); };
+    this.hotzone.addEventListener('mouseenter',show);
+    this.hotzone.addEventListener('mouseleave',hide);
+    this.toggle.addEventListener('mouseenter',show);
+    this.toggle.addEventListener('mouseleave',hide);
+    document.addEventListener('keydown',(e)=>{
+      if((e.key==='e'||e.key==='E') && !e.target.isContentEditable && !e.target.matches('input,textarea')){
+        this.toggleEditMode();
+      }
+      if(e.ctrlKey && (e.key==='s'||e.key==='S')){ e.preventDefault(); this.save(); }
+    });
+  }
+}
+
+const app=new SlidePresentation();
+app.editor=new InlineEditor(app);
+</script>
+</body>
+</html>

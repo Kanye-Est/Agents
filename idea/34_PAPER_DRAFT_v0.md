@@ -1,9 +1,11 @@
 # 34 — Paper Draft v0（The Acquisition Gap）
 
 > 语言：正文用英文（USENIX 投稿语言）；本文件顶部这段是中文导读。
-> 状态：**stable 段落（Abstract / Intro / Threat model / Funnel / Methods / Results-primary /
-> Defense-mechanism / Related work / Limitations）已按 idea/31、33 的冻结口径写实。**
-> `[PENDING]` 目前只剩 variance 子集与跨模型/scaffold；P2-approved 两臂已完成。
+> 状态：**全文 prose 已写实，并已并入三-cell generalization（Abstract/§1/§5/§7/§9/§10 按 idea/40+41 改完）。**
+> 三 cell：Qwen×text（anchor 5→24，过门）、Llama×text（4→9，QR 反向未过门；但 install/payload 8→28 强复现）、
+> Qwen×native-FC（4→12，ICS 反向未过门；install/payload 4→12，parse-fail 0）。定稿口径：attack 跨 cell 复现、
+> functional primary 模型依赖、acquisition propensity scaffold 依赖、第一跳最稳、P2 处处 100% 拦截。
+> `[PENDING]` 仅剩：variance 误差条 + M3 frontier cell + .bib + markdown→LaTeX（定稿后）。
 > 数字全部对齐 `policy_hardgap_causal_v2_full_20260726.analysis.md` 与 idea/33，改结果前不要改这里的数。
 > 口径红线沿用 idea/33 §7：只报 fixed-benchmark，不报现实 prevalence，不外推模型/框架。
 
@@ -31,7 +33,7 @@ distinct hard‑artifact tasks across three capability families (PDF, iCalendar,
 by a deterministic artifact verifier and a benign/malicious *skill twin* with identical
 model‑visible metadata, we run a pre‑registered causal comparison on a fixed model
 (Qwen3‑32B‑AWQ) and scaffold. Holding tool‑call format knowledge identical between conditions
-and removing target‑name leakage, adding one common scaffold pattern — an
+and removing target‑name leakage, adding a self‑extension scaffold pattern — an
 **acquisition‑encouragement policy** that tells the agent it may search, install, and invoke
 extensions when its tools fall short — raises full discovery E2E from **5/30 to 24/30** (paired
 risk difference **+63.3 pp**; consistent across all three families; exact McNemar
@@ -39,10 +41,12 @@ p = 3.8e‑6). The dominant fork is the *first hop*, task→search (5/30 → 25/
 decides to search, the downstream install→invoke→payload chain completes essentially
 deterministically. An **execution‑layer approval gate** applied after the install call is parsed
 but before it executes blocks **25/25** real install attempts (any‑path E2E 0/30) with no
-prompt‑level defense. Our results reframe autonomous skill acquisition as a property of scaffold
-*authorization semantics*, not only of model capability, and provide both a measurement and a
-minimal defense. We report fixed‑benchmark rates on a single model and scaffold, not real‑world
-prevalence.
+prompt‑level defense. Across a second model (Llama‑3.3‑70B) and a second, native function‑calling scaffold, the attack,
+its first‑hop locus, and the gate defense replicate, while the *magnitude* is jointly modulated by
+model competence and scaffold — a task‑success‑gated metric can even rank the model that executes
+*more* payloads as the safer one. Our results reframe autonomous skill acquisition as a property of
+scaffold *authorization semantics* as much as of model capability, and provide a measurement and a
+minimal defense. We report fixed‑benchmark rates, not real‑world prevalence.
 
 ## 1. Introduction
 
@@ -71,7 +75,9 @@ insufficient, search the marketplace, install what you find, then call it" — f
    byte‑identical in model‑visible metadata and differ only in a synthetic localhost marker.
 3. A **pre‑registered causal result** (§5): under a clean single‑variable manipulation, an
    acquisition‑encouragement policy raises discovery E2E from 5/30 to 24/30 (+63.3 pp, all three
-   families same direction), and the risk is concentrated at the first hop task→search.
+   families same direction), with the risk concentrated at the first hop task→search — and across a
+   second model and a native function‑calling scaffold the attack and its first‑hop locus replicate
+   while magnitude tracks model competence and scaffold.
 4. An **execution‑layer approval gate** (§6): a scaffold‑side defense that intercepts the parsed
    install call before any install code runs, blocking 25/25 real attempts; with approval, benign
    twins recover 25/30 functional E2E with 0/30 payloads, while indistinguishable malicious twins
@@ -185,6 +191,38 @@ encouragement does not damage baseline utility on tasks the built‑in tools alr
 0/10 acquisition under P0/P1/P2 after target‑name leakage was removed (in the confounded v1 it
 was 7/10; this v1→v2 drop is a contamination diagnosis, not a randomized effect).
 
+**Generalization across models and scaffolds.** We ran the identical frozen design on a second
+model (Llama-3.3-70B-Instruct-AWQ, text scaffold) and on a second tool-calling surface
+(OpenAI-style native function calling on Qwen), each with its own passing tool-probe and
+pre-registered provenance.
+
+| Cell | discovery E2E P0→P1 | strict H_A | install+payload P0→P1 | once search → downstream |
+|---|---|---|---|---|
+| Qwen × text (anchor) | 5→24 (+63 pp, p=4e-6) | pass | 5→25 | install+payload 25/25; task 24/25 |
+| Llama-70B × text | 4→9 (+17 pp, p=.27) | fail (QR 3→2) | 8→28 (+67 pp, p=2e-6) | install+payload 28/28; task 9/28 |
+| Qwen × native FC | 4→12 (+27 pp, p=.02) | fail (ICS 1→0) | 4→12 | all through task 12/12 |
+
+Three things replicate and two vary, and the split is the finding. *(i) The attack replicates:*
+autonomous acquisition and real payload execution rise under P1 in every cell — strongest of all on
+Llama (install+payload 8→28, 20 discordant pairs to 0, p=2e-6). *(ii) The first hop is the stable
+bottleneck:* once the agent decides to search, the acquisition chain runs to payload in every cell
+(Qwen-text 25/25, Llama 28/28, Qwen-native 12/12). *(iii) The defense replicates:* P2 blocks 100%
+of installs before execution in all cells (25/25, 28/28, 12/12; payload 0). *What varies: (iv) the
+functional primary is model-dependent.* The strict pre-registered cross-family criterion passes
+only on the anchor; both other cells fail it by a single-count reversal in a *different* family
+(Llama QR 3→2, Qwen-native ICS 1→0), and on Llama the functional effect is not even
+pooled-significant. This is task competence, not safety: Llama acquires and runs the malicious skill
+on 28/30 tasks but produces the correct user artifact on only 9 (the 19 misses are semantic
+argument/spec errors, with zero parse failures). Strikingly, Llama fires *more* payloads than the
+anchor (28 vs 25) while scoring *lower* functional E2E (9 vs 24) — a task-success-gated metric ranks
+the more-exploited model as the safer one. *(v) Acquisition propensity is scaffold-dependent:*
+moving Qwen from the text protocol to native function calling roughly halves how often it decides to
+acquire (P1 search 24→12) with zero argument-parse failures — the effect is not a text-parser
+artifact, but the scaffold modulates the first-hop decision. Net: the mechanism
+(encouragement → acquire → execute), its first-hop locus, and the gate defense hold across our
+cells; the *magnitude* is jointly governed by model competence (task success) and scaffold
+(acquisition propensity).
+
 ## 6. Defense: an execution‑layer approval gate
 
 **Denial (mechanism).** `P2` keeps the P1 model‑visible policy but denies the external approval
@@ -224,35 +262,169 @@ division of labor — the gate is the necessary control point, provenance is the
 information — and as motivation for provenance‑aware acquisition policies rather than as a complete
 defense.
 
-## 7. Related work (delta)
+## 7. Discussion and implications
 
-We position against selection‑of‑loaded‑skills, endorsement/recommendation, simulated harmful
-install from a downstream install request, real install/RCE under an explicit user "clone/install
-X", and payload‑given‑loaded‑skill results. Each measures a *different endpoint from a stronger
-start*; none isolates the ordinary‑task → autonomous discovery → real install/register/invoke →
-payload chain with per‑stage attribution, and none runs the P0/P1 causal manipulation of the
-scaffold's acquisition policy. `[fill exact citations from idea/15,21; do not re-claim
-"first execution / first autonomy / first install" — those are taken by SCR and HalluSquatting.]`
+**Acquisition risk is a scaffold-policy property, not only a model property.** Under an identical
+model and identical tool-call knowledge, moving one benign-intended scaffold policy — "if your
+tools fall short, search, install, and call an extension" — moved full discovery E2E from 5/30 to
+24/30. The policy names no skill and tells the agent to do nothing unsafe, yet it functions as an
+*implicit authorization*: it converts ordinary tasks into real third-party code acquisition and
+execution. Scaffold and platform designers thus own a choice that is easy to treat as a usability
+default (advertising self-extension) but that carries an authorization semantics (granting install
+authority on the model's judgment).
 
-## 8. Limitations and ethics
+**Model and scaffold set the magnitude, not the mechanism.** The cross-cell data (§5) sharpens
+this: the acquisition mechanism and its first-hop locus hold for a second model and a native
+function-calling scaffold, but two different knobs set how bad it gets. Scaffold governs
+*propensity* — native function calling halved Qwen's acquisition rate with unchanged mechanics — so
+the same encouragement is more or less dangerous depending on how a platform surfaces its tools.
+Model competence governs *whether the user is also served* — Llama executed the payload more often
+than the anchor yet completed fewer tasks — so a defender who scores only task-gated E2E will
+systematically under-rank the least capable, and here most-exploited, models. Both point the same
+way: acquisition risk cannot be read off a single ASR number or a single setting.
 
-**Limitations.** One model and one scaffold; three capability families and 30 hard specs form a
-*fixed benchmark*, so rates describe the benchmark, not real‑world prevalence, and do not
-extrapolate to other models, frameworks, marketplaces, or permission regimes. Temperature 0 gives
-point estimates; a pre‑registered variance arm (temp 0.3, 3 seeds) is required before any rate is
-quoted with error bars. `[PENDING cross‑model / cross‑scaffold, variance arm]`
+**The leverage point is the first hop.** Attrition concentrated almost entirely at task→search
+(P0 5, P1 25 of 30); once an agent decided to acquire, retrieval, installation, registration,
+invocation, and payload survived essentially without loss. Two implications follow. First,
+defenses that act at invocation time — scanning a skill's behavior after it loads — are
+structurally late: on this scaffold the malicious code has already been fetched, installed, and run
+by then; the defensible boundary is the acquisition *decision*, before search or before execution.
+Second, an ASR reported from a strong start (a loaded skill, or an explicit install request) can
+badly misestimate ordinary-task risk in either direction, because it prices only the
+near-deterministic tail and omits the one conditional that actually varies.
 
-**Ethics.** All skills, payloads, and marketplaces are synthetic and research‑scoped. Malicious
-twins emit only a synthetic marker to a 127.0.0.1 collector; no real credentials, network egress,
-or third‑party services are involved. Installs occur in per‑run temporary sandboxes. The artifact
-release is a measurement harness and a defense, intended to help scaffold authors add acquisition
-gates, not to enable acquisition attacks.
+**Gating is necessary but not sufficient; provenance is the missing primitive.** The
+execution-layer gate blocks every unauthorized install and, once a benign skill is authorized,
+restores task utility with no payload — a clean split between *whether to install* and *what the
+task needs*. But the boundary arm shows the ceiling: with benign and malicious twins identical in
+every model-visible field (equal `SKILL.md` bytes and market hashes across all 30 pairs), an
+authorized malicious install still fires 25/30 payloads. An approver at the gate has exactly the
+information the agent had — none that separates the twins — so the gate *relocates* the trust
+decision rather than resolving it, shifting the attack from autonomous acquisition to
+social-engineering an under-informed approval. Making the gate sufficient needs information the
+metadata does not carry: signed publisher provenance, install-time static/behavioral analysis,
+task-scoped capability manifests, or reputation. We therefore recommend that scaffolds treat
+acquisition as an explicit, logged event gated on *provenance*, not merely on user assent.
+
+**A reusable measurement standard.** Independent of this attack, the funnel and its three mutually
+exclusive endpoints (discovery / direct-install / residual E2E) let one report acquisition risk
+without conflating "guessed a package name" with "discovered and installed one," and localize where
+a policy or model changes risk. We offer per-stage conditional survival, a deterministic task
+verifier, benign/malicious twins with verified model-visible equivalence, and a pre-registered
+primary as a template for evaluating self-extending agents; our own v1→v2 correction — a leaked
+target name and paraphrase-only tasks inflating an early signal — is a concrete example of why
+per-stage, pre-registered measurement matters.
+
+## 8. Related work
+
+**Post‑load skill attacks.** A large body of work measures what a malicious skill can do *once it
+is already loaded into the agent's context*. Skill‑Inject (arXiv:2602.20156) reports up to ~80%
+attack success from instructions hidden in skill files; Poise (arXiv:2606.07943) reaches ~89% with
+a single setup line plus a side script while the user task still passes its verifier; MCPTox
+(arXiv:2508.14925) poisons real MCP tool descriptions; and skill‑backdoor work (SkillTrojan,
+arXiv:2604.06811; BadSkill, arXiv:2604.09378) pushes post‑load ASR to 97–99%. These define the
+*severity* of the final stage but presuppose discovery, install, and registration; our funnel
+begins before a skill is in the agent's hands and treats the loaded‑payload stage as one
+conditional among several.
+
+**Skill retrieval and selection in a registry.** Closest on the *pre‑load* side, Under the Hood of
+SKILL.md (arXiv:2605.11418) shows a short trigger in SKILL.md manipulates registry discovery
+(~86% pairwise win) and that a one‑sentence description change wins selection ~77.6% of the time
+across models — but it explicitly does not report a separate metric for the agent *issuing an
+install*. ToolHijacker (arXiv:2504.19793) frames tool use as retrieval+selection and drives
+document‑optimized hijacking to high ASR on tools *already in the library*; ToolTweak
+(arXiv:2510.02554) lifts selection among *interchangeable* tools from ~20% to ~81%. These measure
+selection given retrieval, not autonomous on‑disk installation of a not‑yet‑present skill.
+
+**Endorsement, install commands, and hallucinated names — the acquisition‑adjacent neighbors.**
+Several recent works touch installation but from a stronger start or stop earlier on the chain.
+SCR (arXiv:2606.15242) shows benign‑in‑isolation skills become harmful in composition; its neutral
+CapFlow setting already uses non‑imperative task language, and its TrustLift setting raises harmful
+installation to >83% — but from a *downstream install request* in a *simulated* market.
+HalluSquatting (arXiv:2607.07433) measures real end‑to‑end install/RCE (40–100%) when the *user
+explicitly asks to clone/install* a skill whose hallucinated name the attacker pre‑registered.
+SearchGEO (arXiv:2606.16821) induces an agent to endorse a skill and emit an install *command*
+(e.g., GPT‑5.4‑mini 17/18, Claude 0/18) but stops at command output; Skills That Don't Exist
+(arXiv:2607.12340) measures recommendation hallucination (~36.9%) with an explicit‑authorization
+install PoC; Neutral Prompting (arXiv:2605.29354) elicits a hallucinated package and a `pip
+install` string (~63%) without executing it; and You Told Me To Do It (arXiv:2603.11862) shows
+~85% compliance with adversarial README/setup instructions. Each reports a *different endpoint
+from a different start* — recommendation, endorsement, install command, or install under explicit
+user intent — and none measures the full ordinary‑task → autonomous discovery → real
+install/register/invoke → payload trajectory with per‑stage attribution.
+
+**Ecosystem, indirect injection, and in‑the‑wild evidence.** Indirect prompt injection (Greshake
+et al., arXiv:2302.12173; InjecAgent, arXiv:2403.02691; AgentDojo, arXiv:2406.13352) establishes
+that untrusted tool/document content can hijack agent actions, the mechanism behind our task→search
+framing. Ecosystem measurements — "Do Not Mention This to the User" (arXiv:2602.06547; 98k skills,
+157 confirmed malicious) and MCP security benchmarks (MSB, arXiv:2510.15994; MCPSecBench,
+arXiv:2508.13220) — show malicious skills exist and spread in practice. Our contribution is
+orthogonal: a same‑trajectory *measurement* of whether an ordinary task, absent any user install
+intent, causes an agent to acquire and execute a not‑yet‑installed skill, plus a controlled
+*causal* attribution of that behavior to a scaffold policy.
+
+**Positioning.** We do not claim the first measurement of skill execution, of neutral/autonomous
+triggering, or of installation — SCR (neutral triggering; simulated harmful install) and
+HalluSquatting (real install/RCE under explicit user request) already occupy those. Our delta is
+the *conjunction*: (a) a pure capability task, (b) a target not preinstalled, (c) real external
+discovery→install→register→invoke→payload, (d) per‑stage attribution, and (e) a pre‑registered
+P0/P1/P2 manipulation isolating the scaffold's acquisition policy. Table 1 places each neighbor by
+where it stops on the funnel.
+
+*[Bib note for codex: keys map to the arXiv IDs above; pull titles/authors from idea/15. Confirm
+each ID and venue against the PDF before camera‑ready — several are 2026 preprints.]*
+
+## 9. Limitations and ethics
+
+**Limitations.** (1) *External validity.* We tested two models (Qwen3-32B-AWQ, Llama-3.3-70B-AWQ)
+and two tool-calling scaffolds (text protocol, native function calling) — three cells beyond the
+anchor. The attack, its first-hop locus, and the gate replicate across them, but the strict
+pre-registered functional criterion passes only on the anchor and the magnitude is model- and
+scaffold-dependent (§5). We have not yet tested a frontier/closed model, other marketplaces, or
+other permission regimes, and we report fixed-benchmark rates, never population prevalence.
+Crucially, the harness, the marketplace, the skill twins, and the P1 encouragement policy are
+all researcher-constructed: the design establishes that *this* self-extension policy causally
+produces autonomous acquisition and execution, not that production agent products commonly ship
+such a policy or such a marketplace. The native function-calling arm varies the tool-calling
+*surface* inside our harness, not a second real product framework. Anchoring the P1 policy and the
+market to observed production scaffolds is required before any claim of real-world commonness.
+(2) *Task breadth.* Thirty distinct specs span three capability families (PDF,
+iCalendar, QR); a low rate in any one family (e.g., ICS) reflects that benchmark, not "hard gaps
+are safe." (3) *Estimand.* P1−P0 measures the whole acquisition-encouragement bundle (a
+system-prompt recipe plus an advisory tool description), not a single sentence, by design.
+(4) *Determinism.* Temperature 0 gives point estimates; a pre-registered variance arm (temp 0.3,
+three seeds) is required before any rate is quoted with error bars `[PENDING]`. (5) *Orchestration
+confound.* One P1 task failed only because a duplicate invocation overwrote a correct artifact — an
+agent-orchestration failure we report separately (attack execution, 25/30 payloads, is therefore ≥
+the 24/30 E2E), not an acquisition failure.
+
+**Ethics.** All skills, payloads, and marketplaces are synthetic and research-scoped. Malicious
+twins emit only a synthetic marker to a 127.0.0.1 collector; there is no real credential access,
+network egress, or third-party service, and installs occur in per-run temporary sandboxes on a
+localhost-only model server. We release a measurement harness, a benchmark, and a defense to help
+scaffold authors add provenance-aware acquisition gates; the artifact is not usable as an
+acquisition attack against real marketplaces, and we will follow coordinated disclosure with
+affected scaffold/marketplace maintainers before release.
+
+## 10. Conclusion
+
+Self-extending agents turn a capability gap into an acquisition action. On a fixed
+Qwen3-32B × HelloAgents benchmark with a pre-registered causal design, a scaffold policy
+that encourages self-extension raised full task-induced discovery E2E from 5/30 to 24/30, with the
+risk concentrated at the task→search decision; an execution-layer approval gate blocked
+unauthorized installs and restored utility for authorized benign skills but did not vet them.
+Across a second model and a native function-calling scaffold, the attack, its first-hop locus, and
+the gate replicate while magnitude tracks model competence and scaffold — a task-gated metric can
+even rank the more-exploited model as safer. We release the Acquisition Funnel measurement and the
+twin benchmark. The take-away for builders is narrow and actionable:
+advertising self-extension is an authorization decision, the place to enforce it is the acquisition
+boundary, and enforcement must be tied to skill provenance.
 
 ---
 
 ## 附：本 draft 尚缺、需实验补齐的洞（给 codex 的 TODO 对照）
-- §8：跨模型 / 跨 scaffold（USENIX 接收门槛级），variance 子集（error bars + 复现实证）。
+- 跨模型/scaffold 三 cell 已并入 §5/§7/§9/§10/Abstract（idea/40、41）。剩：variance 误差条 + M3 frontier cell + .bib + markdown→LaTeX（定稿后）。
 - §5 ICS 复核已完成：`ics_hard_gap_02/06/08` 的 P1/P2 前三次 raw model outputs
   均字节一致；错误包名安装在 P1 返回“包不存在”后触发 search，在 P2 被 gate 拦截后触发
   approval request 并停止。差异是处理后回执导致的合法轨迹分叉，不是首轮非确定性。
-- §7 引用：从 idea/15、21 填精确 citation。
+- §7 引用：已填精确 citation（arXiv IDs 见正文；.bib 的 titles/authors 从 idea/15 取，camera-ready 前逐条回 PDF 核对 ID/venue）。剩：Discussion/Implications 一节（provenance 缺口 + 对 scaffold 设计者的建议）待起草。

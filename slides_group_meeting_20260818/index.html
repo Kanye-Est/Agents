@@ -1,0 +1,1308 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Agent 扩展授权中的制品身份漂移 — 组会进展汇报</title>
+
+<!-- Fonts: Noto Serif SC (display) / Noto Sans SC (body) / IBM Plex Mono (code & evidence tags) -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@600;700;900&family=Noto+Sans+SC:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+/* ===========================================
+   CSS CUSTOM PROPERTIES — 学术审计风
+   深蓝 (navy) / 灰白 (paper) / 橙 (accent)
+   =========================================== */
+:root {
+    --navy-950: #0B1526;
+    --navy-900: #101C33;
+    --navy-800: #16233B;
+    --navy-700: #1F3054;
+    --navy-600: #2A3F6B;
+    --navy-100: #DCE3F0;
+    --ink: #1B2536;
+    --ink-soft: #49566B;
+    --muted: #80899B;
+    --paper: #F7F5F0;
+    --card: #FFFFFF;
+    --line: #E0DACC;
+    --line-soft: #EAE5D9;
+    --accent: #E8590C;
+    --accent-deep: #C2410C;
+    --accent-wash: #FBEADF;
+    --ok: #2F9E44;
+    --ok-wash: #EBFBEE;
+    --bad: #C92A2A;
+    --bad-wash: #FCEFEF;
+    --font-display: 'Noto Serif SC', 'Songti SC', serif;
+    --font-body: 'Noto Sans SC', 'PingFang SC', sans-serif;
+    --font-mono: 'IBM Plex Mono', 'Noto Sans SC', monospace;
+    --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+    --dur: 0.55s;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+/* ===========================================
+   VIEWPORT BASE — fixed 16:9 stage (mandatory)
+   =========================================== */
+html, body {
+    width: 100%; height: 100%; margin: 0; overflow: hidden;
+    background: var(--stage-bg, #000);
+}
+.deck-viewport {
+    position: fixed; inset: 0; overflow: hidden;
+    background: var(--stage-bg, #000);
+}
+.deck-stage {
+    position: absolute; left: 0; top: 0;
+    width: 1920px; height: 1080px; overflow: hidden;
+    transform-origin: 0 0;
+    background: var(--slide-bg, #fff);
+}
+.slide {
+    position: absolute; inset: 0;
+    width: 1920px; height: 1080px; overflow: hidden;
+    display: block; visibility: hidden; opacity: 0; pointer-events: none;
+    background: var(--paper);
+}
+.slide.active, .slide.visible {
+    visibility: visible; opacity: 1; pointer-events: auto; z-index: 1;
+}
+img, video, canvas, svg { max-width: 100%; max-height: 100%; }
+.deck-controls {
+    position: fixed; left: 50%; bottom: 22px;
+    transform: translateX(-50%); z-index: 1000;
+}
+@media print {
+    html, body { width: 1920px; height: auto; overflow: visible; background: #fff; }
+    .deck-viewport { position: static; overflow: visible; background: #fff; }
+    .deck-stage { position: static; width: auto; height: auto; transform: none !important; background: none; }
+    .slide {
+        position: relative; display: block !important; visibility: visible !important;
+        opacity: 1 !important; pointer-events: auto !important;
+        width: 1920px; height: 1080px;
+        break-after: page; page-break-after: always;
+    }
+    .slide:last-child { break-after: auto; page-break-after: auto; }
+    .deck-controls { display: none !important; }
+}
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.2s !important;
+    }
+}
+/* print: force all reveal content visible, hide deck chrome */
+@media print {
+    .reveal { opacity: 1 !important; transform: none !important; }
+    .progress, .edit-hotzone, .edit-toggle { display: none !important; }
+}
+
+/* ===========================================
+   REVEAL ANIMATIONS
+   =========================================== */
+.reveal {
+    opacity: 0; transform: translateY(26px);
+    transition: opacity var(--dur) var(--ease-out-expo), transform var(--dur) var(--ease-out-expo);
+}
+.slide.visible .reveal { opacity: 1; transform: translateY(0); }
+.reveal[data-d="1"] { transition-delay: 0.08s; }
+.reveal[data-d="2"] { transition-delay: 0.16s; }
+.reveal[data-d="3"] { transition-delay: 0.24s; }
+.reveal[data-d="4"] { transition-delay: 0.32s; }
+.reveal[data-d="5"] { transition-delay: 0.40s; }
+.reveal[data-d="6"] { transition-delay: 0.48s; }
+
+/* ===========================================
+   SHARED SLIDE CHROME — content slides
+   =========================================== */
+.slide { font-family: var(--font-body); color: var(--ink); }
+.slide-inner { position: absolute; inset: 0; padding: 52px 84px 92px; display: flex; flex-direction: column; }
+
+.slide-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 32px; margin-bottom: 10px; }
+.kicker {
+    font-family: var(--font-mono); font-size: 17px; letter-spacing: 0.22em;
+    color: var(--accent-deep); text-transform: uppercase; margin-bottom: 12px;
+    display: flex; align-items: center; gap: 14px;
+}
+.kicker::before { content: ""; width: 34px; height: 3px; background: var(--accent); }
+.slide-title {
+    font-family: var(--font-display); font-weight: 700; font-size: 46px; line-height: 1.2; color: var(--navy-800);
+}
+.slide-sub { font-size: 21px; color: var(--ink-soft); margin-top: 6px; }
+.head-rule { height: 1px; background: var(--line); margin: 18px 0 26px; }
+
+/* evidence chip — 每个结论旁的来源标签 */
+.ev {
+    font-family: var(--font-mono); font-size: 15px; font-weight: 500; white-space: nowrap;
+    color: var(--accent-deep); background: var(--accent-wash);
+    border: 1px solid rgba(194, 65, 12, 0.35); border-radius: 4px;
+    padding: 3px 10px; display: inline-block; line-height: 1.4;
+}
+.ev.dark { color: #FFB57D; background: rgba(232, 89, 12, 0.14); border-color: rgba(255, 181, 125, 0.45); }
+
+/* footer band — every slide */
+.slide-foot {
+    position: absolute; left: 0; right: 0; bottom: 0; height: 58px;
+    padding: 0 84px; display: flex; align-items: center; justify-content: space-between;
+    border-top: 1px solid var(--line); background: rgba(247, 245, 240, 0.9);
+    font-family: var(--font-mono); font-size: 14px; letter-spacing: 0.08em; color: var(--muted);
+}
+.slide-foot .pg { color: var(--accent-deep); font-weight: 600; }
+
+/* generic card */
+.card {
+    background: var(--card); border: 1px solid var(--line); border-radius: 10px;
+    padding: 22px 26px;
+}
+.card h3 {
+    font-family: var(--font-display); font-size: 23px; font-weight: 700; color: var(--navy-800);
+    margin-bottom: 10px; display: flex; align-items: center; gap: 12px;
+}
+.card h3 .ev { margin-left: auto; }
+
+/* mono code line */
+.mono { font-family: var(--font-mono); }
+.code {
+    font-family: var(--font-mono); font-size: 18px; background: var(--navy-900); color: #D7E1F2;
+    border-radius: 6px; padding: 10px 16px; line-height: 1.55;
+}
+.code .hl { color: #FFA94D; font-weight: 600; }
+.code .dim { color: #7E8CA8; }
+
+/* data table */
+table.data { width: 100%; border-collapse: collapse; background: var(--card); }
+table.data th {
+    background: var(--navy-800); color: #fff; font-weight: 500; font-size: 19px;
+    padding: 12px 14px; text-align: left; letter-spacing: 0.03em;
+}
+table.data td {
+    font-size: 19.5px; padding: 12px 14px; border-bottom: 1px solid var(--line-soft);
+    color: var(--ink); vertical-align: middle;
+}
+table.data tr:last-child td { border-bottom: none; }
+table.data td.c, table.data th.c { text-align: center; }
+.pill {
+    display: inline-block; font-size: 16.5px; font-weight: 600; border-radius: 999px;
+    padding: 2px 12px; line-height: 1.5;
+}
+.pill.ok { background: var(--ok-wash); color: var(--ok); border: 1px solid #B7E4C7; }
+.pill.bad { background: var(--bad-wash); color: var(--bad); border: 1px solid #F1C3C3; }
+.pill.mut { background: #EEF1F6; color: var(--ink-soft); border: 1px solid #D7DDE8; }
+.pill.acc { background: var(--accent-wash); color: var(--accent-deep); border: 1px solid #EDCBB4; }
+
+/* dark slides (1 & 14) */
+.slide.dark { background: var(--navy-900); color: #EDF1F8; }
+.slide.dark .grid-bg {
+    position: absolute; inset: 0; pointer-events: none;
+    background-image:
+        linear-gradient(rgba(122, 150, 205, 0.07) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(122, 150, 205, 0.07) 1px, transparent 1px);
+    background-size: 64px 64px;
+    mask-image: radial-gradient(ellipse 90% 80% at 50% 40%, #000 30%, transparent 100%);
+    -webkit-mask-image: radial-gradient(ellipse 90% 80% at 50% 40%, #000 30%, transparent 100%);
+}
+.slide.dark .slide-foot { border-top-color: rgba(255,255,255,0.12); background: rgba(16, 28, 51, 0.85); color: #8FA0BE; }
+
+.private-banner {
+    position: absolute; top: 0; left: 0; right: 0; height: 44px; z-index: 5;
+    display: flex; align-items: center; justify-content: center; gap: 14px;
+    background: repeating-linear-gradient(-45deg, rgba(232,89,12,0.16) 0 26px, rgba(232,89,12,0.05) 26px 52px);
+    border-bottom: 1px solid rgba(232, 89, 12, 0.5);
+    font-family: var(--font-mono); font-size: 14.5px; letter-spacing: 0.24em; color: #FFB57D; font-weight: 600;
+}
+
+/* ============ SLIDE 1 — title ============ */
+.s1-wrap { position: absolute; inset: 44px 0 58px; display: flex; flex-direction: column; justify-content: center; padding: 0 130px; }
+.s1-kicker { font-family: var(--font-mono); font-size: 19px; letter-spacing: 0.3em; color: #FFA94D; margin-bottom: 34px; }
+.s1-title {
+    font-family: var(--font-display); font-weight: 900; font-size: 84px; line-height: 1.22; color: #F5F8FE;
+    max-width: 1560px;
+}
+.s1-title em { font-style: normal; color: #FFA94D; }
+.s1-sub { font-family: var(--font-display); font-size: 33px; font-weight: 600; color: #B9C6DE; margin-top: 26px; }
+.s1-en { font-family: var(--font-mono); font-size: 19px; color: #7E8FAD; margin-top: 14px; letter-spacing: 0.04em; }
+.s1-meta { display: flex; gap: 18px; margin-top: 58px; flex-wrap: wrap; }
+.s1-meta .m {
+    border: 1px solid rgba(185, 198, 222, 0.3); border-radius: 8px; padding: 14px 22px;
+    font-size: 18px; color: #C9D4E8; background: rgba(255,255,255,0.03);
+}
+.s1-meta .m b { display: block; font-family: var(--font-mono); font-size: 14px; color: #8FA0BE; letter-spacing: 0.14em; margin-bottom: 6px; font-weight: 500; }
+.s1-meta .m .v { color: #FFB57D; font-weight: 600; }
+
+/* ============ SLIDE 2 — one-sentence finding ============ */
+.s2-stmt {
+    font-family: var(--font-display); font-weight: 600; font-size: 34px; line-height: 1.65; color: var(--navy-800);
+    padding: 30px 36px; background: var(--card); border: 1px solid var(--line); border-left: 6px solid var(--accent);
+    border-radius: 10px;
+}
+.s2-stmt .em { color: var(--accent-deep); font-weight: 700; }
+.s2-stmt code { font-family: var(--font-mono); font-size: 27px; background: var(--navy-900); color: #FFB57D; padding: 2px 10px; border-radius: 5px; }
+.s2-term { display: flex; align-items: center; gap: 16px; margin-top: 20px; font-size: 20px; color: var(--ink-soft); }
+.s2-term .t { font-family: var(--font-mono); font-weight: 600; color: var(--navy-800); font-size: 21px; }
+.s2-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-top: 30px; }
+.s2-grid .card { padding: 20px 22px; }
+.s2-grid .num { font-family: var(--font-display); font-size: 44px; font-weight: 700; color: var(--accent-deep); line-height: 1.1; }
+.s2-grid .num small { font-size: 22px; color: var(--ink-soft); font-weight: 600; }
+.s2-grid .lab { font-size: 17.5px; color: var(--ink-soft); margin-top: 6px; line-height: 1.45; }
+.s2-grid .ev { margin-top: 12px; }
+
+/* ============ SLIDE 3 — motivation ============ */
+.s3-grid { display: grid; grid-template-columns: 1.08fr 0.92fr; gap: 40px; flex: 1; min-height: 0; }
+.s3-q { font-family: var(--font-display); font-size: 30px; font-weight: 700; color: var(--navy-800); margin-bottom: 20px; line-height: 1.5; }
+.layer { display: flex; align-items: center; gap: 20px; background: var(--card); border: 1px solid var(--line); border-radius: 9px; padding: 17px 24px; margin-bottom: 14px; }
+.layer .tag { font-family: var(--font-mono); font-size: 15px; font-weight: 600; color: var(--navy-600); background: var(--navy-100); border-radius: 5px; padding: 3px 10px; white-space: nowrap; }
+.layer .nm { font-size: 21.5px; font-weight: 700; color: var(--ink); white-space: nowrap; }
+.layer .ds { font-size: 17.5px; color: var(--ink-soft); line-height: 1.4; }
+.layer.art { border: 2px solid var(--accent); background: var(--accent-wash); position: relative; }
+.layer.art .nm { color: var(--accent-deep); }
+.layer.art .q { position: absolute; right: 20px; font-family: var(--font-display); font-size: 40px; color: var(--accent); font-weight: 900; }
+.s3-right { display: flex; flex-direction: column; gap: 20px; }
+.s3-right .card { flex: 1; }
+
+/* ============ SLIDE 4 — mechanism chain ============ */
+.chainbox { border: 2px solid var(--navy-700); border-radius: 12px; background: var(--card); padding: 20px 26px 24px; position: relative; }
+.chainbox .bl {
+    position: absolute; top: -14px; left: 26px; background: var(--navy-800); color: #fff;
+    font-size: 16.5px; font-weight: 600; padding: 4px 16px; border-radius: 6px; letter-spacing: 0.05em;
+}
+.chainrow { display: flex; align-items: stretch; gap: 0; margin-top: 12px; }
+.cnode { flex: 1; background: #F4F7FC; border: 1px solid #D7DFEE; border-radius: 8px; padding: 14px 12px 12px; text-align: center; position: relative; }
+.cnode .n { font-family: var(--font-mono); font-size: 14px; color: var(--navy-600); font-weight: 600; }
+.cnode .t { font-size: 18.5px; font-weight: 700; color: var(--navy-800); margin-top: 5px; line-height: 1.3; }
+.cnode .d { font-size: 15px; color: var(--ink-soft); margin-top: 6px; line-height: 1.4; }
+.carrow { align-self: center; color: var(--navy-600); font-size: 22px; padding: 0 6px; flex: 0 0 auto; }
+.cnode.hot { background: var(--accent-wash); border-color: var(--accent); }
+.cnode.hot .t { color: var(--accent-deep); }
+.chainbox.out { border: 2px dashed var(--accent); background: #FFFDF9; margin-top: 46px; position: relative; }
+.chainbox.out .bl { background: var(--accent); }
+.cross { position: absolute; top: -46px; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; }
+.cross .arr { font-size: 26px; color: var(--accent); line-height: 1; }
+.cross .lb { font-family: var(--font-mono); font-size: 13.5px; color: var(--accent-deep); background: var(--accent-wash); border: 1px solid rgba(194,65,12,.3); border-radius: 4px; padding: 1px 8px; }
+.s4-note { display: flex; gap: 20px; margin-top: 26px; align-items: stretch; }
+.s4-note .code { flex: 1.15; display: flex; align-items: center; }
+.s4-note .insight { flex: 1; background: var(--navy-800); color: #E7EDF8; border-radius: 10px; padding: 18px 24px; font-size: 19.5px; line-height: 1.6; display: flex; align-items: center; }
+.s4-note .insight b { color: #FFB57D; }
+
+/* ============ SLIDE 5 — threat model & canary ============ */
+.s5-grid { display: grid; grid-template-columns: 0.95fr 1.05fr; gap: 36px; flex: 1; min-height: 0; }
+.s5-grid .col { display: flex; flex-direction: column; gap: 18px; }
+.threat-step { display: flex; gap: 16px; align-items: flex-start; }
+.threat-step .k {
+    flex: 0 0 34px; height: 34px; border-radius: 50%; background: var(--navy-800); color: #FFD8B8;
+    font-family: var(--font-mono); font-weight: 600; font-size: 16px; display: flex; align-items: center; justify-content: center; margin-top: 2px;
+}
+.threat-step .b { font-size: 19.5px; line-height: 1.5; color: var(--ink); }
+.threat-step .b b { color: var(--navy-800); }
+.kv { display: grid; grid-template-columns: auto 1fr; gap: 7px 16px; font-size: 18px; }
+.kv dt { font-family: var(--font-mono); color: var(--navy-600); font-size: 16px; white-space: nowrap; }
+.kv dd { color: var(--ink); }
+.kv .mono { font-size: 16.5px; color: var(--accent-deep); }
+
+/* ============ SLIDE 6 — D1 timeline & levels ============ */
+.s6-grid { display: grid; grid-template-columns: 1.02fr 0.98fr; gap: 36px; flex: 1; min-height: 0; }
+.tl { position: relative; padding-left: 26px; }
+.tl::before { content: ""; position: absolute; left: 7px; top: 8px; bottom: 8px; width: 2px; background: var(--line); }
+.tl .ti { position: relative; padding: 0 0 13px 16px; }
+.tl .ti::before {
+    content: ""; position: absolute; left: -24px; top: 7px; width: 12px; height: 12px; border-radius: 50%;
+    background: var(--navy-700); border: 3px solid var(--paper);
+}
+.tl .ti.hot::before { background: var(--accent); box-shadow: 0 0 0 4px rgba(232,89,12,0.18); }
+.tl .ti .ts { font-family: var(--font-mono); font-size: 15px; color: var(--muted); }
+.tl .ti .tx { font-size: 18.5px; color: var(--ink); line-height: 1.35; }
+.tl .ti.hot .tx { color: var(--accent-deep); font-weight: 700; }
+.tl .ti .tx .mono { font-size: 16px; color: var(--navy-600); }
+.lvl { border-radius: 10px; padding: 16px 22px; margin-bottom: 14px; border: 1px solid var(--line); background: var(--card); }
+.lvl .hd { display: flex; align-items: center; gap: 12px; margin-bottom: 6px; }
+.lvl .ln { font-family: var(--font-mono); font-size: 15px; font-weight: 600; color: var(--navy-600); }
+.lvl .lt { font-size: 21px; font-weight: 700; color: var(--navy-800); }
+.lvl .bd { font-size: 17.5px; color: var(--ink-soft); line-height: 1.5; }
+.lvl.l1 { border-left: 6px solid var(--ok); }
+.lvl.l2 { border-left: 6px solid var(--accent); background: #FFFDF9; }
+.lvl.l3 { border-left: 6px solid var(--bad); background: var(--bad-wash); }
+.lvl .st { margin-left: auto; }
+
+/* ============ SLIDE 7 — source root cause ============ */
+.s7-top { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+.struct { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 18px 20px 16px; }
+.struct .sn { font-family: var(--font-mono); font-size: 17px; font-weight: 600; color: var(--navy-800); }
+.struct .sl { font-size: 15.5px; color: var(--muted); margin: 2px 0 10px; }
+.struct .fl { display: flex; flex-wrap: wrap; gap: 6px; }
+.struct .f { font-family: var(--font-mono); font-size: 15px; background: #F1F4FA; color: var(--navy-700); border-radius: 4px; padding: 2px 8px; }
+.struct .f.no { background: var(--bad-wash); color: var(--bad); border: 1px dashed #E5A5A5; text-decoration: line-through; }
+.struct .miss { margin-top: 11px; font-size: 16.5px; color: var(--bad); font-weight: 600; line-height: 1.4; }
+.s7-mid { display: grid; grid-template-columns: 1.25fr 0.75fr; gap: 20px; margin-top: 20px; }
+.osv { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 18px 22px; }
+.osv h3, .npx h3 { font-family: var(--font-display); font-size: 21.5px; font-weight: 700; color: var(--navy-800); margin-bottom: 8px; display: flex; align-items: center; gap: 10px; }
+.osv ul, .npx ul { list-style: none; }
+.osv li, .npx li { font-size: 17.5px; color: var(--ink); line-height: 1.5; padding-left: 20px; position: relative; margin-bottom: 5px; }
+.osv li::before, .npx li::before { content: "▪"; position: absolute; left: 2px; color: var(--navy-600); }
+.osv li.good::before { content: "✓"; color: var(--ok); font-weight: 700; }
+.osv li.warn::before { content: "△"; color: var(--accent-deep); }
+.osv li.bad::before { content: "✗"; color: var(--bad); }
+.npx { background: #FFFDF9; border: 1px solid var(--line); border-radius: 10px; padding: 18px 22px; }
+.s7-band {
+    margin-top: 20px; background: var(--navy-800); border-radius: 10px; padding: 18px 28px;
+    color: #E7EDF8; font-size: 20.5px; line-height: 1.6; display: flex; align-items: center; gap: 24px;
+}
+.s7-band b { color: #FFB57D; }
+.s7-band .ev { margin-left: auto; }
+
+/* ============ SLIDE 8 — R1 table ============ */
+.s8-strips { display: grid; grid-template-columns: 1.05fr 0.95fr; gap: 20px; margin-top: 22px; }
+.note-strip { background: var(--card); border: 1px solid var(--line); border-radius: 9px; padding: 15px 20px; font-size: 17.5px; line-height: 1.5; color: var(--ink-soft); }
+.note-strip b { color: var(--navy-800); }
+.note-strip .no { color: var(--bad); font-weight: 700; }
+.s8-warn {
+    margin-top: 20px; border: 1.5px solid var(--bad); background: var(--bad-wash); border-radius: 9px;
+    padding: 13px 22px; font-size: 19px; color: var(--bad); font-weight: 600; display: flex; align-items: center; gap: 14px;
+}
+.s8-warn .ev { background: #fff; }
+
+/* ============ SLIDE 9 — R2 ============ */
+.s9-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; flex: 1; min-height: 0; }
+.arm { border-radius: 10px; padding: 18px 24px; border: 1px solid var(--line); background: var(--card); }
+.arm .ah { font-family: var(--font-mono); font-size: 16px; font-weight: 600; letter-spacing: 0.06em; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+.arm.r1 { border-top: 5px solid var(--accent); }
+.arm.r2 { border-top: 5px solid var(--ok); }
+.arm .cfg { font-size: 17.5px; color: var(--ink-soft); line-height: 1.55; }
+.arm .cfg b { color: var(--ink); }
+.arm .res { display: flex; align-items: baseline; gap: 14px; margin-top: 12px; }
+.arm .res .big { font-family: var(--font-display); font-size: 42px; font-weight: 900; line-height: 1; }
+.arm.r1 .res .big { color: var(--accent-deep); }
+.arm.r2 .res .big { color: var(--ok); }
+.arm .res .cap { font-size: 16.5px; color: var(--ink-soft); line-height: 1.4; }
+.chan { display: flex; gap: 10px; align-items: flex-start; margin-bottom: 8px; }
+.chan .cn { flex: 0 0 22px; height: 22px; border-radius: 50%; background: var(--navy-100); color: var(--navy-700); font-family: var(--font-mono); font-size: 13px; font-weight: 600; display: flex; align-items: center; justify-content: center; margin-top: 2px; }
+.chan .cb { font-size: 17px; line-height: 1.45; color: var(--ink); }
+.chan .cb b { color: var(--navy-800); }
+.s9-claim { border: 1.5px solid var(--accent); background: var(--accent-wash); border-radius: 9px; padding: 13px 20px; margin-top: 6px; font-size: 17.5px; line-height: 1.5; color: var(--ink); }
+.s9-claim b { color: var(--accent-deep); }
+.s9-no { font-size: 16px; color: var(--bad); line-height: 1.55; margin-top: 10px; }
+.s9-no b { font-weight: 700; }
+
+/* ============ SLIDE 10 — can / cannot ============ */
+.s10-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; flex: 1; min-height: 0; }
+.s10-col { border-radius: 12px; padding: 22px 28px; }
+.s10-col.yes { background: var(--ok-wash); border: 1.5px solid #B7E4C7; }
+.s10-col.no { background: var(--bad-wash); border: 1.5px solid #EFC9C9; }
+.s10-col h3 { font-family: var(--font-display); font-size: 26px; font-weight: 700; margin-bottom: 14px; display: flex; align-items: center; gap: 12px; }
+.s10-col.yes h3 { color: var(--ok); }
+.s10-col.no h3 { color: var(--bad); }
+.s10-item { background: rgba(255,255,255,0.75); border-radius: 8px; padding: 11px 16px; margin-bottom: 10px; font-size: 18px; line-height: 1.5; color: var(--ink); }
+.s10-item b { color: var(--navy-800); }
+.s10-item .ev { margin-left: 8px; }
+
+/* ============ SLIDE 11 — R3–R6 ============ */
+.s11-cards { display: grid; grid-template-columns: 1.15fr 0.85fr; gap: 20px; margin-top: 20px; }
+.pair { display: grid; grid-template-columns: 1fr auto 1fr; gap: 12px; align-items: stretch; margin-bottom: 12px; }
+.pair .pc { border-radius: 8px; padding: 12px 16px; font-size: 17px; line-height: 1.45; }
+.pair .pc.a { background: var(--ok-wash); border: 1px solid #B7E4C7; }
+.pair .pc.b { background: var(--bad-wash); border: 1px solid #EFC9C9; }
+.pair .pc b { display: block; font-family: var(--font-mono); font-size: 15px; margin-bottom: 3px; }
+.pair .pc.a b { color: var(--ok); }
+.pair .pc.b b { color: var(--bad); }
+.pair .pw { align-self: center; font-size: 20px; font-weight: 700; color: var(--navy-700); }
+
+/* ============ SLIDE 12 — benchmark ============ */
+.proposed {
+    font-family: var(--font-mono); font-size: 16px; font-weight: 600; letter-spacing: 0.14em;
+    color: #fff; background: var(--accent); padding: 5px 16px; border-radius: 5px; white-space: nowrap;
+}
+.s12-dims { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-top: 22px; }
+.dim { background: var(--card); border: 1px solid var(--line); border-radius: 8px; padding: 13px 18px; display: flex; gap: 12px; align-items: flex-start; }
+.dim .dn { font-family: var(--font-mono); font-size: 14px; color: var(--accent-deep); font-weight: 600; margin-top: 3px; }
+.dim .dt { font-size: 17.5px; color: var(--ink); line-height: 1.45; font-weight: 500; }
+.s12-note { margin-top: 22px; background: var(--navy-800); color: #E7EDF8; border-radius: 9px; padding: 14px 24px; font-size: 18.5px; display: flex; align-items: center; gap: 16px; }
+.s12-note b { color: #FFB57D; }
+
+/* ============ SLIDE 13 — limitations & ethics ============ */
+.s13-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; flex: 1; min-height: 0; }
+.lim { display: flex; gap: 14px; margin-bottom: 11px; align-items: flex-start; }
+.lim .x { flex: 0 0 auto; font-weight: 700; font-size: 17px; margin-top: 1px; }
+.lim.neg .x { color: var(--bad); }
+.lim.pos .x { color: var(--ok); }
+.lim .b { font-size: 18px; line-height: 1.5; color: var(--ink); }
+.lim .b b { color: var(--navy-800); }
+
+/* ============ SLIDE 14 — discussion ============ */
+.s14-wrap { position: absolute; inset: 44px 0 58px; padding: 40px 120px 30px; display: flex; flex-direction: column; }
+.s14-title { font-family: var(--font-display); font-size: 52px; font-weight: 900; color: #F5F8FE; margin-bottom: 8px; }
+.s14-sub { font-size: 20px; color: #8FA0BE; margin-bottom: 34px; }
+.qgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; flex: 1; }
+.qcard {
+    background: rgba(255,255,255,0.045); border: 1px solid rgba(185,198,222,0.22); border-radius: 12px;
+    padding: 22px 26px; display: flex; gap: 18px; align-items: flex-start;
+}
+.qcard .qn { font-family: var(--font-mono); font-size: 26px; font-weight: 600; color: #FFA94D; line-height: 1.2; }
+.qcard .qt { font-size: 21px; line-height: 1.55; color: #E2E9F5; }
+.qcard .qt b { color: #fff; }
+
+/* deck chrome */
+.progress {
+    position: fixed; top: 0; left: 0; height: 3px; background: var(--accent);
+    width: 0; z-index: 1001; transition: width 0.3s ease;
+}
+.deck-controls { display: flex; gap: 10px; }
+.deck-controls button {
+    font-family: var(--font-mono); font-size: 14px; color: #fff; background: rgba(22,35,59,0.75);
+    border: 1px solid rgba(255,255,255,0.18); border-radius: 6px; padding: 5px 12px; cursor: pointer;
+}
+[contenteditable="true"] { outline: 2px dashed var(--accent); outline-offset: 3px; border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<div class="deck-viewport">
+<main class="deck-stage" id="deckStage">
+
+<!-- ============ SLIDE 1 · 标题页 ============ -->
+<section class="slide dark active">
+    <div class="grid-bg"></div>
+    <div class="private-banner">PRIVATE — RESEARCH DISCUSSION / COORDINATED DISCLOSURE PENDING</div>
+    <div class="s1-wrap">
+        <div class="s1-kicker reveal">组会进展汇报 · 2026-08-18</div>
+        <h1 class="s1-title reveal" data-d="1">Agent 扩展授权中的<br><em>制品身份漂移</em></h1>
+        <div class="s1-sub reveal" data-d="2">Goose v1.45.0 Case Study 与多框架 Benchmark 计划</div>
+        <div class="s1-en reveal" data-d="3">Artifact Identity Binding in Agent Extension Activation</div>
+        <div class="s1-meta reveal" data-d="4">
+            <div class="m"><b>受测系统</b>Goose v1.45.0 · Linux CLI · <span class="v">Auto（默认模式）</span></div>
+            <div class="m"><b>结论上限</b><span class="v">Level 2</span> authorization-reference drift</div>
+            <div class="m"><b>正式运行</b><span class="v">5 / 15</span>（R1×3 + R2×2）</div>
+            <div class="m"><b>待执行</b>R3–R6 · <span class="v">VM 已 hibernate</span></div>
+        </div>
+    </div>
+    <div class="slide-foot">
+        <span>PRIVATE — Research Discussion / Coordinated Disclosure Pending</span>
+        <span class="pg">01 / 14</span>
+    </div>
+</section>
+
+<!-- ============ SLIDE 2 · 一句话发现与当前阶段 ============ -->
+<section class="slide">
+    <div class="slide-inner">
+        <div class="slide-head">
+            <div>
+                <div class="kicker">TL;DR</div>
+                <h2 class="slide-title">一句话发现与当前阶段</h2>
+            </div>
+            <span class="ev">D1 §1·§6 ｜ R1组 §2 ｜ R2组 §6</span>
+        </div>
+        <div class="head-rule"></div>
+
+        <div class="s2-stmt reveal">
+            受控实验中，Goose 在准入（admission）时授权的对象是一个<span class="em">可变选择器</span>
+            <code>npx -y goose-activation-canary@latest</code>；激活（activation）前，同一引用被重指向制品
+            <span class="em">B 并被原样执行</span>——配置文本逐字节未变，且<span class="em">未出现针对具体制品的任何新授权</span>。
+        </div>
+        <div class="s2-term reveal" data-d="1">
+            严谨名称：<span class="t">authorization-reference drift</span> ·
+            <span class="t">deferred-resolution authorization</span>
+            <span class="ev" style="margin-left:8px">D1 §0</span>
+        </div>
+
+        <div class="s2-grid">
+            <div class="card reveal" data-d="2">
+                <div class="num">Level 2</div>
+                <div class="lab">结论上限：漂移成立；Level 3（TOCTOU）判据缺失，不使用该词</div>
+                <span class="ev">D1 §6</span>
+            </div>
+            <div class="card reveal" data-d="3">
+                <div class="num">5<small> / 15 上限</small></div>
+                <div class="lab">正式运行：R1-1 / R1-2 / R1-3 / R2-1 / R2-2；停止条件均未触发</div>
+                <span class="ev">R2组 §6</span>
+            </div>
+            <div class="card reveal" data-d="4">
+                <div class="num">4 + 2</div>
+                <div class="lab">漂移观测 4 次（D1+R1）；exact-version 阴性对照 2 次未漂移</div>
+                <span class="ev">R1组 §2 ｜ R2组 §2</span>
+            </div>
+            <div class="card reveal" data-d="5">
+                <div class="num">R3–R6</div>
+                <div class="lab">全部未执行；VM 已 hibernate，R3a readiness 恢复后不可直接复用</div>
+                <span class="ev">P50 A1.6 ｜ R3a-H</span>
+            </div>
+        </div>
+
+        <div class="slide-foot">
+            <span>PRIVATE — Research Discussion / Coordinated Disclosure Pending</span>
+            <span class="pg">02 / 14</span>
+        </div>
+    </div>
+</section>
+
+<!-- ============ SLIDE 3 · 研究动机 ============ -->
+<section class="slide">
+    <div class="slide-inner">
+        <div class="slide-head">
+            <div>
+                <div class="kicker">MOTIVATION</div>
+                <h2 class="slide-title">研究动机：Agent 授权的对象究竟是什么？</h2>
+            </div>
+            <span class="ev">SRC §2·§4·§6</span>
+        </div>
+        <div class="head-rule"></div>
+
+        <div class="s3-grid">
+            <div>
+                <div class="s3-q reveal">“启用一个扩展”时，系统各环节实际持有的是哪一层身份？</div>
+                <div class="layer reveal" data-d="1">
+                    <span class="tag">L1 · 名称</span>
+                    <span class="nm">extension name</span>
+                    <span class="ds">发现与选择向模型暴露的唯一信息（name + description）</span>
+                </div>
+                <div class="layer reveal" data-d="2">
+                    <span class="tag">L2 · 命令行</span>
+                    <span class="nm">cmd + args</span>
+                    <span class="ds">配置与授权的载体：<span class="mono">npx -y pkg@latest</span></span>
+                </div>
+                <div class="layer reveal" data-d="3">
+                    <span class="tag">L3 · 版本</span>
+                    <span class="nm">version</span>
+                    <span class="ds">OSV 信誉查询输入；<span class="mono">latest</span> 被源码显式归约为“无版本”</span>
+                </div>
+                <div class="layer art reveal" data-d="4">
+                    <span class="tag">L4 · 制品</span>
+                    <span class="nm">最终执行的 artifact 内容</span>
+                    <span class="ds">只在 Goose 进程之外、activation 阶段由 npx 确定的字节</span>
+                    <span class="q">?</span>
+                </div>
+            </div>
+            <div class="s3-right">
+                <div class="card reveal" data-d="2">
+                    <h3>研究问题 <span class="ev">SRC §3</span></h3>
+                    <p style="font-size:20.5px; line-height:1.65; color:var(--ink)">
+                        当授权与检查建立在 <b>L1–L3</b>，而实际执行的是 <b>L4</b>：在<b>名称保持不变</b>的前提下，
+                        控制链路的任何一环能否<b>察觉最终制品身份的变化</b>？
+                    </p>
+                </div>
+                <div class="card reveal" data-d="4">
+                    <h3>本研究给出的初步回答 <span class="ev">D1 §6 ｜ R1组 §2</span></h3>
+                    <p style="font-size:19px; line-height:1.6; color:var(--ink-soft)">
+                        在 Goose v1.45.0 的 stdio extension 激活路径上：<b style="color:var(--accent-deep)">不能</b>。
+                        admission 观测制品 A → activation 执行制品 B，全程无 artifact-specific 新授权。
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="slide-foot">
+            <span>PRIVATE — Research Discussion / Coordinated Disclosure Pending</span>
+            <span class="pg">03 / 14</span>
+        </div>
+    </div>
+</section>
+
+<!-- ============ SLIDE 4 · Goose 内部机制 ============ -->
+<section class="slide">
+    <div class="slide-inner">
+        <div class="slide-head">
+            <div>
+                <div class="kicker">MECHANISM</div>
+                <h2 class="slide-title">Goose 扩展启用的内部机制链</h2>
+            </div>
+            <span class="ev">SRC §2（含行号）· commit 4dc0420f5704</span>
+        </div>
+        <div class="head-rule"></div>
+
+        <div class="chainbox reveal">
+            <div class="bl">Goose 进程内 — 已审计控制点</div>
+            <div class="chainrow">
+                <div class="cnode"><div class="n">[1]</div><div class="t">发现 / 选择</div><div class="d">仅暴露 name + description</div></div>
+                <div class="carrow">→</div>
+                <div class="cnode"><div class="n">[2]</div><div class="t">查找 config</div><div class="d">get_extension_by_name 按名取回</div></div>
+                <div class="carrow">→</div>
+                <div class="cnode"><div class="n">[3]</div><div class="t">授权 / 允许</div><div class="d">Auto 无条件 Allow；批准键 = 工具名</div></div>
+                <div class="carrow">→</div>
+                <div class="cnode"><div class="n">[4]</div><div class="t">安全检查</div><div class="d">OSV 按包名查恶意信誉</div></div>
+                <div class="carrow">→</div>
+                <div class="cnode hot"><div class="n">[5]</div><div class="t">原样 spawn</div><div class="d">Command::new(cmd).args(args) 不解析</div></div>
+            </div>
+        </div>
+
+        <div class="chainbox out reveal" data-d="2">
+            <div class="cross"><span class="arr">↓</span><span class="lb">越过 Goose 全部控制点</span></div>
+            <div class="bl">Goose 进程之外 — activation 阶段</div>
+            <div class="chainrow">
+                <div class="cnode hot"><div class="n">[6]</div><div class="t">npx 解析 <span class="mono">@latest</span></div><div class="d">dist-tag → 具体版本 → 确定字节</div></div>
+                <div class="carrow">→</div>
+                <div class="cnode hot"><div class="n">[7]</div><div class="t">执行解析出的 artifact</div><div class="d">Goose 侧不再有机会核对身份</div></div>
+            </div>
+        </div>
+
+        <div class="s4-note">
+            <div class="code reveal" data-d="3">
+                <span class="dim"># 配置与授权实际持有的全部内容（无 digest / 无版本钉死）</span><br>
+                args: <span class="hl">["-y", "goose-activation-canary@latest"]</span>
+            </div>
+            <div class="insight reveal" data-d="4">
+                <span><b>@latest 的解析不在这条链路的任何一步。</b>名称是贯穿发现、查找、检查、授权的唯一标识符——名称不变时，这些环节结构上看不到最终制品身份的变化。</span>
+            </div>
+        </div>
+
+        <div class="slide-foot">
+            <span>PRIVATE — Research Discussion / Coordinated Disclosure Pending</span>
+            <span class="pg">04 / 14</span>
+        </div>
+    </div>
+</section>
+
+<!-- ============ SLIDE 5 · 威胁模型与 canary ============ -->
+<section class="slide">
+    <div class="slide-inner">
+        <div class="slide-head">
+            <div>
+                <div class="kicker">THREAT MODEL &amp; CANARY</div>
+                <h2 class="slide-title">威胁模型与本地良性 A/B canary</h2>
+            </div>
+            <span class="ev">D1 §2.3·§3·§8</span>
+        </div>
+        <div class="head-rule"></div>
+
+        <div class="s5-grid">
+            <div class="col">
+                <div class="card reveal" style="flex:1">
+                    <h3>威胁模型 <span class="ev">idea/48 §3</span></h3>
+                    <div class="threat-step" style="margin-top:6px">
+                        <div class="k">1</div>
+                        <div class="b"><b>攻击者能力</b>：控制 registry 的 dist-tag 指向（registry 投毒 / 账号劫持 / 同名抢注），可在 admission 与 activation 之间重指向，且<b>无需触碰本地任何配置</b>。</div>
+                    </div>
+                    <div class="threat-step" style="margin-top:14px">
+                        <div class="k">2</div>
+                        <div class="b"><b>用户行为</b>：按名称登记并启用扩展（官方文档路径），配置为指向可变 tag 的选择器——用户以为批准的是“那个扩展”。</div>
+                    </div>
+                    <div class="threat-step" style="margin-top:14px">
+                        <div class="k">3</div>
+                        <div class="b"><b>攻击结果</b>：activation 时解析到不同制品并执行；授权、检查、持久化状态均不发生变化。</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col">
+                <div class="card reveal" data-d="1">
+                    <h3>canary 制品设计 <span class="ev">D1 §2.3</span></h3>
+                    <dl class="kv">
+                        <dt>制品 A</dt><dd>1.0.0 · sha256 <span class="mono">cfb882e2deec…</span></dd>
+                        <dt>制品 B</dt><dd>1.0.1 · sha256 <span class="mono">081c9afc7b71…</span></dd>
+                        <dt>tool surface</dt><dd>A / B 的 tools/list <b>逐字节相同</b>（<span class="mono">29c2a28b…</span>）</dd>
+                        <dt>行为差异</dt><dd>仅自报身份与效应文件名（canary-A / canary-B）</dd>
+                        <dt>capability effect</dt><dd>进程启动即向隔离目录 <span class="mono">O_EXCL</span> 写固定文件</dd>
+                    </dl>
+                </div>
+                <div class="card reveal" data-d="2" style="flex:1">
+                    <h3>安全信封（全部遵守） <span class="ev">D1 §8</span></h3>
+                    <div class="threat-step"><div class="k">✓</div><div class="b">良性制品：不联网、不读凭据、不访问任何真实服务</div></div>
+                    <div class="threat-step"><div class="k">✓</div><div class="b">registry 为本机 loopback 自建，<b>从未发布到任何真实 registry</b></div></div>
+                    <div class="threat-step"><div class="k">✓</div><div class="b">产品原生 OSV 外呼被 harness 阻断并验证（R1 起）</div></div>
+                    <div class="threat-step"><div class="k">✓</div><div class="b">停止规则触发即停，未扩大测试面</div></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="slide-foot">
+            <span>PRIVATE — Research Discussion / Coordinated Disclosure Pending</span>
+            <span class="pg">05 / 14</span>
+        </div>
+    </div>
+</section>
+
+<!-- ============ SLIDE 6 · D1 与判据 ============ -->
+<section class="slide">
+    <div class="slide-inner">
+        <div class="slide-head">
+            <div>
+                <div class="kicker">BLIND DISCOVERY</div>
+                <h2 class="slide-title">D1：盲发现与 Level 1 / 2 / 3 判据</h2>
+            </div>
+            <span class="ev">D1 §4.1·§5·§6 ｜ idea/48 §2</span>
+        </div>
+        <div class="head-rule"></div>
+
+        <div class="s6-grid">
+            <div class="card reveal">
+                <h3>D1 事件时间线（同源纳秒时戳） <span class="ev">D1 §4.1</span></h3>
+                <div class="tl" style="margin-top:6px">
+                    <div class="ti"><span class="ts">…961.50</span><div class="tx">registry_start — 本地测试 registry 启动，<span class="mono">latest → 1.0.0</span></div></div>
+                    <div class="ti"><span class="ts">…962.95</span><div class="tx">admission：研究者解析选择器 → <b>制品 A</b>（<span class="mono">cfb882e2deec…</span>）；extension 以 <span class="mono">enabled:false</span> 写入配置</div></div>
+                    <div class="ti hot"><span class="ts">…963.36</span><div class="tx">dist_tag_repointed：<span class="mono">latest 1.0.0 → 1.0.1</span>（配置文件未改动）</div></div>
+                    <div class="ti"><span class="ts">…963.37</span><div class="tx">goose_start — 单条明确指令驱动启用扩展</div></div>
+                    <div class="ti"><span class="ts">…974.31</span><div class="tx">process_spawned — <span class="mono">npx</span>（父进程为 goose）</div></div>
+                    <div class="ti"><span class="ts">…974.51</span><div class="tx">packument_fetch — npx 看到 <span class="mono">latest=1.0.1</span>（tarball 命中本地缓存）</div></div>
+                    <div class="ti hot"><span class="ts">…974.63</span><div class="tx">effect_B_process_start ★ 预注册 capability effect 即刻产生</div></div>
+                    <div class="ti"><span class="ts">…984.48</span><div class="tx">effect_B_first_tool_execution — 比 process_start <b>晚约 9.85 s</b></div></div>
+                </div>
+            </div>
+
+            <div>
+                <div class="lvl l1 reveal" data-d="1">
+                    <div class="hd"><span class="ln">LEVEL 1</span><span class="lt">顺序结果</span><span class="st pill ok">成立（附条件）</span></div>
+                    <div class="bd">capability effect 先于该 extension 首个工具执行约 <b>9.85 s</b>；但 Auto 模式全程无批准提示 → 记 <span class="mono">no_first_tool_approval_in_profile</span>，<b>不得称“绕过了批准”</b>。</div>
+                </div>
+                <div class="lvl l2 reveal" data-d="2">
+                    <div class="hd"><span class="ln">LEVEL 2</span><span class="lt">authorization-reference drift</span><span class="st pill acc">成立</span></div>
+                    <div class="bd">四条件合取：admission 观测 A ∧ activation 执行 B ∧ 授权仅绑定可变选择器 ∧ 全程无针对制品的新授权。</div>
+                </div>
+                <div class="lvl l3 reveal" data-d="3">
+                    <div class="hd"><span class="ln">LEVEL 3</span><span class="lt">TOCTOU 候选</span><span class="st pill bad">不成立</span></div>
+                    <div class="bd"><b>缺 <span class="mono">SystemCheckedOrBound(A)</span></b>：无证据表明系统曾解析并绑定 A 的 digest。<span class="mono">admission_resolution = unobservable</span>，<span class="mono">system_bound_digest = absent</span> → 不使用 TOCTOU 一词。</div>
+                </div>
+                <div class="note-strip reveal" data-d="4" style="margin-top:2px">
+                    <b>证据完整性</b>：外层 frozen manifest <b>30 OK / 0 FAILED</b>；内层 28 OK / 1 FAILED（run.log 追加行，已确定性证明为器材顺序缺陷，非篡改）。
+                </div>
+            </div>
+        </div>
+
+        <div class="slide-foot">
+            <span>PRIVATE — Research Discussion / Coordinated Disclosure Pending</span>
+            <span class="pg">06 / 14</span>
+        </div>
+    </div>
+</section>
+
+<!-- ============ SLIDE 7 · 源码根因 ============ -->
+<section class="slide">
+    <div class="slide-inner">
+        <div class="slide-head">
+            <div>
+                <div class="kicker">ROOT CAUSE (SOURCE)</div>
+                <h2 class="slide-title">源码根因：授权对象在类型层面无法表达制品身份</h2>
+            </div>
+            <span class="ev">SRC §3–§6 ｜ SRC-ADD A2·A3</span>
+        </div>
+        <div class="head-rule"></div>
+
+        <div class="s7-top">
+            <div class="struct reveal">
+                <div class="sn">ExtensionConfig::Stdio</div>
+                <div class="sl">extension.rs:176 — 扩展配置</div>
+                <div class="fl">
+                    <span class="f">name</span><span class="f">description</span><span class="f">cmd</span><span class="f">args</span><span class="f">envs</span><span class="f">timeout</span>
+                    <span class="f no">digest</span><span class="f no">checksum</span><span class="f no">signature</span><span class="f no">publisher</span><span class="f no">version-lock</span>
+                </div>
+                <div class="miss">四文件全文检索 sha256|digest|signature|verify_hash|checksum → 0 命中</div>
+            </div>
+            <div class="struct reveal" data-d="1">
+                <div class="sn">CanonicalGrant（观测到的）</div>
+                <div class="sl">D1 §5.2 — 持久化授权表达</div>
+                <div class="fl"><span class="f">cmd: npx</span><span class="f">args: ["-y","…@latest"]</span></div>
+                <div class="miss">无 digest、无版本钉死（保守表述：本 profile 中观测到的全部）</div>
+            </div>
+            <div class="struct reveal" data-d="2">
+                <div class="sn">ToolPermissionRecord</div>
+                <div class="sl">permission_store.rs:12 — 批准存储</div>
+                <div class="fl"><span class="f">key = tool_name</span><span class="f no">extension</span><span class="f no">artifact</span></div>
+                <div class="miss">一次 AlwaysAllow 覆盖未来所有 extension 的启用操作</div>
+            </div>
+        </div>
+
+        <div class="s7-mid">
+            <div class="osv reveal" data-d="3">
+                <h3>pre-spawn OSV 检查 — 有效，但解决的是另一个问题 <span class="ev">SRC §4 ｜ SRC-ADD A2</span></h3>
+                <ul>
+                    <li class="good">对 <b>恶意包信誉筛查</b> 有效：名称（及可用版本）命中 <span class="mono">MAL-</span> 通告即拒绝启动——设计者认真对待了这层风险</li>
+                    <li class="warn">输入是<b>同一个可变选择器</b>：源码显式把 <span class="mono">latest</span> 归约为 <span class="mono">version: None</span>，只按名查询</li>
+                    <li class="bad">与 <b>artifact identity binding 正交</b>：查询不涉内容，无法区分同名不同内容；网络/HTTP/JSON 失败均 fail-open</li>
+                </ul>
+            </div>
+            <div class="npx reveal" data-d="4">
+                <h3>解析时点 <span class="ev">SRC §2</span></h3>
+                <ul>
+                    <li>Goose 把 cmd 与 args <b>原样</b>交给 <span class="mono">Command::new</span></li>
+                    <li><span class="mono">@latest</span> 由 <b>npx 在 Goose 进程之外</b>、spawn 之后解析</li>
+                    <li>位于 Goose 所有已审计控制点<b>之后</b></li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="s7-band reveal" data-d="5">
+            <span>配置与权限记录<b>合起来</b>仍缺少一个能指称已解析制品的字段——这不是“忘了校验”，而是<b>授权对象的类型里没有可供校验的字段</b>。<span style="color:#9FB0CC">（≠ “Goose 没有安全检查”）</span></span>
+            <span class="ev dark">SRC-ADD A3</span>
+        </div>
+
+        <div class="slide-foot">
+            <span>PRIVATE — Research Discussion / Coordinated Disclosure Pending</span>
+            <span class="pg">07 / 14</span>
+        </div>
+    </div>
+</section>
+
+<!-- ============ SLIDE 8 · R1 重复性 ============ -->
+<section class="slide">
+    <div class="slide-inner">
+        <div class="slide-head">
+            <div>
+                <div class="kicker">REPLICATION</div>
+                <h2 class="slide-title">R1：漂移的重复性结果</h2>
+            </div>
+            <span class="ev">R1组 §0·§2·§5 ｜ R1-1 §4</span>
+        </div>
+        <div class="head-rule"></div>
+
+        <table class="data reveal">
+            <thead><tr>
+                <th style="width:9%">运行</th><th style="width:24%">证据类别（不得合并计数）</th>
+                <th class="c" style="width:14%">admission 观测</th><th class="c" style="width:14%">dist-tag 变化</th>
+                <th class="c" style="width:14%">RuntimeArtifact</th><th class="c" style="width:11%">L1 间隔</th><th class="c" style="width:14%">Level 2</th>
+            </tr></thead>
+            <tbody>
+                <tr><td class="mono"><b>D1</b></td><td><span class="pill mut">A · preregistered（盲）</span> 不计入本协议</td><td class="c">A (1.0.0)</td><td class="c mono">1.0.0→1.0.1</td><td class="c"><b style="color:var(--accent-deep)">canary-B</b></td><td class="c mono">~9.85 s</td><td class="c"><span class="pill acc">成立</span></td></tr>
+                <tr><td class="mono"><b>R1-1</b></td><td><span class="pill mut">B · 带偏差（A5.6 并发）</span> 永久不计入</td><td class="c">A (1.0.0)</td><td class="c mono">1.0.0→1.0.1</td><td class="c"><b style="color:var(--accent-deep)">canary-B</b></td><td class="c mono">~9.99 s</td><td class="c"><span class="pill acc">成立</span></td></tr>
+                <tr><td class="mono"><b>R1-2</b></td><td><span class="pill ok">C · 前瞻符合</span> conforming #1（rig v8）</td><td class="c">A (1.0.0)</td><td class="c mono">1.0.0→1.0.1</td><td class="c"><b style="color:var(--accent-deep)">canary-B</b></td><td class="c mono">9.9237 s</td><td class="c"><span class="pill acc">成立</span></td></tr>
+                <tr><td class="mono"><b>R1-3</b></td><td><span class="pill ok">C · 前瞻符合</span> conforming #2（rig v9）</td><td class="c">A (1.0.0)</td><td class="c mono">1.0.0→1.0.1</td><td class="c"><b style="color:var(--accent-deep)">canary-B</b></td><td class="c mono">6.6169 s</td><td class="c"><span class="pill acc">成立</span></td></tr>
+            </tbody>
+        </table>
+
+        <div class="s8-strips">
+            <div class="note-strip reveal" data-d="1">
+                <b>R1-1 偏差性质</b>：Goose 自身并发发起 session-naming 辅助请求（vLLM <span class="mono">Running: 2</span>），违反 A5.6“一次一个请求”；属受测产品自身行为，非器材并行。对判据依据（制品身份 / effect 时戳 / 授权对象）无影响，但<b>协议层效力不由执行者裁定</b>。
+            </div>
+            <div class="note-strip reveal" data-d="2">
+                <b>controlled-warm 证据完整性差异（必须披露）</b>：D1 / R1-1 未捕获 pre-activation 证据；R1-2 / R1-3 完整捕获（预热日志分段保存 + registry 确认 <span class="mono">081c9afc…</span> + 缓存清点 7/7）。<span class="no">✘ 不得回溯补造</span>。
+            </div>
+        </div>
+
+        <div class="s8-warn reveal" data-d="3">
+            ⚠ 计数纪律：R1-2 / R1-3 为<b>两次前瞻符合协议的重复（上限）</b>——<span class="no">不得声称 N = 3</span>，不得把 D1 与本协议运行混列不加区分。
+        </div>
+
+        <div class="slide-foot">
+            <span>PRIVATE — Research Discussion / Coordinated Disclosure Pending</span>
+            <span class="pg">08 / 14</span>
+        </div>
+    </div>
+</section>
+
+<!-- ============ SLIDE 9 · R2 阴性对照 ============ -->
+<section class="slide">
+    <div class="slide-inner">
+        <div class="slide-head">
+            <div>
+                <div class="kicker">NEGATIVE CONTROL</div>
+                <h2 class="slide-title">R2：exact-version 阴性对照（×2，一致）</h2>
+            </div>
+            <span class="ev">R2组 §0·§2·§4 ｜ R2-1·R2-2 §2</span>
+        </div>
+        <div class="head-rule"></div>
+
+        <div class="s9-grid">
+            <div>
+                <div class="arm r1 reveal">
+                    <div class="ah" style="color:var(--accent-deep)">R1 臂 · 可变选择器 <span class="ev">R1组 §2</span></div>
+                    <div class="cfg">Auto · <span class="mono">…@latest</span> · controlled-warm（预热 B）</div>
+                    <div class="res"><span class="big">B</span><span class="cap">RuntimeArtifact = canary-B<br>漂移发生（4 次观测：D1 + R1×3）</span></div>
+                </div>
+                <div class="arm r2 reveal" data-d="1" style="margin-top:18px">
+                    <div class="ah" style="color:var(--ok)">R2 臂 · 精确版本 <span class="ev">R2-1·R2-2 §1</span></div>
+                    <div class="cfg">Auto · <span class="mono">…@1.0.0</span> · cleared（空缓存）—— 参数逐字段相同 ×2</div>
+                    <div class="res"><span class="big">A</span><span class="cap">RuntimeArtifact = A (1.0.0) 两轮一致<br>漂移未发生（阴性对照成立）</span></div>
+                </div>
+                <div class="s9-claim reveal" data-d="2">
+                    <b>唯一允许的表述</b>：在该受控 registry 环境中，精确版本阻止了 dist-tag 漂移——repoint 后解析器<b>看到</b> <span class="mono">latest=1.0.1</span> 仍取回 1.0.0（<span class="mono">tarball_fetch cfb882e2deec…</span>）。
+                </div>
+                <div class="s9-no reveal" data-d="3">
+                    <b>✘ 版本号 ≠ 内容摘要</b>：同版本号重发布为不同字节的情形本实验未测（属 R3 content-bound 臂）；<b>✘ 非因果证明</b>：R1↔R2 同时存在 selector 形式 + 缓存条件两个差异，需 R4（mutable + cleared）分离。
+                </div>
+            </div>
+
+            <div class="card reveal" data-d="2">
+                <h3>执行制品 A 的五条独立证据（两轮一致） <span class="ev">R2组 §2</span></h3>
+                <div class="chan"><span class="cn">1</span><span class="cb"><b>效应文件</b>：<span class="mono">effect_A_*</span> 三件，canary_id="A"、server_version="canary-A"</span></div>
+                <div class="chan"><span class="cn">2</span><span class="cb"><b>安装树元数据</b>：<span class="mono">canary_identity.json</span> → "A"；package.json → 1.0.0</span></div>
+                <div class="chan"><span class="cn">3</span><span class="cb"><b>registry 访问日志</b>：<span class="mono">tarball_fetch …-1.0.0.tgz</span>（cfb882e2deec…），同窗 packument 均 latest=1.0.1</span></div>
+                <div class="chan"><span class="cn">4</span><span class="cb"><b>MCP 会话输出</b>：<span class="mono">[canary-A] ping</span>；canary-B 出现 0 次</span></div>
+                <div class="chan"><span class="cn">5</span><span class="cb"><b>per-run 缓存内容</b>：_cacache 仅含 A 的 tarball（3407 B），无 B</span></div>
+                <div style="border-top:1px solid var(--line-soft); margin:12px 0 10px"></div>
+                <div style="font-size:16.5px; color:var(--ink-soft); line-height:1.5">
+                    顺序与授权观测同 R1：L1 成立（附 no_first_tool_approval_in_profile）· 批准提示 0 ·
+                    <span class="mono">session_scoped</span> · <span class="mono">admission_resolution=unobservable</span> ·
+                    证据完整性 frozen 52 OK / inner 51 OK（0 FAILED，×2）。
+                </div>
+            </div>
+        </div>
+
+        <div class="slide-foot">
+            <span>PRIVATE — Research Discussion / Coordinated Disclosure Pending</span>
+            <span class="pg">09 / 14</span>
+        </div>
+    </div>
+</section>
+
+<!-- ============ SLIDE 10 · 能说 / 不能说 ============ -->
+<section class="slide">
+    <div class="slide-inner">
+        <div class="slide-head">
+            <div>
+                <div class="kicker">CLAIM DISCIPLINE</div>
+                <h2 class="slide-title">当前证据能说什么、不能说什么</h2>
+            </div>
+        </div>
+        <div class="head-rule"></div>
+
+        <div class="s10-grid">
+            <div class="s10-col yes reveal">
+                <h3>✓ 可以主张（均有冻结证据）</h3>
+                <div class="s10-item"><b>Level 2 漂移成立</b>：4 次观测 + 2 次前瞻符合协议的重复<span class="ev">R1组 §2</span></div>
+                <div class="s10-item"><b>源码层根因</b>：授权对象类型无制品字段；<span class="mono">@latest</span> 在全部控制点之后解析<span class="ev">SRC §3</span></div>
+                <div class="s10-item"><b>阴性对照相容性</b>：R2 结果与“漂移由可变 tag 承载”相容（非因果证明）<span class="ev">R2组 §5</span></div>
+                <div class="s10-item"><b>证据链完整</b>：冻结 + 双层哈希 + 只读归档；除 D1 内层已证顺序缺陷外全部 0 FAILED<span class="ev">R1组 §3</span></div>
+                <div class="s10-item"><b>宿主路径确定性（附条件）</b>：固定外部条件时，已审计代码路径未发现不确定性分支<span class="ev">SRC-ADD A4</span></div>
+            </div>
+            <div class="s10-col no reveal" data-d="1">
+                <h3>✗ 不能声称（证据不支持 / 明确错误）</h3>
+                <div class="s10-item"><b>TOCTOU</b> — 缺 SystemCheckedOrBound(A)；admission_resolution = unobservable<span class="ev">D1 §6</span></div>
+                <div class="s10-item"><b>arbitrary code execution / 可利用漏洞 / 高危定级</b><span class="ev">D1 §0</span></div>
+                <div class="s10-item"><b>“绕过了 artifact-specific 用户批准”</b> — Auto 模式本无批准环节<span class="ev">D1 §6</span></div>
+                <div class="s10-item"><b>跨框架 / 跨系统普遍性</b> — 单产品、单版本、单配置<span class="ev">SRC §9</span></div>
+                <div class="s10-item"><b>N = 3 protocol-conforming repetitions</b><span class="ev">R1组 §0</span></div>
+                <div class="s10-item"><b>exact-version = 内容完整性保证</b>；<b>R1→R2 因果证明</b><span class="ev">R2组 §0</span></div>
+            </div>
+        </div>
+
+        <div class="slide-foot">
+            <span>PRIVATE — Research Discussion / Coordinated Disclosure Pending</span>
+            <span class="pg">10 / 14</span>
+        </div>
+    </div>
+</section>
+
+<!-- ============ SLIDE 11 · R3–R6 ============ -->
+<section class="slide">
+    <div class="slide-inner">
+        <div class="slide-head">
+            <div>
+                <div class="kicker">NEXT EXPERIMENTS</div>
+                <h2 class="slide-title">R3–R6：后续实验矩阵（全部待确认后执行）</h2>
+            </div>
+            <span class="ev">P50 §6 + A1.3/A1.4/A1.6 ｜ R3a-H</span>
+        </div>
+        <div class="head-rule"></div>
+
+        <table class="data reveal">
+            <thead><tr>
+                <th style="width:8%">ID</th><th style="width:15%">目的</th><th style="width:10%">模式</th>
+                <th style="width:31%">selector 臂</th><th style="width:10%">cache</th><th class="c" style="width:6%">次数</th><th style="width:20%">状态</th>
+            </tr></thead>
+            <tbody>
+                <tr><td class="mono"><b>R3a</b></td><td>功能对照</td><td>Auto</td><td>content-bound：解析到 A，期望 A</td><td>cleared</td><td class="c mono">1</td><td><span class="pill bad">未执行</span> VM hibernate，readiness 需重建</td></tr>
+                <tr><td class="mono"><b>R3b</b></td><td>拒绝对照</td><td>Auto</td><td>content-bound：解析到 B，期望 A</td><td>cleared</td><td class="c mono">1</td><td><span class="pill bad">未执行</span></td></tr>
+                <tr><td class="mono"><b>R4</b></td><td>准入解析探针</td><td>Auto</td><td>mutable（<span class="mono">@latest</span>）</td><td>cleared</td><td class="c mono">2</td><td><span class="pill bad">未执行</span> 与 R2 构成单差异对照</td></tr>
+                <tr><td class="mono"><b>R5</b></td><td>批准内容</td><td>Approve</td><td>mutable · <span class="mono">Allow Once</span> / <span class="mono">Always Allow</span> 各一</td><td>cleared</td><td class="c mono">2</td><td><span class="pill bad">未执行</span> 分别报告显示/选择/持久化</td></tr>
+                <tr><td class="mono"><b>R6</b></td><td>批准内容</td><td>Smart</td><td>mutable · 同 R5 操作冻结</td><td>cleared</td><td class="c mono">2</td><td><span class="pill bad">未执行</span></td></tr>
+            </tbody>
+        </table>
+
+        <div class="s11-cards">
+            <div class="card reveal" data-d="1">
+                <h3>R3 配对判读规则（缺一不可） <span class="ev">P50 A1.3</span></h3>
+                <div class="pair">
+                    <div class="pc a"><b>R3a · digest-match</b>期望 A / 实际 A → 放行，A 正常启动并产生预注册 A effect</div>
+                    <div class="pw">∧</div>
+                    <div class="pc b"><b>R3b · digest-mismatch</b>期望 A / 实际 B → B 执行前拒绝（冻结退出码 4），不产生任何 B effect</div>
+                </div>
+                <div style="font-size:17px; line-height:1.5; color:var(--ink-soft)">
+                    仅 <b style="color:var(--ok)">R3a pass ∧ R3b reject</b> 同时成立 ⇒ content binding 有效；
+                    <b style="color:var(--bad)">仅 R3b 拒绝不能排除 fail-closed-by-breakage</b>（wrapper 损坏也会“拒绝”）。
+                    该 adapter 是<b>外部 custom adapter，非 Goose 原生防御</b>。
+                </div>
+            </div>
+            <div class="card reveal" data-d="2">
+                <h3>R4 认识论边界（预先冻结） <span class="ev">P50 §6.1</span></h3>
+                <div style="font-size:17px; line-height:1.55; color:var(--ink-soft)">
+                    ✔ 可观测 manage_extensions 之前 registry 日志是否出现请求<br>
+                    ✘ 零 registry 流量 <b>≠</b> 系统未执行解析（可能经未观测路径）<br>
+                    ✘ 不得据此把 <span class="mono">admission_resolution</span> 收敛为 <span class="mono">not_performed</span>，无正面证据时保持 <span class="mono">unobservable</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="slide-foot">
+            <span>PRIVATE — Research Discussion / Coordinated Disclosure Pending</span>
+            <span class="pg">11 / 14</span>
+        </div>
+    </div>
+</section>
+
+<!-- ============ SLIDE 12 · benchmark ============ -->
+<section class="slide">
+    <div class="slide-inner">
+        <div class="slide-head">
+            <div>
+                <div class="kicker">EXTENSION</div>
+                <h2 class="slide-title">从 Goose case study 到多框架 benchmark</h2>
+            </div>
+            <span class="proposed">PROPOSED — 设计中，未开始</span>
+        </div>
+        <div class="head-rule"></div>
+
+        <div class="s2-stmt reveal" style="font-size:27px; padding:22px 32px">
+            导师建议的方向：使用<b style="color:var(--accent-deep)">统一的受控 attack / workload</b>，
+            测量多个开源 Agent 框架对 <b style="color:var(--accent-deep)">artifact identity drift</b> 的抵抗能力。
+        </div>
+
+        <div class="s12-dims">
+            <div class="dim reveal" data-d="1"><span class="dn">D1</span><span class="dt">是否允许 mutable selector</span></div>
+            <div class="dim reveal" data-d="1"><span class="dn">D2</span><span class="dt">selector 在哪个生命周期阶段解析</span></div>
+            <div class="dim reveal" data-d="1"><span class="dn">D3</span><span class="dt">admission 是否解析 artifact</span></div>
+            <div class="dim reveal" data-d="2"><span class="dn">D4</span><span class="dt">DisplayedGrant 显示名称 / 版本 / digest</span></div>
+            <div class="dim reveal" data-d="2"><span class="dn">D5</span><span class="dt">CanonicalGrant 实际绑定什么</span></div>
+            <div class="dim reveal" data-d="2"><span class="dn">D6</span><span class="dt">activation 前是否重新授权</span></div>
+            <div class="dim reveal" data-d="3"><span class="dn">D7</span><span class="dt">是否验证版本 / digest / 签名 / provenance</span></div>
+            <div class="dim reveal" data-d="3"><span class="dn">D8</span><span class="dt">Auto / Approve / Smart 等模式的差别</span></div>
+            <div class="dim reveal" data-d="3"><span class="dn">D9</span><span class="dt">actual RuntimeArtifact 是否可观测</span></div>
+            <div class="dim reveal" data-d="4"><span class="dn">D10</span><span class="dt">exact-version 与 content-bound 防御是否有效</span></div>
+            <div class="dim reveal" data-d="4"><span class="dn">D11</span><span class="dt">失败时 fail-open 还是 fail-closed</span></div>
+            <div class="dim reveal" data-d="4" style="background:var(--accent-wash); border-color:var(--accent)"><span class="dn">?</span><span class="dt" style="color:var(--accent-deep)">评分制与首批框架 —— 待组会讨论（见第 14 页）</span></div>
+        </div>
+
+        <div class="s12-note reveal" data-d="5">
+            <span>Goose case study 为上述维度提供了<b>一套完整的构造方法与判读纪律</b>（canary / 三态观测 / 配对对照 / 停止规则）；benchmark 将复用该方法而非仅复用结论。</span>
+        </div>
+
+        <div class="slide-foot">
+            <span>PRIVATE — Research Discussion / Coordinated Disclosure Pending</span>
+            <span class="pg">12 / 14</span>
+        </div>
+    </div>
+</section>
+
+<!-- ============ SLIDE 13 · 局限与伦理 ============ -->
+<section class="slide">
+    <div class="slide-inner">
+        <div class="slide-head">
+            <div>
+                <div class="kicker">LIMITATIONS &amp; ETHICS</div>
+                <h2 class="slide-title">局限、披露与研究伦理</h2>
+            </div>
+        </div>
+        <div class="head-rule"></div>
+
+        <div class="s13-grid">
+            <div class="card reveal">
+                <h3>当前结论的边界 <span class="ev">SRC §11 ｜ SRC-ADD A6</span></h3>
+                <div class="lim neg"><span class="x">✗</span><span class="b"><b>单产品、单版本、单配置</b>：Goose v1.45.0 CLI · Auto · stdio extension 路径</span></div>
+                <div class="lim neg"><span class="x">✗</span><span class="b"><b>源码 ↔ 受测二进制仅版本号对应</b>，未做 reproducible-build 级验证</span></div>
+                <div class="lim neg"><span class="x">✗</span><span class="b"><b>仅审计 stdio 路径</b>：GUI/Desktop、streamable_http、recipe / plugin / skills 未覆盖</span></div>
+                <div class="lim neg"><span class="x">✗</span><span class="b"><b>LLM 步骤确定性未证明</b>：模型是否发出 manage_extensions 涉及 N=1 决策</span></div>
+                <div class="lim neg"><span class="x">✗</span><span class="b"><b>R1↔R2 双差异未分离</b>（selector 形式 × 缓存条件），因果归因需 R4</span></div>
+                <div class="lim neg"><span class="x">✗</span><span class="b"><b>模型后端两处偏差</b>：chat template 单条件修改；seed 无法经客户端设置<span class="ev">D1 §2.2</span></span></div>
+            </div>
+            <div class="card reveal" data-d="1">
+                <h3>伦理与披露状态 <span class="ev">D1 §3·§7·§8 ｜ P50 §8</span></h3>
+                <div class="lim pos"><span class="x">✓</span><span class="b"><b>良性 canary</b>：仅隔离目录效应，不联网、不读凭据、不访问真实服务</span></div>
+                <div class="lim pos"><span class="x">✓</span><span class="b"><b>本地 loopback registry</b>：从未向任何真实 registry 发布或拉取</span></div>
+                <div class="lim pos"><span class="x">✓</span><span class="b"><b>停止规则优先</b>：安全信封与停止条件优先于完成重复次数（D1 触发即停）</span></div>
+                <div class="lim pos"><span class="x">✓</span><span class="b"><b>证据纪律</b>：逐次冻结 + 双层哈希 + 只读归档；偏差与缺陷一律 erratum，不回溯改写</span></div>
+                <div class="lim pos"><span class="x">✓</span><span class="b"><b>未联系 vendor</b>：是否 / 何时 / 以何种形式披露，由导师与机构决定</span></div>
+                <div class="lim pos"><span class="x">✓</span><span class="b"><b>本材料仅限组会内部讨论</b>：不公开、不外传，与协调披露时间线保持一致</span></div>
+            </div>
+        </div>
+
+        <div class="slide-foot">
+            <span>PRIVATE — Research Discussion / Coordinated Disclosure Pending</span>
+            <span class="pg">13 / 14</span>
+        </div>
+    </div>
+</section>
+
+<!-- ============ SLIDE 14 · 讨论问题 ============ -->
+<section class="slide dark">
+    <div class="grid-bg"></div>
+    <div class="private-banner">PRIVATE — RESEARCH DISCUSSION / COORDINATED DISCLOSURE PENDING</div>
+    <div class="s14-wrap">
+        <div class="s14-title reveal">希望组会讨论的六个决策</div>
+        <div class="s14-sub reveal" data-d="1">研究路线 · 优先级 · 披露时间线</div>
+        <div class="qgrid">
+            <div class="qcard reveal" data-d="1"><span class="qn">Q1</span><span class="qt">论文主贡献定位：<b>单系统机制 case study</b> 为主，还是<b>多框架 benchmark</b> 为主？</span></div>
+            <div class="qcard reveal" data-d="2"><span class="qn">Q2</span><span class="qt">benchmark 第一批应选择<b>哪些主流开源 Agent 框架</b>？</span></div>
+            <div class="qcard reveal" data-d="2"><span class="qn">Q3</span><span class="qt">是否<b>先完成 Goose R3–R6</b>，再扩展到第二个框架？</span></div>
+            <div class="qcard reveal" data-d="3"><span class="qn">Q4</span><span class="qt"><b>ordinary-task E2E</b>（headline PRIMARY 臂，N=10）应何时开展？</span></div>
+            <div class="qcard reveal" data-d="3"><span class="qn">Q5</span><span class="qt"><b>coordinated disclosure 时间线</b>如何与投稿计划协调？</span></div>
+            <div class="qcard reveal" data-d="4"><span class="qn">Q6</span><span class="qt">benchmark 评分：<b>二元 pass / fail</b>，还是分层 <b>resistance score</b>？</span></div>
+        </div>
+    </div>
+    <div class="slide-foot">
+        <span>PRIVATE — Research Discussion / Coordinated Disclosure Pending</span>
+        <span class="pg">14 / 14</span>
+    </div>
+</section>
+
+</main>
+</div>
+
+<div class="progress" id="progress"></div>
+<div class="deck-controls">
+    <button id="prevBtn" title="上一页 (←)">‹ Prev</button>
+    <button id="nextBtn" title="下一页 (→)">Next ›</button>
+</div>
+<div class="edit-hotzone"></div>
+<button class="edit-toggle" id="editToggle" title="编辑模式 (E)">✏️</button>
+
+<style>
+/* inline-edit chrome (JS-controlled visibility only) */
+.edit-hotzone { position: fixed; top: 0; left: 0; width: 80px; height: 80px; z-index: 10000; cursor: pointer; }
+.edit-toggle {
+    position: fixed; top: 16px; left: 16px; z-index: 10001; opacity: 0; pointer-events: none;
+    transition: opacity 0.3s ease; font-size: 18px; background: rgba(22,35,59,0.85); color: #fff;
+    border: 1px solid rgba(255,255,255,0.25); border-radius: 8px; padding: 6px 12px; cursor: pointer;
+}
+.edit-toggle.show, .edit-toggle.active { opacity: 1; pointer-events: auto; }
+</style>
+
+<script>
+/* ===========================================
+   SLIDE PRESENTATION CONTROLLER
+   fixed 1920×1080 stage, uniform scaling
+   =========================================== */
+class SlidePresentation {
+    constructor() {
+        this.slides = document.querySelectorAll('.slide');
+        this.currentSlide = 0;
+        this.stage = document.getElementById('deckStage');
+        this.progress = document.getElementById('progress');
+        this.setupStageScale();
+        this.setupKeyboardNav();
+        this.setupTouchNav();
+        this.setupWheelNav();
+        this.setupButtons();
+        this.showSlide(0);
+    }
+
+    setupStageScale() {
+        const scale = () => {
+            const factor = Math.min(window.innerWidth / 1920, window.innerHeight / 1080);
+            const x = (window.innerWidth - 1920 * factor) / 2;
+            const y = (window.innerHeight - 1080 * factor) / 2;
+            this.stage.style.transform = `translate(${x}px, ${y}px) scale(${factor})`;
+        };
+        scale();
+        window.addEventListener('resize', scale);
+    }
+
+    setupKeyboardNav() {
+        document.addEventListener('keydown', (e) => {
+            if (e.target.getAttribute('contenteditable') === 'true') return;
+            if (['ArrowRight', ' ', 'PageDown', 'Enter'].includes(e.key)) { e.preventDefault(); this.next(); }
+            else if (['ArrowLeft', 'PageUp', 'Backspace'].includes(e.key)) { e.preventDefault(); this.prev(); }
+            else if (e.key === 'Home') this.showSlide(0);
+            else if (e.key === 'End') this.showSlide(this.slides.length - 1);
+        });
+    }
+
+    setupTouchNav() {
+        let startX = null;
+        document.addEventListener('touchstart', (e) => { startX = e.touches[0].clientX; }, { passive: true });
+        document.addEventListener('touchend', (e) => {
+            if (startX === null) return;
+            const dx = e.changedTouches[0].clientX - startX;
+            if (Math.abs(dx) > 50) (dx < 0 ? this.next() : this.prev());
+            startX = null;
+        }, { passive: true });
+    }
+
+    setupWheelNav() {
+        let lock = false;
+        document.addEventListener('wheel', (e) => {
+            if (lock || Math.abs(e.deltaY) < 24) return;
+            lock = true; setTimeout(() => lock = false, 700);
+            (e.deltaY > 0 ? this.next() : this.prev());
+        }, { passive: true });
+    }
+
+    setupButtons() {
+        document.getElementById('prevBtn').addEventListener('click', () => this.prev());
+        document.getElementById('nextBtn').addEventListener('click', () => this.next());
+    }
+
+    next() { this.showSlide(this.currentSlide + 1); }
+    prev() { this.showSlide(this.currentSlide - 1); }
+
+    showSlide(index) {
+        this.currentSlide = Math.max(0, Math.min(index, this.slides.length - 1));
+        this.slides.forEach((slide, i) => {
+            slide.classList.toggle('active', i === this.currentSlide);
+            slide.classList.toggle('visible', i === this.currentSlide);
+        });
+        if (this.progress) {
+            this.progress.style.width = ((this.currentSlide + 1) / this.slides.length * 100) + '%';
+        }
+    }
+}
+
+/* ===========================================
+   INLINE EDITING — hover top-left or press E
+   =========================================== */
+class InlineEditor {
+    constructor() {
+        this.isActive = false;
+        this.toggleBtn = document.getElementById('editToggle');
+        this.toggleBtn.addEventListener('click', () => this.toggleEditMode());
+        this.setupHotzone();
+        document.addEventListener('keydown', (e) => {
+            if ((e.key === 'e' || e.key === 'E') && !e.target.getAttribute('contenteditable')) {
+                this.toggleEditMode();
+            }
+            if (e.key === 's' && (e.ctrlKey || e.metaKey) && this.isActive) {
+                e.preventDefault(); this.save();
+            }
+        });
+        this.restore();
+    }
+
+    setupHotzone() {
+        const hotzone = document.querySelector('.edit-hotzone');
+        const btn = this.toggleBtn;
+        let hideTimeout = null;
+        const show = () => { clearTimeout(hideTimeout); btn.classList.add('show'); };
+        const hide = () => {
+            hideTimeout = setTimeout(() => { if (!this.isActive) btn.classList.remove('show'); }, 400);
+        };
+        hotzone.addEventListener('mouseenter', show);
+        hotzone.addEventListener('mouseleave', hide);
+        btn.addEventListener('mouseenter', show);
+        btn.addEventListener('mouseleave', hide);
+        hotzone.addEventListener('click', () => this.toggleEditMode());
+    }
+
+    toggleEditMode() {
+        this.isActive = !this.isActive;
+        this.toggleBtn.classList.toggle('active', this.isActive);
+        document.querySelectorAll('.slide.active [class], .slide.active h1, .slide.active h2, .slide.active h3, .slide.active p, .slide.active span, .slide.active div, .slide.active td, .slide.active th, .slide.active li')
+            .forEach(el => {
+                if (this.isActive) {
+                    if (!el.children.length && el.textContent.trim()) el.setAttribute('contenteditable', 'true');
+                } else {
+                    el.removeAttribute('contenteditable');
+                }
+            });
+        if (!this.isActive) this.save();
+    }
+
+    save() {
+        const key = 'slides-edits-' + location.pathname;
+        const data = {};
+        document.querySelectorAll('.slide').forEach((s, i) => { data[i] = s.innerHTML; });
+        localStorage.setItem(key, JSON.stringify(data));
+        const b = this.toggleBtn;
+        b.textContent = '✓ 已保存';
+        setTimeout(() => b.textContent = '✏️', 1200);
+    }
+
+    restore() {
+        try {
+            const key = 'slides-edits-' + location.pathname;
+            const raw = localStorage.getItem(key);
+            if (!raw) return;
+            const data = JSON.parse(raw);
+            document.querySelectorAll('.slide').forEach((s, i) => { if (data[i]) s.innerHTML = data[i]; });
+        } catch (e) { /* ignore corrupt local edits */ }
+    }
+}
+
+const deck = new SlidePresentation();
+const editor = new InlineEditor();
+</script>
+</body>
+</html>
