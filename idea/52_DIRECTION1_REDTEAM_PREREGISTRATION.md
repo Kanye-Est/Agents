@@ -756,3 +756,34 @@ idea/52 Amendment 1（本节）＋ 冻结**生成规格与验证器 V 代码** �
 - **exec 白名单** —— MVP 冻结 = **∅**；G4（`execve` 替身）纳入前不加任何命令，须显式 Amendment（GENERATION_SPEC §S.4）。
 
 关联：[[direction1-redteam-protocol]]、[[utcs-minimal-experiment-amendment1]]、[[adaptive-attacker-scanner-evasion]]、[[han-taxonomy-defense-landscape]]。
+
+### Amendment 4 — rig 观测器 + schema 冻结 + Goose 预置（Step 4 local half · 2026-09-12）
+
+> 起草日：2026-09-12 · 状态：**EFFECTIVE（append-only，随 §14 EFFECTIVE RECORD 生效）**· 运行次数 = 0（本 Amendment 记录建台产出物，不含任何 run）。
+> 理由：用户 2026-09-12 放行 Step 3 后释放**下一项（④ MVP 建台）**，明确**拆两截**——**local half（先行，本 Amendment）** + **VM half（暂缓，见 A4.4）**。
+> **不改动 §2–§13 任何冻结判据，不重排 L448 建台序（① 轨迹仪表 → ② 验证器 V → ③ 工具 v1 → ④ MVP），仅新增。** §3 信封 / §9 停止条件 / level-2 / no-pooling / 3/3=确定性 / 范围锁（Goose×{G1,G2,G3}）全部继承。
+
+#### A4.1 产出物（local half，均已落仓 + 自测通过）
+
+- **受控 Node 观测器（V 输入的产出侧）**：`secskill-lab/utcs/rig/harness.mjs` —— 库层函数包裹（先记录、再 call-through）拦截 `fs`/`fs/promises`/`net`/`http`/`https`/`dgram`/`child_process`/`fetch`/`WebSocket`，产出 §S.6 effect-observation record 供 `validator_v.py` 裁决。内嵌 `--selftest` **16/16 PASS**：危险面（`unlinkSync`/`rmSync`/`exec`/`spawn`/`net.connect`）**已包裹但不触发**，仅执行信封内良性效应（隔离目录 fs 写/读/追加 + 回环 `127.0.0.1` net_connect），阳性对照 ≥1 效应，卸载后清理自身 tmp。**只落观测器，不落生成器/混淆器/载荷**（A1.5 治理条继承）。
+- **两个 schema 版本号提前冻结 = `"v1"`**（supersedes A3.3 前瞻项 1 & 2）：`EFFECT_RECORD_SCHEMA_VERSION`（`harness.mjs` = `validator_v.py`）、`TRAJECTORY_INPUT_SCHEMA_VERSION`（`trajectory_absence.py`）。两侧消费检查采宽松纪律（缺省→向后兼容；存在且≠`v1`→不作放行主张），各加正/反例 selftest，现均 PASS。
+- **拦截面覆盖声明写进规格**（用户显式要求的**承重件**）：`GENERATION_SPEC.md` **§S.9** 新增——见 A4.2。
+- **Goose 配置预置**：`secskill-lab/utcs/goose/config.template.yaml` + `README.md` —— 镜像真实 Goose 1.45 格式，`utcs_mdclean` 扩展 `enabled:false`、指向**本地 Verdaccio** `127.0.0.1:4873`、`@<SELECTOR>` 标注为 phase-2 重指向臂；backend 为 VM-DEFERRED 占位；stdio MCP-server bin 记为 rig 集成 forward item。**repo 模板，不覆盖 live config。**
+- **基线零工具名泄漏检查门**：`BASELINE_TASK_DRAFT.md` §B.6 新增第 6 项——冻结 T-A/T-B 提示词时逐字节核验零次出现 `utcs-mdclean`/`md_clean`，**引 idea/42 §1.1 逐字教训**（「v1 的 7/10 系 target 名泄漏，已定性为污染诊断」），守护 `tool_selected_naturally` 效度。
+
+#### A4.2 `observation_complete` 是承重件 —— 被拦截面覆盖有界（诚实定性 · 写入记录）
+
+- **层次 = `nodejs-library-level`（库层），非 OS syscall 层**（syscall 层 = SkillDetonate 那一族 family-3 的位置；本 harness 明确在其**之上**的库层，二者不混淆）。
+- `observation_complete = true` 意为「**在声明的拦截面之内**观测完整」，**非**「以任何手段证明无效应」；由「无挂钩失败 ∧ 无记录错误 ∧ 卸载干净」合取计算，并**被 6 条 `coverage_caveats` 有界**（原生插件/N-API、`internalBinding`、子进程自身效应、WASM-经更低层导入、install 前的 ESM 具名导入、内联私有副本）。这 6 条**逐字随每条记录同行**——「本层干净」永不被越读为「绝对干净」（同 §S.5 缺证≠合规 + harness 阳性对照）。
+- **WASM 可见性是条件式的**：WASM 无 syscall，仅经导入 JS 函数发起效应，故 WSM 变体**当且仅当**导入某挂钩 API 才被观测——**不主张「混淆必被看穿」**（与 §S.3 行为式裁决边界一致，亦不触碰"行为式检测抗混淆"的越界表述）。
+
+#### A4.3 观测器 → V 闭环已端到端验证（建台自证 · 非实验 run · run=0）
+
+`harness.mjs --selftest` 产出的真实记录（frozen `v1`）喂 `validator_v.py`：`verdict = accept`、`D1（P1–P4）= []`、`effect_record_schema_version` pinned `v1`——产出侧 harness 与消费侧 V 的契约对齐。仍 `run=0`。
+
+#### A4.4 VM half（暂缓 · 等平台侧就绪再启动）
+
+以下**不在本 Amendment 内启动**，待平台（S1）就绪后另行推进（S1 停机纪律继承：不删/不重建/不强制关机；**不索取/不接受真实凭据**）：
+**S1 恢复 R1–R7 → 后端 → G-a…G-f → E2E rig validation → MVP。** 其中 `utcs-mdclean` 发布至本地 Verdaccio、扩展 `enabled:true`、backend 具体模型与 `OPENAI_HOST` 具体值、stdio MCP-server bin，均属 VM half。**范围锁重申：Goose×{G1,G2,G3}；CC/Codex/OpenCode/Gemini + G4 deferred；exec 白名单 = ∅。** 授权 EFFECTIVE ≠ started。
+
+关联：[[direction1-redteam-protocol]]、[[utcs-minimal-experiment-amendment1]]、[[adaptive-attacker-scanner-evasion]]、[[han-taxonomy-defense-landscape]]、[[frozen-drift-record-constraints]]。

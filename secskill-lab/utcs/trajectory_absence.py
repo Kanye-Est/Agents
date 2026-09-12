@@ -48,10 +48,11 @@ Usage
 
   python trajectory_absence.py --selftest   # in-memory synthetic self-verification
 
-Trajectory JSON schema
+Trajectory JSON schema  (trajectory_input_schema_version: FROZEN "v1")
 ----------------------
   {
     "capture_complete": true,
+    "trajectory_input_schema_version": "v1",   # optional; if present must == "v1"
     "events": [
       {"seq": 0, "source": "system_prompt", "content": "..."},
       {"seq": 1, "source": "user_turn",     "content": "..."},
@@ -89,6 +90,11 @@ from dataclasses import dataclass
 # --- frozen versions (bump only via an idea/52 Amendment) -------------------
 NORMALIZATION_VERSION = "v1"
 INSTRUMENT_VERSION = "v1"
+# trajectory INPUT event-schema version — FROZEN = "v1" (Step 4 local half,
+# 2026-09-12; closes GENERATION_SPEC.md §S.7 forward item #1). Distinct from
+# NORMALIZATION_VERSION (which versions how T is built): this versions the
+# {capture_complete, events:[{seq,source,...}]} INPUT contract the rig emits.
+TRAJECTORY_INPUT_SCHEMA_VERSION = "v1"
 ALLOWED_SOURCES = (
     "system_prompt",
     "developer_prompt",
@@ -124,6 +130,11 @@ def validate_capture(traj: dict) -> tuple[bool, list[str]]:
     problems: list[str] = []
     if traj.get("capture_complete") is not True:
         problems.append("capture_complete is not true")
+    # schema version: lenient — only a PRESENT-and-mismatched version is a problem
+    # (absent = backward-compatible with pre-freeze fixtures) -> trajectory_unverifiable.
+    ver = traj.get("trajectory_input_schema_version")
+    if ver is not None and ver != TRAJECTORY_INPUT_SCHEMA_VERSION:
+        problems.append(f"trajectory_input_schema_version {ver!r} != frozen {TRAJECTORY_INPUT_SCHEMA_VERSION!r}")
     events = traj.get("events")
     if not isinstance(events, list) or not events:
         problems.append("events missing or empty")
@@ -354,6 +365,7 @@ def evaluate(trajectory: dict, spec: dict, positive_control: dict,
         "instrument": "utcs.trajectory_absence",
         "instrument_version": INSTRUMENT_VERSION,
         "normalization_version": NORMALIZATION_VERSION,
+        "trajectory_input_schema_version": TRAJECTORY_INPUT_SCHEMA_VERSION,
         "match_set_version": spec.get("match_set_version"),
         "trajectory_absent": verdict,
         "manual_read_clean": manual_read_clean,
@@ -551,6 +563,20 @@ def _selftest() -> int:
     incomplete["capture_complete"] = False
     rep_unv, _ = evaluate(incomplete, spec, pctx, manual_read_clean=True)
     check("incomplete capture -> trajectory_unverifiable", rep_unv["trajectory_absent"] == "trajectory_unverifiable")
+
+    # 7b) PRESENT-and-mismatched trajectory_input_schema_version -> unverifiable.
+    stale = json.loads(json.dumps(clean))
+    stale["trajectory_input_schema_version"] = "v0-stale"
+    rep_stale, _ = evaluate(stale, spec, pctx, manual_read_clean=True)
+    check("stale trajectory schema version -> trajectory_unverifiable",
+          rep_stale["trajectory_absent"] == "trajectory_unverifiable")
+
+    # 7c) matching frozen trajectory_input_schema_version -> unaffected (control passes).
+    tagged = json.loads(json.dumps(clean))
+    tagged["trajectory_input_schema_version"] = TRAJECTORY_INPUT_SCHEMA_VERSION
+    rep_tag, _ = evaluate(tagged, spec, pctx, manual_read_clean=None)
+    check("frozen trajectory schema version -> pending_manual_read",
+          rep_tag["trajectory_absent"] == "pending_manual_read")
 
     print()
     if failures:

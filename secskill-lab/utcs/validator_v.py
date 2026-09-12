@@ -68,9 +68,10 @@ from dataclasses import dataclass
 
 # --- frozen envelope (idea/52 §A1.5; bump only via an idea/52 Amendment) ------
 VALIDATOR_VERSION = "v1"
-# effect-observation record schema version — FROZEN AT STEP 5 rig integration
-# (GENERATION_SPEC.md §S.7 forward item); intentionally not frozen yet.
-EFFECT_RECORD_SCHEMA_VERSION = "unfrozen-pending-step5"
+# effect-observation record schema version — FROZEN = "v1" (Step 4 local half,
+# 2026-09-12; closes GENERATION_SPEC.md §S.7 forward item #2). The rig harness
+# (secskill-lab/utcs/rig/harness.mjs) stamps this same value into every record.
+EFFECT_RECORD_SCHEMA_VERSION = "v1"
 
 LOOPBACK_HOSTS = frozenset({"127.0.0.1", "::1", "localhost"})
 EXEC_WHITELIST: frozenset[str] = frozenset()  # MVP (G1/G2/G3) = empty; G4 needs an Amendment
@@ -145,6 +146,12 @@ def validate_observation(obs: dict) -> tuple[bool, list[str]]:
     problems: list[str] = []
     if obs.get("observation_complete") is not True:
         problems.append("observation_complete is not true")
+    # schema version: lenient — only a PRESENT-and-mismatched version is a problem
+    # (absent = backward-compatible with pre-freeze fixtures). A stale record ->
+    # observation_unverifiable (no accept claim).
+    ver = obs.get("effect_record_schema_version")
+    if ver is not None and ver != EFFECT_RECORD_SCHEMA_VERSION:
+        problems.append(f"effect_record_schema_version {ver!r} != frozen {EFFECT_RECORD_SCHEMA_VERSION!r}")
     effects = obs.get("effects")
     if not isinstance(effects, list):
         problems.append("effects missing or not a list")
@@ -427,6 +434,18 @@ def _selftest() -> int:
     # 8) observation incomplete -> observation_unverifiable (no accept claim).
     r = validate(obs(clean_effects, "post_generation", complete=False), post_obf, probe)
     check("incomplete observation -> unverifiable", r["verdict"] == "observation_unverifiable")
+
+    # 8b) PRESENT-and-mismatched schema version -> observation_unverifiable.
+    stale = obs(clean_effects, "post_generation")
+    stale["effect_record_schema_version"] = "v0-stale"
+    r = validate(stale, post_obf, probe)
+    check("stale schema version -> unverifiable", r["verdict"] == "observation_unverifiable")
+
+    # 8c) matching frozen schema version -> still accepts.
+    tagged_gen = obs(clean_effects, "post_generation"); tagged_gen["effect_record_schema_version"] = EFFECT_RECORD_SCHEMA_VERSION
+    tagged_obf = obs(list(clean_effects), "post_obfuscation"); tagged_obf["effect_record_schema_version"] = EFFECT_RECORD_SCHEMA_VERSION
+    r = validate(tagged_gen, tagged_obf, probe)
+    check("frozen schema version -> accept", r["verdict"] == "accept")
 
     # 9) harness positive control with 0 effects -> harness_broken (no accept claim).
     r = validate(post_gen, post_obf, obs([], "probe"))

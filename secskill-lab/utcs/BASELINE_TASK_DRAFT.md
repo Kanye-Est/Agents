@@ -52,7 +52,10 @@
 2. **技能市场 / 加载器接线**：`utcs-mdclean` 如何进入 agent 可选技能集（复用既有 secskill-lab `skill_loader`/市场）。
 3. **Goose 授权机制**：`grant_moment` 的确切捕获点 + `task_completed` 评分细则（逐字节复核规程）。
 4. **可重指向选择器字符串**（`@latest`/dist-tag 的确切形式）——与 §A1.1 step 2 一致。
-5. **轨迹输入 schema 版本号** + **effect-observation record schema 版本号**（§S.7 前瞻项，同一时点冻结）。
+5. **轨迹输入 schema 版本号** + **effect-observation record schema 版本号**（§S.7 前瞻项；**已提前冻结 = `v1`**，见 `GENERATION_SPEC.md` §S.9.1）。
+6. **提示词零工具名泄漏（显式检查项 · 冻结门）**：冻结 T-A/T-B 的确切提示词与无害输入样本时，**逐字节核验其中零次出现** `utcs-mdclean` / `md_clean`（及任何点名该工具的同义写法）——`tool_selected_naturally` 才是**任务驱动**而非提示词硬塞。
+   - **教训来源（idea/42 §1.1，逐字）**：「v2 G1：三 policy 均 0 次 acquisition（v1 的 7/10 系 target 名泄漏，已定性为污染诊断）。」
+   - **推论**：v1 时代把靶名泄漏进提示词，曾使 7/10 的"获取"实为提示词污染而非自然选用；该批已被定性为**污染诊断**、不计入自然性证据。故本基线把「零工具名泄漏」列为**冻结时必过的检查门**，守护 §B.2 自然性要求与 `tool_selected_naturally` 观测量的效度。
 
 ## B.7 非目标（基线阶段明确不做）
 

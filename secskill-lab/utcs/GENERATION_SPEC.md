@@ -116,3 +116,69 @@
 - 本文件 `secskill-lab/utcs/GENERATION_SPEC.md`（规格侧，冻结）。
 - `secskill-lab/utcs/validator_v.py`（验证器 V 骨架 + 内嵌 `--selftest`）。
 - idea/52 **Amendment 3**（记录 Step 2 建台、行为式裁决定性、前瞻项；append-only，run=0）。
+
+---
+
+## S.9 拦截面覆盖声明 + schema 版本冻结（Step 4 local half · 2026-09-12 · append-only）
+
+> 追加日：2026-09-12 · 运行次数 = 0 · 承接 §S.6 的 record 契约与 §S.7 的前瞻项。
+> 本节由用户 2026-09-12 释放件显式要求：「harness 的 `observation_complete` 证明是**承重件**——把**拦截面覆盖声明（syscall/库层）**写进规格。」
+> 产出侧代码：`secskill-lab/utcs/rig/harness.mjs`（受控 Node 观测器，本 Step local half 建成，`--selftest` 16/16 PASS）。
+
+### S.9.1 两个 schema 版本号 —— 现 FROZEN = `"v1"`（supersedes §S.7 前瞻项 1 & 2）
+
+§S.7 曾把这两个版本号列为「Step 5 rig 集成时冻结」；用户 2026-09-12 指令在 local half **提前冻结**，本节记入、**取代** §S.7 第 1、2 项：
+
+| schema | 常量位置 | 冻结值 |
+|---|---|---|
+| effect-observation record schema | `rig/harness.mjs` `EFFECT_RECORD_SCHEMA_VERSION` = `validator_v.py` `EFFECT_RECORD_SCHEMA_VERSION` | **`"v1"`**（原 `unfrozen-pending-step5`） |
+| 轨迹输入 schema | `trajectory_absence.py` `TRAJECTORY_INPUT_SCHEMA_VERSION` | **`"v1"`** |
+
+- 版本号写入每条记录/捕获；消费侧核验采**宽松纪律**：字段缺省 → 向后兼容放行（兼容冻结前夹具）；字段存在且**不等于** `v1` → 记为 problem（record 侧 `observation_unverifiable`，轨迹侧 `trajectory_unverifiable`）——**不作放行主张**（缺证/版本漂移 ≠ 合规，逻辑同 §S.5 house discipline）。
+- 两侧 `--selftest` 均加正例（冻结版 → 放行/待读）与反例（陈旧版 → 不可验证），现均 PASS。
+
+### S.9.2 record 契约的**加性**扩展（不改 §S.6 已冻结行）
+
+§S.6 append-only；本节additively 记入每条 effect-observation record 现**额外**携带两字段：
+
+```json
+{
+  "effect_record_schema_version": "v1",
+  "observation_complete": true,
+  "interception_surface": {
+    "layer": "nodejs-library-level",
+    "coverage_caveats": ["...", "..."]
+  }
+}
+```
+其余字段（`variant_id`/`phase`/`isolated_roots`/`effects`/`function_tests`）不变。
+
+### S.9.3 拦截面覆盖声明（syscall / 库层 · 承重件的诚实边界）
+
+**层次：`nodejs-library-level`。** 方法 = 对 Node 核心模块**公共 API** + `fetch`/`WebSocket` 全局做**函数级包裹**（先记录、再 call-through）。这是**库层**观测，**非** OS syscall 层拦截（syscall 层 = SkillDetonate 那一族 family-3 检测的位置；本 harness 明确在其**之上**的库层，二者不混淆）。
+
+**已挂钩模块（hooked surface）**：`fs` · `fs/promises` · `net` · `http` · `https` · `dgram` · `child_process` · `globalThis.fetch` · `globalThis.WebSocket`。覆盖 §S.6 的写/删除/网络/执行/读五族 `kind`。
+
+**`observation_complete` 语义（写死）**：`observation_complete = true` 意为「**在下列声明的拦截面之内**观测完整」，**并非**「以任何手段都证明无效应」。它由三条合取计算：无挂钩失败 ∧ 无记录错误 ∧ 卸载干净。它**被** `coverage_caveats` **有界**——因此一条「干净」记录**永不**被越读为绝对保证（同 §S.5 缺证 ≠ 合规 + harness 阳性对照）。
+
+**覆盖盲区（`coverage_caveats` · 库层看不到的东西 · 逐条写入每条记录）**：
+
+1. **原生插件（N-API/C++）**经内部 binding 发起的 fs/net/exec **绕过**公共 API 包裹。
+2. **`process.binding()` / `internalBinding`** 低层调用绕过公共模块包裹（Node 自身模块加载器即走此路，故内部加载**有意不记**）。
+3. **被 spawn 子进程自身的效应不被观测**——只记录 spawn 动作（`child_process`）本身，**不记**子进程随后做了什么。
+4. **WASM 无 syscall**：它**仅**经导入的 JS 函数发起效应，故一个 WASM（WSM/Wobfuscator）变体**当且仅当**它导入某个已挂钩 API 时才被观测；一个接到**更低层/原生导入**的 WASM 模块在本层**不被观测**。（∴ 本层对 WSM 的可见性是**条件式**的——不主张「混淆必被看穿」，与 §S.3 行为式裁决的边界一致。）
+5. **ESM 具名导入**（`import { writeFileSync } from 'node:fs'`）若在 `install()` **之前**绑定，持有未包裹引用——故 rig **必须** `install()` **先于**候选模块加载。
+6. **被打包/内联的核心模块私有副本**（非共享缓存实例）持有未包裹引用。
+
+> 上述六条即 `harness.mjs` 的 `INTERCEPTION_SURFACE.coverage_caveats`（`Object.freeze`），逐字写入每条记录的 `interception_surface.coverage_caveats`——**声明随证据同行**，读者永不会把「本层干净」误读为「绝对干净」。
+
+### S.9.4 观测器 → V 闭环（本 Step 已验证 · run=0）
+
+- `rig/harness.mjs --selftest`：危险面（`unlinkSync`/`rmSync`/`exec`/`spawn`/`net.connect`）**已包裹但不触发**；仅执行信封内良性效应（隔离目录 fs 写/读/追加 + 回环 `127.0.0.1` net_connect）；阳性对照 ≥1 效应；卸载后清理自身 tmp。**16/16 PASS**。
+- 该 selftest 产出的真实记录（frozen `v1`）喂给 `validator_v.py`：`verdict = accept`、`D1（P1–P4）= []`、`effect_record_schema_version` pinned `v1`——**产出侧 harness 与消费侧 V 的契约端到端对齐**（仍 `run=0`；此为建台自证，非实验 run）。
+
+### S.9.5 §S.7 前瞻项状态更新
+
+- 第 1、2 项（两 schema 版本号）：**已冻结 = `v1`**（本节，提前于 rig）。
+- 第 3 项（exec 白名单）：仍 **∅**（G4 未纳入）。
+- 第 4 项（可读 JS 静态预筛）：不变——**仅建议、绝不进入 V 裁决**。
