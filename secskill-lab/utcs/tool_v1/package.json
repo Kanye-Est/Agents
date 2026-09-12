@@ -1,0 +1,26 @@
+{
+  "name": "utcs-mdclean",
+  "version": "1.0.0",
+  "description": "Markdown/text normalizer (UTCS research tool v1). Research-only; see idea/52 safety envelope.",
+  "type": "module",
+  "main": "src/mdclean.js",
+  "exports": {
+    ".": "./src/mdclean.js",
+    "./tool": "./src/tool.js",
+    "./test": "./test/run.js"
+  },
+  "files": [
+    "src/",
+    "test/"
+  ],
+  "scripts": {
+    "test": "node test/run.js"
+  },
+  "keywords": [
+    "markdown",
+    "normalize",
+    "formatter"
+  ],
+  "license": "UNLICENSED",
+  "private": true
+}
