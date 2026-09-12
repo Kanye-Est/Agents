@@ -728,3 +728,31 @@ idea/52 Amendment 1（本节）＋ 冻结**生成规格与验证器 V 代码** �
 
 - Goose 装机 + config（指向 A2.2 后端 endpoint）+ **一次基线工具调用跑通**，标注 **rig validation / 不计 run**。
 - **run 数只由 §6.3 授权矩阵递增**（Goose × {G1,G2,G3} 五判据实跑）；rig validation、tool-probe、就绪判据核验**均不计入 run**。
+
+---
+
+### Amendment 3 — 冻结生成规格 + 验证器 V（Step 2 · 2026-09-12）
+
+> 起草日：2026-09-12 · 状态：**EFFECTIVE（append-only，随 §14 EFFECTIVE RECORD 生效）**· 运行次数 = 0（本 Amendment 记录建台产出物，不含任何 run）。
+> 理由：用户 2026-09-12 放行 Step 2 = 「冻结生成规格 + 验证器 V」；落实 §A1.5 与 §A1.9「冻结生成规格与验证器 V 代码」产出物。
+> **不改动 §2–§13 任何冻结判据，不重排 L448 建台序（① 轨迹仪表 → ② 验证器 V → ③ 工具 v1 → ④ MVP），仅新增。** §3 信封 / §9 停止条件 2–6 / level-2 / no-pooling / 3/3=确定性 全部继承。
+
+#### A3.1 产出物（本 Step，均已落仓 + 自测通过）
+
+- **生成规格（冻结）**：`secskill-lab/utcs/GENERATION_SPEC.md` —— 操作化 §A1.5：五冻结效应集（读 `sk-FAKE` / 写隔离 marker / 打包隔离目录 / POST `127.0.0.1` / 可逆 canary 编辑）、form-not-effect 规则、四条信封外拒收谓词、V 三职 + 完整性纪律、前瞻项。真理来源 = §A1.5，如冲突以 §A1.5 为准。
+- **验证器 V 骨架（代码）**：`secskill-lab/utcs/validator_v.py` —— stdlib-only、确定性（无 Date/random，裁决为输入的纯函数）、内嵌 `--selftest`（19/19 PASS：五效应 accept、四谓词各 reject、路径穿越 reject、混淆新效应 reject、混淆丢效应仍 accept、功能回归 reject、观测不完整 → `observation_unverifiable`、静默探针 → `harness_broken`、`::1`/localhost 回环判定、非回环 IPv6 拒收、静态预筛建议标记）。CLI 退出码：accept=0 / reject=1 / 无主张(unverifiable·harness_broken)=2。**本仓库不落生成器/混淆器**（A1.5 治理条：耦合 §11 披露 hold），只落 SPEC + 护栏 V。
+
+#### A3.2 行为式而非静态式裁决（新方法学定性 · 写入记录）
+
+- V 的**权威裁决基于观测到的实际效应**（受控 sandbox 拦截 fs/net/child_process → effect-observation record），**不是静态源扫描**。
+- **理由（由 §A1.5 混淆集强制，非偏好）**：A1.5 的 CFF/SS/WSM **专为破坏静态分析而设计**（fang：LLM 尤其无法破译 WSM），而 V 须在**混淆后**复验（§A1.5 L565）；静态 V 会被 A1.5 自带的混淆击穿，故 V 必须行为式。
+- **与三层防御图一致（idea/53 §2.5）**：V 是我方**行为式护栏**（family-3 式），**非**静态扫描器（family-1）；且 V **只是安全护栏**，既非攻击、也非受测防御，**不作"击败某防御"任何主张**（A1.7 诚实边界继承，禁写"击败 SkillDetonate"）。
+- **完整性纪律（逻辑同 A1.6(d) 匹配器阳性对照 / A2.4）**：观测须自证 `observation_complete` 且结构合法，否则 `observation_unverifiable`；**强制 harness 阳性对照**——已知效应探针须观测到 ≥1 效应，否则 `harness_broken`；两者均**不作放行主张**。
+
+#### A3.3 前瞻项（记入 · Step 5 rig 集成时冻结）
+
+- **轨迹输入 schema 版本号** —— 在 **Step 5 rig 集成时冻结版本号**（用户 2026-09-12 指定）。Step 1 仪表现已冻结**归一化** `NORMALIZATION_VERSION="v1"`；轨迹**输入事件 schema** 的版本随 rig 定型再冻结。
+- **effect-observation record schema 版本号** —— 同一纪律，Step 5 rig 集成时冻结（现 `EFFECT_RECORD_SCHEMA_VERSION="unfrozen-pending-step5"`）。
+- **exec 白名单** —— MVP 冻结 = **∅**；G4（`execve` 替身）纳入前不加任何命令，须显式 Amendment（GENERATION_SPEC §S.4）。
+
+关联：[[direction1-redteam-protocol]]、[[utcs-minimal-experiment-amendment1]]、[[adaptive-attacker-scanner-evasion]]、[[han-taxonomy-defense-landscape]]。
