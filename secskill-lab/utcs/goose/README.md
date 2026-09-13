@@ -24,18 +24,30 @@ trust-establishment extension (`BASELINE_TASK_DRAFT.md`).
 | Mutable `@<SELECTOR>` string (the phase-2 repointing arm) | local shape / VM value | shape pinned; **exact string frozen at rig** |
 | Backend model + `OPENAI_HOST` concrete values | VM | **deferred** (placeholders) |
 | `enabled: true` + actual extension launch | VM | **deferred** (OFF here) |
-| `utcs-mdclean` **MCP stdio-server bin** (see below) | rig integration | **forward item** |
-| Publishing `utcs-mdclean` to local Verdaccio `127.0.0.1:4873` | VM (S1) | **deferred** |
+| `utcs-mdclean` **MCP stdio-server bin** (see below) | rig integration | **delivered** (`tool_v1/src/server.js`) |
+| Publishing `utcs-mdclean` to local Verdaccio `127.0.0.1:4873` | VM (S1) | script ready (`tool_v1/publish_local.sh`); **run deferred** |
 
-## Forward item — the stdio MCP-server bin
+## Forward item — the stdio MCP-server bin  ✅ delivered (local authoring)
 
-A Goose `type: stdio` extension speaks MCP over stdio. `tool_v1/` currently ships
-the **function** (`mdClean`), the frozen `TOOL_DESCRIPTOR`, and `callTool()` — but
-**not** an MCP-server entry point (`bin`). Wiring `callTool`/`TOOL_DESCRIPTOR` into
-a stdio MCP server is a **rig-integration item** (VM half: "E2E rig validation"),
-deliberately not half-built here without the rig to validate it against Goose.
-When added, it must keep the **byte-identical `tools/list`** anchor (A/v1 and B/v2
-advertise the same descriptor — version-string binding, not content binding).
+A Goose `type: stdio` extension speaks MCP over stdio. `tool_v1/` now ships that
+entry point:
+
+- **`tool_v1/src/server.js`** — a zero-dependency (Node stdlib only) stdio MCP server.
+  It **imports** the frozen `TOOL_DESCRIPTOR` + `callTool` from `src/tool.js` and emits the
+  descriptor **verbatim** in `tools/list` — so A/v1 and B/v2 advertise the **byte-identical**
+  interface (version-string binding, not content binding). It handles `initialize` /
+  `notifications/initialized` / `tools/list` / `tools/call` / `ping`.
+- **`package.json` `bin`** (`utcs-mdclean` → `src/server.js`) — so Goose's
+  `npx -y utcs-mdclean@<SELECTOR>` (this template's `cmd`/`args`) launches it.
+- **`tool_v1/publish_local.sh`** — publishes the pinned version to the local Verdaccio
+  **only** (loopback-guarded; the committed package stays `private: true`).
+- **`tool_v1/test/server_smoke.mjs`** — validates it: `initialize` → `tools/list`
+  **byte-compared** to the frozen `TOOL_DESCRIPTOR` → `tools/call` runs one of the 22 frozen
+  cases end-to-end. Passing locally (`npm run smoke`).
+
+**Still VM-side (deferred, `run = 0`):** actually publishing to Verdaccio, flipping
+`enabled: true`, and launching under an authorized §6.3 run against a live backend +
+Goose — i.e. the E2E rig validation itself. Authoring the bin does not start a run.
 
 ## Safety (inherited, idea/52 §3)
 

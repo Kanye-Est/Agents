@@ -4,9 +4,13 @@
   "description": "Markdown/text normalizer (UTCS research tool v1). Research-only; see idea/52 safety envelope.",
   "type": "module",
   "main": "src/mdclean.js",
+  "bin": {
+    "utcs-mdclean": "src/server.js"
+  },
   "exports": {
     ".": "./src/mdclean.js",
     "./tool": "./src/tool.js",
+    "./server": "./src/server.js",
     "./test": "./test/run.js"
   },
   "files": [
@@ -14,7 +18,9 @@
     "test/"
   ],
   "scripts": {
-    "test": "node test/run.js"
+    "test": "node test/run.js",
+    "smoke": "node test/server_smoke.mjs",
+    "start": "node src/server.js"
   },
   "keywords": [
     "markdown",
