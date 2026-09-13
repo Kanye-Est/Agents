@@ -787,3 +787,52 @@ idea/52 Amendment 1（本节）＋ 冻结**生成规格与验证器 V 代码** �
 **S1 恢复 R1–R7 → 后端 → G-a…G-f → E2E rig validation → MVP。** 其中 `utcs-mdclean` 发布至本地 Verdaccio、扩展 `enabled:true`、backend 具体模型与 `OPENAI_HOST` 具体值、stdio MCP-server bin，均属 VM half。**范围锁重申：Goose×{G1,G2,G3}；CC/Codex/OpenCode/Gemini + G4 deferred；exec 白名单 = ∅。** 授权 EFFECTIVE ≠ started。
 
 关联：[[direction1-redteam-protocol]]、[[utcs-minimal-experiment-amendment1]]、[[adaptive-attacker-scanner-evasion]]、[[han-taxonomy-defense-landscape]]、[[frozen-drift-record-constraints]]。
+
+---
+
+### Amendment 5 — MVP 模型后端回退偏差记录（Qwen3-32B-AWQ · 2026-09-13）
+
+> 起草日：2026-09-13 · 状态：**EFFECTIVE（append-only，随 §14 EFFECTIVE RECORD 生效）** · **run=0 不变**（本 Amendment 记录后端选择偏差，不含任何 run）。
+> 理由：Qwen3.8-27B 的官方量化制品、架构适配与 L40 内核验证存在三项部署障碍；MVP 回退到 D1/R1 时代同款、已验证的 Qwen3-32B-AWQ 后端，以保留冻结栈与历史 probe 可比性。
+> 当时已见证据：用户于 2026-09-13 本次任务提供的 HF API / 模型配置 / 软件版本 / 硬件支持核实摘要（A5.1）及导师异步回复（A5.4）；仓库 `deploy/hyperstack/README_L40.md` L8–L17 的已验证栈与 revision，以及 `serve_qwen3_32b_awq_native_fc.sh` 已有的默认 revision。外部事实按用户提供记录转录，本次未另行联网复核。
+> **不改动 §2–§13 任何冻结判据，不重写 §14 EFFECTIVE RECORD 或 Amendment 1–4，不重排既定建台序，仅追加本次后端选择偏差。** §3 安全信封 / §9 停止条件 / level-2 / no-pooling / 3/3=确定性 / 范围锁（Goose×{G1,G2,G3}）全部继承。
+
+#### A5.1 三项部署障碍（2026-09-13 核实摘要 · 用户提供）
+
+| 障碍 | 当时提供的核实记录 | 对本期部署的影响 |
+|---|---|---|
+| **① 官方 AWQ 制品路径不成立** | 用户核实结论为 `Qwen/Qwen3.8-27B-AWQ` 仓库不存在；报告的 HF API 响应为 **401**。官方量化仅 **FP8，约 28.6 GiB**。 | A2.3/R5 与旧 runbook 预设的官方 AWQ 下载路径不能作为本期可用配方；不能把官方 FP8 当成已验证的 AWQ 替换件。 |
+| **② 混合 GDN 架构超出冻结栈** | 模型配置为 **`Qwen3_5Config`**，需 **vLLM ≥0.17.0 + Transformers ≥5.8.0**；现冻结栈为 **vLLM 0.10.2 / Transformers 4.55.2**，不支持该架构。该 27B 路径的工具 parser 应为 **`qwen3_coder`**（非 `hermes`），think-off 机制为 **`--default-chat-template-kwargs`**（非现有 jinja 配方）。用户提供的时点记录：vLLM 最新 **0.29.0（2026-09-09）**，若后续升级则用 **0.28.0**。 | 不能沿用 A2.2 对该模型的 dense/AWQ 假设及 Qwen3 原有解析与模板配方；新栈属于后续升级项，须重新验收与冻结，当前不升级。 |
+| **③ L40 上的内核与替代量化缺少验证** | **FP8×GDN** 内核在 **L40（Ada）无官方验证**，所报官方验证覆盖仅 **Blackwell/Hopper**。社区 **`cyankiwi/Qwen3.8-27B-AWQ-INT4`** 为 **W4A16，约 21 GB**，仓库记录到 **2026-09-11 改动**；仍有两项未验证条件：**内核×新架构适配**、**校准质量无证据**。 | 不以社区量化替代件承担本期 MVP 的两项未验证条件；无官方验证不等于已证实不能运行，仓库改动记录也不构成质量或恶意判断。 |
+
+**证据边界：**上述 HF API **401 仅记录该次请求的响应，不能单独证明仓库不存在**；“不存在”是用户提供的核实结论，两者不作因果等同。表中的大小、版本、支持范围与社区更新时间均归属于本次提供的核实摘要，不冒称本 Amendment 新做了部署实测。
+
+#### A5.2 MVP 后端回退决定（冻结 · 替代相应旧部署计划）
+
+- **决定：MVP 主后端 = `Qwen/Qwen3-32B-AWQ`。** 本条替代 A2.1 的 MVP 主后端选择，以及 A2.2 / A2.3 中对应 Qwen3.8-27B 的部署与下载计划；既有文字原样保留，由本 Amendment 记录变更。
+- **固定 revision = `0499c3ac83fdef8810b907a23894ba91e95eddd8`**（`README_L40.md` L15 已 pin，32B native-FC 脚本已有同一默认值）。不得重新解析浮动版本来代替此 pin。
+- **沿用已验证栈：NVIDIA L40 / driver 570.195.03 / vLLM 0.10.2 / PyTorch 2.8.0+cu128 / Transformers 4.55.2。** 本期不升级到 A5.1 的新架构候选栈。
+- **可比性依据：D1/R1 时代同款后端。** G-c 的新 probe 与历史同模型、同栈成绩对照；历史记录不替代本次就绪门，异常退化即停，记录结果后再处理。
+- **实现配套（后续独立提交）：**升级 `deploy/hyperstack/serve_qwen3_32b_awq_native_fc.sh` 的护栏，并将 `R5_R7_qwen3_8_27b_runbook.md` 的操作路径更新为 32B。32B 继续采用 native-FC 的 `hermes` / `qwen3` 解析及 `qwen3_thinkoff.jinja`；A5.1 的 `qwen3_coder` 与 `--default-chat-template-kwargs` 仅属于递延的 27B 路径。
+- **运行设置口径：默认回环/离线 + G-e 门验证。** 配套脚本采用 `HOST=127.0.0.1`、`HF_HUB_OFFLINE=1` 默认值，二者均可由环境变量覆盖；运行时监听面是否仅回环，由 **G-e 的 `ss -tlnp` 实测**判定。默认值不等于已经通过验收，也不构成网络面强制封锁的证明。
+
+#### A5.3 泛化阶段递延（当前不扩大运行信封）
+
+- **Qwen3.8-27B → 泛化阶段。** 首选 **H100 80G + 官方 FP8**；若启用新栈，按 A5.1 所记升级选择重新冻结环境、解析与 think-off 配方，并重跑准入验收。
+- **DeepSeek V4 flash → 泛化阶段拟走 API。** 用户提供的成本估计为 **约 US$1 级**，仅作后续提案预算，非本期实测成本；该路线须先有**书面安全信封扩展并另行提案**，方可执行。相较 A2.1 的“大卡到位后自托管”排序，本条记录后续 API 提案方向，**不授权本期公网 API 调用、不修改当前 §3 信封**。
+- **范围锁不变：仅 Goose×{G1,G2,G3}。** G4 / 跨对象 / Claude Code 等框架防御实测继续维持既有未纳入状态；本次后端回退不扩大对象或目标集合。
+
+#### A5.4 导师知会与批准（据用户提供记录）
+
+- **日期与渠道：2026-09-13，异步知会韩老师。**
+- **导师回复（用户本次提供的逐字转录）：“已了解同意”。** 本记录据此记入本次后端回退决定；不虚构额外归档件路径或哈希。
+- **状态：EFFECTIVE（随 §14 EFFECTIVE RECORD 生效），run=0 不变。** 本次决定生效不表示后端已经起服或任何就绪门已经通过。
+
+#### A5.5 后续验收与计数纪律（继承 A2.4 / A2.5 / A2.7）
+
+- 首批实验以本 Amendment 的 **32B 固定 revision + 既有冻结栈**为准；服务名须与客户端模型配置及 G-a 一致。
+- **G-a…G-f 仍须逐门通过**，权重 `sha256` / revision / fetch-date 入 G-d，就绪实测值入 G-f；本 Amendment 不是就绪实测记录。
+- **G-c 冻结门不变：**明确单工具 ≥9/10、显式 search ≥8/10、显式 install ≥7/10、无关触发 ≤1/10、结构化解析 ≥95%；历史可比性不能放松门槛。
+- **六道就绪门与 E2E rig validation 均不计 run。** 仅 §6.3 授权矩阵实际执行后递增；本 Amendment 落盘时 **run=0**。
+
+关联：[[direction1-redteam-protocol]]、[[utcs-minimal-experiment-amendment1]]、[[frozen-drift-record-constraints]]。
