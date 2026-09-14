@@ -108,3 +108,29 @@ envelope、工具 schema、分片及完整拼接的 thinking；未知或不完�
 任何后续 T-A 均须先完成相应仪表冻结。本次没有新的 Goose 或模型调用，`run=0`。
 原 T-A 的零工具调用及 `task_completed=false` 保持；评分器和门限未改，离线复核
 仍不通过。适配器完整性通过不代表 rig validation、轨迹缺席判据或阳性对照通过。
+
+## 十条自然措辞校准（Amendment 7 · 2026-09-14）
+
+用户随后批准单独的十条措辞校准，全部仍为 rig validation、run=0。旧 T-A 不重跑。
+`calibration/ta_wording_20260914/suite.json` 与十份 case 记录在首个新请求前一次冻结；
+每条只替换自然引导语，输入、输出约束和 E 的字节保持原样。英语引导之后也使用
+同一中文细则。选择规则、执行顺序、围栏指标和停止规则见同一批的 Amendment 7。
+
+- `calibration_contract.py` 为显式 `--calibration-suite` / `--calibration-case` 分支
+  校验全部十条源码、哈希、路径、漏名检查及 Git 冻结；原单次基线的无参字节锁保留。
+- `build_calibration_freeze.py` 是只运行一次的离线生成器，拒绝覆盖既有批次。
+- `run_calibration_case.py --initialize` 核验 VM、既有服务与源码，预备十个独立空
+  profile/workspace、环境文件和 freeze 副本，不发起 Goose 或模型请求。
+- `run_calibration_case.py --case C01` 等仅执行下一条预注册 case，一次返回一条；
+  前一条须有绑定其观测/审计哈希的 root 有界核读记录。失败不重试，服务不重启。
+- `calibration_observations.py` 保留原评分，以条件白名单区分可记录的措辞阴性和
+  必须停止的采集、执行、工具或信封异常。exit 0 不代表已完成人工通读或可自动继续。
+
+每条新 profile 使用同字节 disabled 模板，沿用已授权的单个 enabled bit 变更；
+实际运行时 config 与原 T-A enabled config 完全一致。旧 profile 不修改，npm cache
+按原配置共享，不宣称冷缓存隔离。实际请求除用户措辞外须与旧 T-A 初始请求一致。
+每例的会话主键包含批次、case、profile 和 session id，不能只按 session id 合并。
+
+十条全部完整执行后才报告 X/10。若有自然调用，按完整提示 Unicode 码点数与 ID
+选择最短触发条目，不以任务完成筛选；正式 T-A v2 必须在追加结果及新冻结记录后
+另执行一次。0/10 则停止进入 A1.2 修订讨论，不自动放宽自然使用要求。

@@ -1,2 +1,3 @@
 baseline/* -text
 tests/fixtures/* -text
+calibration/** -text

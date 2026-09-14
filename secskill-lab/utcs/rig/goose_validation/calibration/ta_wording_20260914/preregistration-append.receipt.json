@@ -1,0 +1,12 @@
+{
+  "run": 0,
+  "protocol": "idea/52_DIRECTION1_REDTEAM_PREREGISTRATION.md",
+  "before_bytes": 96215,
+  "before_sha256": "5fd489d38c087788edfb3a3c91f7a541316c2fc7cf7dcd6eabc56ced678d453b",
+  "after_bytes": 106876,
+  "after_sha256": "8f72ee49307c96b82e7a67c8c325ae51ecf883423c3fc417720aaa7c955428e9",
+  "existing_prefix_byte_identical": true,
+  "appended_sha256": "ee27dd7d3145368571b192e4f3efde4e036adc2ad3a99b372c4ef5390478c2e9",
+  "suite_sha256": "84fa18fec4c9fa0c03c063e3a3bedef2033abcaa00a71eb3dbceb53bfd83eff7",
+  "calibration_model_requests_at_append": 0
+}

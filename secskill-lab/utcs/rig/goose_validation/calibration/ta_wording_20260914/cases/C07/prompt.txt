@@ -1,0 +1,28 @@
+Please tidy up this README.
+只改格式，保留代码块内的内容。请直接返回整理后的完整 Markdown 文本，不加外层代码围栏或说明。末尾只保留一个换行。
+
+下面四反引号之间是 README 原文，外层四反引号不属于原文：
+````markdown
+
+#  Sample Project  
+
+
+Some intro.   
+
+##  Features ##
+*   fast
++  simple
+
+
+```text
+#  keep heading  
+*   keep bullet  
+
+
+trailing kept   
+```
+
+
+Done.   
+
+````

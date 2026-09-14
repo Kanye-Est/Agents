@@ -110,7 +110,13 @@ def verify_source_manifest(manifest_path, source_dir=HERE):
                         for name, digest in sorted(entries.items())]}
 
 
-def verify_frozen_baseline(freeze_dir):
+def verify_frozen_baseline(freeze_dir, calibration_suite=None, calibration_case=None):
+    require((calibration_suite is None) == (calibration_case is None),
+            "--calibration-suite and --calibration-case must be supplied together")
+    if calibration_suite is not None:
+        from calibration_contract import verify_calibration_baseline
+        return verify_calibration_baseline(freeze_dir, calibration_suite, calibration_case)
+    # The original no-argument lock remains byte-for-byte strict.
     freeze_dir = pathlib.Path(freeze_dir).resolve(strict=True)
     record_path = freeze_dir / "record.json"
     require(record_path.read_bytes() == (HERE / "baseline/original-freeze-record.json").read_bytes(),
@@ -243,7 +249,10 @@ class PrepareController:
         require(a.chain4 != a.chain6, "IPv4 and IPv6 chain names must be distinct")
         manifest = verify_source_manifest(a.source_manifest)
         write_json(control / "prepare-source-freeze.json", manifest)
-        frozen = verify_frozen_baseline(a.freeze_dir)
+        frozen = verify_frozen_baseline(a.freeze_dir, a.calibration_suite, a.calibration_case)
+        if "calibration" in frozen:
+            require(str(self.stage / "grant_event.json") == frozen["grant_capture"]["grant_event_file"],
+                    "Calibration stage does not match its frozen grant event path")
         inputs = prepared_inputs(a)
         state = run(["sudo", "-n", "systemctl", "show", a.unit, "-p", "LoadState", "--value"]).stdout.decode().strip()
         require(state == "not-found", "Refuse to reuse baseline unit: " + state)
@@ -324,6 +333,7 @@ class PrepareController:
                   "gate_ready": ready, "awaiting_goose": awaiting, "goose_started": False,
                   "source_manifest_sha256": manifest["manifest_sha256"], "freeze_dir": str(pathlib.Path(a.freeze_dir).resolve()),
                   "prepared_inputs": inputs,
+                  **({"calibration": frozen["calibration"]} if "calibration" in frozen else {}),
                   "boundary": "Rules restrict new IP sockets in this Goose cgroup. Existing local backend/registry processes use their separately verified offline/no-uplink configurations. No public probe was made. Native OSV returns 503; scanner unavailable, not scan-passed."}
         write_json(control / "network-controls-result.json", record)
         return record
@@ -354,7 +364,11 @@ def main(argv=None):
         parser.add_argument("--" + name, required=True)
     parser.add_argument("--osv-pid", required=True, type=int)
     parser.add_argument("--source-manifest", default=str(HERE / "SHA256SUMS"))
+    parser.add_argument("--calibration-suite")
+    parser.add_argument("--calibration-case")
     args = parser.parse_args(argv)
+    if (args.calibration_suite is None) != (args.calibration_case is None):
+        parser.error("--calibration-suite and --calibration-case must be supplied together")
     os.umask(0o077)
     return PrepareController(args).run()
 

@@ -1,0 +1,45 @@
+{
+  "run": 0,
+  "model_requests_issued": 0,
+  "python": "3.14.7 (main, Aug 10 2026, 07:46:56) [GCC 16.1.1 20260728]",
+  "syntax_files": [
+    "build_calibration_freeze.py",
+    "run_calibration_case.py",
+    "calibration_contract.py",
+    "calibration_contract_selftest.py",
+    "calibration_observations.py",
+    "calibration_observations_selftest.py",
+    "prepare_controls.py",
+    "launch_baseline.py"
+  ],
+  "files": {
+    "build_calibration_freeze.py": "9fc564d9a5b77c907db575b7c74887c827d110eca5c655d6e1890daa411044d6",
+    "run_calibration_case.py": "c4356e44ecafa871a55b44d4adb7d7e9effda3661b8d5a91cfed93bca2d73d00",
+    "calibration_contract.py": "242d08abfd593c40e0c47eec7b3470e17e289942d5ac22542259a0105ffc24f1",
+    "calibration_contract_selftest.py": "b97d6ca322d86c688bdebb72f138ba670209a2942f16044b1d8d75f0c1d10c2b",
+    "calibration_observations.py": "d25a331992b7d5e86803ddd238f57e2417ae6636d7a1ca3dced4093eb33cf51f",
+    "calibration_observations_selftest.py": "722b139905db6d15ebb5c5abd14b85599df78c723e03f8e74cbdcd1e1a25d4cd",
+    "prepare_controls.py": "9b17e815f931bacb5b41eeca8846206f3c89b1edd2a405b3aef64d5ed93bd8f6",
+    "launch_baseline.py": "45e6bd17065b395debde12201a99344e54198c049ee72907903752ec81b26bd9"
+  },
+  "independent_reviews": {
+    "frozen_wordings_and_orchestrator": "Passed after moving workspace-before evidence outside the exact four-file freeze directory. Final subsequent change only compacts console output; full observation JSON remains preserved.",
+    "contract_and_controller_diff": "Root read-only review passed; original no-argument byte lock and enable action retained.",
+    "observer_real_replay": "See validation/calibration-instrument-replay-20260914/replay.receipt.json."
+  },
+  "selftests_reported_from_collaborating_agents": {
+    "calibration_contract": {
+      "passed": 45,
+      "total": 45
+    },
+    "calibration_observations": {
+      "passed": 53,
+      "total": 53
+    },
+    "controllers_regression": {
+      "passed": 38,
+      "total": 38
+    }
+  },
+  "scope": "Agent-reported selftest counts are from this session tool records; this receipt does not claim a separate root rerun. VM Python 3.12 runtime checks will be recorded before any case."
+}

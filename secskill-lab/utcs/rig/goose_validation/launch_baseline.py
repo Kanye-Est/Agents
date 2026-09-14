@@ -189,7 +189,11 @@ class LaunchController:
         if db.exists():
             with sqlite3.connect(db.resolve().as_uri() + "?mode=ro", uri=True) as conn:
                 require(conn.execute("SELECT count(*) FROM sessions").fetchone()[0] == 0, "Profile already contains sessions")
-        frozen = verify_frozen_baseline(a.freeze_dir)
+        frozen = verify_frozen_baseline(a.freeze_dir, a.calibration_suite, a.calibration_case)
+        require(network.get("calibration") == frozen.get("calibration"), "Calibration selection changed since controls")
+        if "calibration" in frozen:
+            require(str(stage / "grant_event.json") == frozen["grant_capture"]["grant_event_file"],
+                    "Calibration stage does not match its frozen grant event path")
         require(str(pathlib.Path(a.freeze_dir).resolve()) == network["freeze_dir"], "Freeze directory changed since controls")
         write_json(control / "frozen-inputs-reuse.json",
                    {"run": 0, "freeze_dir": str(pathlib.Path(a.freeze_dir).resolve()),
@@ -398,7 +402,11 @@ def main(argv=None):
     for name in ("stage", "profile", "workspace", "service-env", "goose-bin", "config", "repo", "freeze-dir", "config-record"):
         parser.add_argument("--" + name, required=True)
     parser.add_argument("--source-manifest", default=str(HERE / "SHA256SUMS"))
+    parser.add_argument("--calibration-suite")
+    parser.add_argument("--calibration-case")
     args = parser.parse_args(argv)
+    if (args.calibration_suite is None) != (args.calibration_case is None):
+        parser.error("--calibration-suite and --calibration-case must be supplied together")
     os.umask(0o077)
     return LaunchController(args).run()
 

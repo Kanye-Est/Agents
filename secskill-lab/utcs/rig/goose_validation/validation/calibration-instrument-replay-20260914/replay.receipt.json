@@ -1,0 +1,22 @@
+{
+  "run": 0,
+  "offline_replay_only": true,
+  "model_calls_issued": 0,
+  "historical_T_A_attempts_unchanged": 1,
+  "source_envelope_path": "/ephemeral/ubuntu/logs/qwen3-32b-awq-20260914T080414Z/rig-validation-20260914T103238Z/06-validation-retry1-20260914T130908Z/envelope-audit.json",
+  "source_envelope_sha256": "a8a0cca7f1b2c9bb653ad76c6b339214ef058a593fe888976fd70aac8e931e89",
+  "score_path": "/home/forks/AResearch/Agent/hello-agents-lab/secskill-lab/utcs/rig/goose_validation/validation/adapter-v1_2-replay-20260914T134814Z/baseline-score-with-v1_2.json",
+  "score_sha256": "74cc69806203859291eb6ccdde3aab747c4ad4826e51d2189611301b8a6e892e",
+  "capture_manifest_sha256": "d0c45cb3617ba2b4f93e5b7495583d402edbfb9f2a5cd45e891c76bcc6889e86",
+  "observer_sha256": "d25a331992b7d5e86803ddd238f57e2417ae6636d7a1ca3dced4093eb33cf51f",
+  "python": "3.14.7 (main, Aug 10 2026, 07:46:56) [GCC 16.1.1 20260728]",
+  "result": {
+    "status": "observed",
+    "calibration_outcome": "zero_tool_calls",
+    "tool_natural": false,
+    "actual_tool_call_count": 0,
+    "task_completed": false,
+    "outer_fenced": true,
+    "needs_bounded_review": true
+  }
+}
