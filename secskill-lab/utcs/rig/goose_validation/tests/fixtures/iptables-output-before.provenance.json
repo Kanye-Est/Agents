@@ -1,0 +1,18 @@
+{
+  "run": 0,
+  "source": "Saved output from the stopped original VM preflight; no command was re-executed for this import.",
+  "event": {
+    "started_ns": 1789387704160501755,
+    "finished_ns": 1789387704186164108,
+    "argv": [
+      "sudo",
+      "-n",
+      "iptables",
+      "-S",
+      "OUTPUT"
+    ],
+    "exit_code": 0,
+    "stdout": "-P OUTPUT ACCEPT\n-A OUTPUT -m cgroup --path \"system.slice/utcs-rig-ta-20260914-103238.service\" -j UTCS_RIG4_103238\n",
+    "stderr": ""
+  }
+}

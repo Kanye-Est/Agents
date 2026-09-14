@@ -1,0 +1,2 @@
+-P OUTPUT ACCEPT
+-A OUTPUT -m cgroup --path "system.slice/utcs-rig-ta-20260914-103238.service" -j UTCS_RIG4_103238

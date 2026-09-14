@@ -1,0 +1,11 @@
+{
+  "scope": "pure offline trace/listing fixtures and mocked command collection; no VM/iptables/network/Goose/model",
+  "run": 0,
+  "tests_run": 48,
+  "failures": 0,
+  "errors": 0,
+  "successful": true,
+  "module_sha256": "037ef19a0ac937311c93eec1e074883a6b46d4f2eeb32976e4741b3d371a338c",
+  "selftest_sha256": "5135f37f6be0dace4d709ccd08de66be57d354d1aeab75438c88262570bb9904",
+  "python_version": "3.14.7"
+}

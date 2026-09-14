@@ -1,0 +1,53 @@
+test_abbreviated_counter_is_not_accepted (__main__.CounterTests.test_abbreviated_counter_is_not_accepted) ... ok
+test_accept_growth_does_not_change_reject_delta (__main__.CounterTests.test_accept_growth_does_not_change_reject_delta) ... ok
+test_decreasing_counter_requires_review (__main__.CounterTests.test_decreasing_counter_requires_review) ... ok
+test_no_reject_row_fails_closed (__main__.CounterTests.test_no_reject_row_fails_closed) ... ok
+test_noncontiguous_row_number_fails_closed (__main__.CounterTests.test_noncontiguous_row_number_fails_closed) ... ok
+test_raw_hash_and_bytes_are_preserved (__main__.CounterTests.test_raw_hash_and_bytes_are_preserved) ... ok
+test_reject_growth_is_measured_exactly (__main__.CounterTests.test_reject_growth_is_measured_exactly) ... ok
+test_rule_replacement_is_not_hidden_by_equal_counts (__main__.CounterTests.test_rule_replacement_is_not_hidden_by_equal_counts) ... ok
+test_wrong_chain_fails_closed (__main__.CounterTests.test_wrong_chain_fails_closed) ... ok
+test_all_three_explicit_allowed_ports (__main__.TraceTests.test_all_three_explicit_allowed_ports) ... ok
+test_execve_and_execveat_are_retained (__main__.TraceTests.test_execve_and_execveat_are_retained) ... ok
+test_explicit_sendmsg_destination_is_extracted (__main__.TraceTests.test_explicit_sendmsg_destination_is_extracted) ... ok
+test_explicit_sendto_destination_is_extracted (__main__.TraceTests.test_explicit_sendto_destination_is_extracted) ... ok
+test_hostname_peer_is_not_resolved_over_network (__main__.TraceTests.test_hostname_peer_is_not_resolved_over_network) ... ok
+test_invalid_trace_encoding_requires_review (__main__.TraceTests.test_invalid_trace_encoding_requires_review) ... ok
+test_ipv6_sockaddr_is_reported (__main__.TraceTests.test_ipv6_sockaddr_is_reported) ... ok
+test_literal_payload_ellipsis_does_not_fake_truncation (__main__.TraceTests.test_literal_payload_ellipsis_does_not_fake_truncation) ... ok
+test_local_address_operation_is_listed_for_manual_interpretation (__main__.TraceTests.test_local_address_operation_is_listed_for_manual_interpretation) ... ok
+test_nonloopback_peer_is_reported_without_contact (__main__.TraceTests.test_nonloopback_peer_is_reported_without_contact) ... ok
+test_other_loopback_port_is_reported (__main__.TraceTests.test_other_loopback_port_is_reported) ... ok
+test_payload_cannot_inject_an_observed_peer (__main__.TraceTests.test_payload_cannot_inject_an_observed_peer) ... ok
+test_payload_truncation_requires_review (__main__.TraceTests.test_payload_truncation_requires_review) ... ok
+test_pointer_destination_requires_review (__main__.TraceTests.test_pointer_destination_requires_review) ... ok
+test_resumed_record_is_not_declared_complete (__main__.TraceTests.test_resumed_record_is_not_declared_complete) ... ok
+test_sendmsg_null_name_uses_yy_peer (__main__.TraceTests.test_sendmsg_null_name_uses_yy_peer) ... ok
+test_tcp_loopback_connect_is_decoded (__main__.TraceTests.test_tcp_loopback_connect_is_decoded) ... ok
+test_udp_is_not_mistaken_for_tcp (__main__.TraceTests.test_udp_is_not_mistaken_for_tcp) ... ok
+test_unclosed_network_record_requires_review (__main__.TraceTests.test_unclosed_network_record_requires_review) ... ok
+test_undecoded_send_without_peer_is_not_silently_allowed (__main__.TraceTests.test_undecoded_send_without_peer_is_not_silently_allowed) ... ok
+test_unfinished_record_is_retained_for_review (__main__.TraceTests.test_unfinished_record_is_retained_for_review) ... ok
+test_unix_log_path_is_not_implicitly_approved (__main__.TraceTests.test_unix_log_path_is_not_implicitly_approved) ... ok
+test_unix_socketpair_is_classified_only_as_local_ipc (__main__.TraceTests.test_unix_socketpair_is_classified_only_as_local_ipc) ... ok
+test_unknown_transport_requires_review (__main__.TraceTests.test_unknown_transport_requires_review) ... ok
+test_yy_ipv6_peer_is_parsed_without_being_allowed (__main__.TraceTests.test_yy_ipv6_peer_is_parsed_without_being_allowed) ... ok
+test_yy_peer_on_write_is_extracted (__main__.TraceTests.test_yy_peer_on_write_is_extracted) ... ok
+test_clean_auxiliary_scope_preserves_raw_snapshots (__main__.AuditTests.test_clean_auxiliary_scope_preserves_raw_snapshots) ... ok
+test_cli_existing_output_prevents_all_commands (__main__.AuditTests.test_cli_existing_output_prevents_all_commands) ... ok
+test_cli_refuses_to_write_evidence_inside_workspace (__main__.AuditTests.test_cli_refuses_to_write_evidence_inside_workspace) ... ok
+test_cli_review_items_exit_two_and_remain_in_saved_json (__main__.AuditTests.test_cli_review_items_exit_two_and_remain_in_saved_json) ... ok
+test_cli_success_keeps_human_review_required (__main__.AuditTests.test_cli_success_keeps_human_review_required) ... ok
+test_existing_snapshot_is_never_overwritten_or_requeried (__main__.AuditTests.test_existing_snapshot_is_never_overwritten_or_requeried) ... ok
+test_invalid_chain_option_does_not_execute_a_command (__main__.AuditTests.test_invalid_chain_option_does_not_execute_a_command) ... ok
+test_missing_trace_cannot_be_reported_as_complete (__main__.AuditTests.test_missing_trace_cannot_be_reported_as_complete) ... ok
+test_nested_workspace_entries_are_reported (__main__.AuditTests.test_nested_workspace_entries_are_reported) ... ok
+test_reject_growth_is_a_reported_anomaly (__main__.AuditTests.test_reject_growth_is_a_reported_anomaly) ... ok
+test_snapshot_command_error_is_preserved (__main__.AuditTests.test_snapshot_command_error_is_preserved) ... ok
+test_timeout_partial_output_is_preserved (__main__.AuditTests.test_timeout_partial_output_is_preserved) ... ok
+test_workspace_symlink_is_not_followed (__main__.AuditTests.test_workspace_symlink_is_not_followed) ... ok
+
+----------------------------------------------------------------------
+Ran 48 tests in 0.016s
+
+OK

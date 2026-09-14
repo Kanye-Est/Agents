@@ -1,0 +1,171 @@
+{
+  "schema": "utcs_instrument_selftests_local_v1",
+  "run": 0,
+  "scope": "Pure offline selftests and local published-source Node oracle; no Goose/model/VM/network calls",
+  "runtime": {
+    "python_version": "3.14.7 (main, Aug 10 2026, 07:46:56) [GCC 16.1.1 20260728]",
+    "python_executable": "/usr/bin/python3.14",
+    "node_version": "v25.2.1",
+    "node_executable": "/home/forks/.local/share/fnm/node-versions/v25.2.1/installation/bin/node",
+    "node_sha256": "ff2d367cbba86845f4634df2197955188549a129f486b88e955fac037ab29950",
+    "platform": "Linux-7.2.4-arch1-2-x86_64-with-glibc2.44"
+  },
+  "vm_runtime_not_tested_here": {
+    "python": "3.12.3",
+    "node": "24.21.0"
+  },
+  "source_hashes_before": {
+    "/home/forks/AResearch/Agent/hello-agents-lab/secskill-lab/utcs/rig/goose_validation/http_capture.py": "144d323cfb814753d40951d52f8b83c44f638ce9d7ab5fd862e9e8311aa04d33",
+    "/home/forks/AResearch/Agent/hello-agents-lab/secskill-lab/utcs/rig/goose_validation/http_capture_selftest.py": "68bba9bc46b37074e568f93f2d0568eaf1559cf317ee3b56d44f2cc0fd4db6b5",
+    "/home/forks/AResearch/Agent/hello-agents-lab/secskill-lab/utcs/rig/goose_validation/capture_watch.py": "7b929423da5b1dfab415ec522610f16a5a48d2631f175b16af78a5b810561561",
+    "/home/forks/AResearch/Agent/hello-agents-lab/secskill-lab/utcs/rig/goose_validation/capture_watch_selftest.py": "96cf736953727bc6b05060a98dd6558169604b33f2ac84aba6e5fc9eeb9c3940",
+    "/home/forks/AResearch/Agent/hello-agents-lab/secskill-lab/utcs/rig/goose_validation/goose_trajectory_adapter.py": "3fcfd02e1ffa40aadf289c9f14c48104e522569fcd8fb5fe1d6b0007c9dcb11a",
+    "/home/forks/AResearch/Agent/hello-agents-lab/secskill-lab/utcs/rig/goose_validation/goose_trajectory_adapter_selftest.py": "b66bfd6b70713deb01c9d199d724c750b9fdc751a3dd45f70c8d878da3ec5e33",
+    "/home/forks/AResearch/Agent/hello-agents-lab/secskill-lab/utcs/rig/goose_validation/score_baseline.py": "9fde778de29633e02a8985facb3c3f6bd9f60467bbc0ad1c0820e01be028eaef",
+    "/home/forks/AResearch/Agent/hello-agents-lab/secskill-lab/utcs/rig/goose_validation/score_baseline_selftest.py": "ebdb7b6f016231cbcff581e7470177940bc926edf3ba220a83ad2d01b9db72ff",
+    "/home/forks/AResearch/Agent/hello-agents-lab/secskill-lab/utcs/trajectory_absence.py": "49c5a0eb7f2939c4dc05a5473db4da15db96bf6d34e686a0182436987e40a586",
+    "/home/forks/AResearch/Agent/hello-agents-lab/secskill-lab/utcs/tool_v1/src/tool.js": "ae83a2e95541caddec475a1af2b907f8f847060500e455f54260c966d2e3fa43",
+    "/home/forks/AResearch/Agent/hello-agents-lab/secskill-lab/utcs/tool_v1/src/mdclean.js": "d79d1a4c89ada4b90f8666cad2e285afe5d52e1861916e5b4b0843dddce875bc",
+    "/home/forks/AResearch/Agent/hello-agents-lab/secskill-lab/utcs/rig/goose_validation/baseline/original-freeze-record.json": "e156669d70efb8bd57de2cbdcc13e9b8cd31121d2b26f2e08d0555eae09ca7ab",
+    "/home/forks/AResearch/Agent/hello-agents-lab/secskill-lab/utcs/rig/goose_validation/baseline/T-A.prompt.txt": "af86281596b7e9c7f6030811a3f0d9972939917f586ea73e822a7b548a389016",
+    "/home/forks/AResearch/Agent/hello-agents-lab/secskill-lab/utcs/rig/goose_validation/baseline/T-A.input.md": "3a4e0f8725b95d48c53b8a1304b5ca475f1c5cc353b702cade0d4b21819a7029",
+    "/home/forks/AResearch/Agent/hello-agents-lab/secskill-lab/utcs/rig/goose_validation/baseline/T-A.expected.md": "56cb968204a24faec245a73cd0b1db9e116ef7bac96ba44da7da2c50dd9e8707"
+  },
+  "source_hashes_after": {
+    "/home/forks/AResearch/Agent/hello-agents-lab/secskill-lab/utcs/rig/goose_validation/http_capture.py": "144d323cfb814753d40951d52f8b83c44f638ce9d7ab5fd862e9e8311aa04d33",
+    "/home/forks/AResearch/Agent/hello-agents-lab/secskill-lab/utcs/rig/goose_validation/http_capture_selftest.py": "68bba9bc46b37074e568f93f2d0568eaf1559cf317ee3b56d44f2cc0fd4db6b5",
+    "/home/forks/AResearch/Agent/hello-agents-lab/secskill-lab/utcs/rig/goose_validation/capture_watch.py": "7b929423da5b1dfab415ec522610f16a5a48d2631f175b16af78a5b810561561",
+    "/home/forks/AResearch/Agent/hello-agents-lab/secskill-lab/utcs/rig/goose_validation/capture_watch_selftest.py": "96cf736953727bc6b05060a98dd6558169604b33f2ac84aba6e5fc9eeb9c3940",
+    "/home/forks/AResearch/Agent/hello-agents-lab/secskill-lab/utcs/rig/goose_validation/goose_trajectory_adapter.py": "3fcfd02e1ffa40aadf289c9f14c48104e522569fcd8fb5fe1d6b0007c9dcb11a",
+    "/home/forks/AResearch/Agent/hello-agents-lab/secskill-lab/utcs/rig/goose_validation/goose_trajectory_adapter_selftest.py": "b66bfd6b70713deb01c9d199d724c750b9fdc751a3dd45f70c8d878da3ec5e33",
+    "/home/forks/AResearch/Agent/hello-agents-lab/secskill-lab/utcs/rig/goose_validation/score_baseline.py": "9fde778de29633e02a8985facb3c3f6bd9f60467bbc0ad1c0820e01be028eaef",
+    "/home/forks/AResearch/Agent/hello-agents-lab/secskill-lab/utcs/rig/goose_validation/score_baseline_selftest.py": "ebdb7b6f016231cbcff581e7470177940bc926edf3ba220a83ad2d01b9db72ff",
+    "/home/forks/AResearch/Agent/hello-agents-lab/secskill-lab/utcs/trajectory_absence.py": "49c5a0eb7f2939c4dc05a5473db4da15db96bf6d34e686a0182436987e40a586",
+    "/home/forks/AResearch/Agent/hello-agents-lab/secskill-lab/utcs/tool_v1/src/tool.js": "ae83a2e95541caddec475a1af2b907f8f847060500e455f54260c966d2e3fa43",
+    "/home/forks/AResearch/Agent/hello-agents-lab/secskill-lab/utcs/tool_v1/src/mdclean.js": "d79d1a4c89ada4b90f8666cad2e285afe5d52e1861916e5b4b0843dddce875bc",
+    "/home/forks/AResearch/Agent/hello-agents-lab/secskill-lab/utcs/rig/goose_validation/baseline/original-freeze-record.json": "e156669d70efb8bd57de2cbdcc13e9b8cd31121d2b26f2e08d0555eae09ca7ab",
+    "/home/forks/AResearch/Agent/hello-agents-lab/secskill-lab/utcs/rig/goose_validation/baseline/T-A.prompt.txt": "af86281596b7e9c7f6030811a3f0d9972939917f586ea73e822a7b548a389016",
+    "/home/forks/AResearch/Agent/hello-agents-lab/secskill-lab/utcs/rig/goose_validation/baseline/T-A.input.md": "3a4e0f8725b95d48c53b8a1304b5ca475f1c5cc353b702cade0d4b21819a7029",
+    "/home/forks/AResearch/Agent/hello-agents-lab/secskill-lab/utcs/rig/goose_validation/baseline/T-A.expected.md": "56cb968204a24faec245a73cd0b1db9e116ef7bac96ba44da7da2c50dd9e8707"
+  },
+  "sources_unchanged": true,
+  "tests": [
+    {
+      "name": "http_capture",
+      "command": [
+        "/usr/bin/python3",
+        "-B",
+        "/home/forks/AResearch/Agent/hello-agents-lab/secskill-lab/utcs/rig/goose_validation/http_capture_selftest.py"
+      ],
+      "started_ns": 1789389830266823822,
+      "finished_ns": 1789389830330802670,
+      "exit_code": 0,
+      "stdout": {
+        "path": "/home/forks/AResearch/Agent/hello-agents-lab/secskill-lab/utcs/rig/goose_validation/validation/instrument-selftests-local-20260914T124350Z/http_capture.stdout.log",
+        "sha256": "0cdc5ac52beda5cae6e45ad06a6234a3ac25b3def216cf85a0daf320ac313476"
+      },
+      "stderr": {
+        "path": "/home/forks/AResearch/Agent/hello-agents-lab/secskill-lab/utcs/rig/goose_validation/validation/instrument-selftests-local-20260914T124350Z/http_capture.stderr.log",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "summary": {
+        "all_pass": true,
+        "passed": 30,
+        "total": 30,
+        "run": 0
+      }
+    },
+    {
+      "name": "capture_watch",
+      "command": [
+        "/usr/bin/python3",
+        "-B",
+        "/home/forks/AResearch/Agent/hello-agents-lab/secskill-lab/utcs/rig/goose_validation/capture_watch_selftest.py"
+      ],
+      "started_ns": 1789389830267237902,
+      "finished_ns": 1789389831734100430,
+      "exit_code": 0,
+      "stdout": {
+        "path": "/home/forks/AResearch/Agent/hello-agents-lab/secskill-lab/utcs/rig/goose_validation/validation/instrument-selftests-local-20260914T124350Z/capture_watch.stdout.log",
+        "sha256": "7ab6f911b91858a815420e4066421800d553ef15a598f4cc88549e9f628d86b3"
+      },
+      "stderr": {
+        "path": "/home/forks/AResearch/Agent/hello-agents-lab/secskill-lab/utcs/rig/goose_validation/validation/instrument-selftests-local-20260914T124350Z/capture_watch.stderr.log",
+        "sha256": "df3145800cac40b48ea9b25e7563ada3d7843c46f8a31d0f826c3197e62eb5bd"
+      },
+      "summary": {
+        "successful": true,
+        "tests_run": 9,
+        "failures": 0,
+        "errors": 0
+      }
+    },
+    {
+      "name": "goose_trajectory_adapter",
+      "command": [
+        "/usr/bin/python3",
+        "-B",
+        "/home/forks/AResearch/Agent/hello-agents-lab/secskill-lab/utcs/rig/goose_validation/goose_trajectory_adapter_selftest.py",
+        "--output",
+        "/home/forks/AResearch/Agent/hello-agents-lab/secskill-lab/utcs/rig/goose_validation/validation/instrument-selftests-local-20260914T124350Z/goose_trajectory_adapter.result.json"
+      ],
+      "started_ns": 1789389830267378462,
+      "finished_ns": 1789389830882644936,
+      "exit_code": 0,
+      "stdout": {
+        "path": "/home/forks/AResearch/Agent/hello-agents-lab/secskill-lab/utcs/rig/goose_validation/validation/instrument-selftests-local-20260914T124350Z/goose_trajectory_adapter.stdout.log",
+        "sha256": "8343c3dda67c5e94e50ce6f6ffa2e039cc714bf6dfed75b4077f75f99b728bd2"
+      },
+      "stderr": {
+        "path": "/home/forks/AResearch/Agent/hello-agents-lab/secskill-lab/utcs/rig/goose_validation/validation/instrument-selftests-local-20260914T124350Z/goose_trajectory_adapter.stderr.log",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "summary": {
+        "all_pass": true,
+        "passed": 41,
+        "total": 41,
+        "run": 0,
+        "synthetic_only": true
+      },
+      "report": {
+        "path": "/home/forks/AResearch/Agent/hello-agents-lab/secskill-lab/utcs/rig/goose_validation/validation/instrument-selftests-local-20260914T124350Z/goose_trajectory_adapter.result.json",
+        "sha256": "10ff0e75a63b026bf5b0cf5888d6a27d1fcd8b9557b685562f049a212ab380cd"
+      }
+    },
+    {
+      "name": "score_baseline",
+      "command": [
+        "/usr/bin/python3",
+        "-B",
+        "/home/forks/AResearch/Agent/hello-agents-lab/secskill-lab/utcs/rig/goose_validation/score_baseline_selftest.py",
+        "--node",
+        "/home/forks/.local/share/fnm/node-versions/v25.2.1/installation/bin/node",
+        "--output",
+        "/home/forks/AResearch/Agent/hello-agents-lab/secskill-lab/utcs/rig/goose_validation/validation/instrument-selftests-local-20260914T124350Z/score_baseline.result.json"
+      ],
+      "started_ns": 1789389830268020469,
+      "finished_ns": 1789389842207130912,
+      "exit_code": 0,
+      "stdout": {
+        "path": "/home/forks/AResearch/Agent/hello-agents-lab/secskill-lab/utcs/rig/goose_validation/validation/instrument-selftests-local-20260914T124350Z/score_baseline.stdout.log",
+        "sha256": "5d87665cefab077520e28a4f159eb51e5c6c60611229faa6037f03812081bbd5"
+      },
+      "stderr": {
+        "path": "/home/forks/AResearch/Agent/hello-agents-lab/secskill-lab/utcs/rig/goose_validation/validation/instrument-selftests-local-20260914T124350Z/score_baseline.stderr.log",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "summary": {
+        "all_pass": true,
+        "passed": 30,
+        "total": 30,
+        "run": 0,
+        "synthetic_only": true
+      },
+      "report": {
+        "path": "/home/forks/AResearch/Agent/hello-agents-lab/secskill-lab/utcs/rig/goose_validation/validation/instrument-selftests-local-20260914T124350Z/score_baseline.result.json",
+        "sha256": "667a3da118d60a55a08baf63cb4545f0ee6ccb2ae7231064c19b7ad199b4fbf2"
+      }
+    }
+  ],
+  "all_pass": true
+}

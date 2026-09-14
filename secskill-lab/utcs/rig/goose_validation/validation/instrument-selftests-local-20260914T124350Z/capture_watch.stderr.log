@@ -1,0 +1,14 @@
+test_24_rotations_preserve_final_buffered_contents (__main__.CaptureTests.test_24_rotations_preserve_final_buffered_contents) ... ok
+test_create_already_renamed_and_final_drain (__main__.CaptureTests.test_create_already_renamed_and_final_drain) ... ok
+test_duplicate_inode_initial_aliases_are_deduplicated (__main__.CaptureTests.test_duplicate_inode_initial_aliases_are_deduplicated) ... ok
+test_inotify_overflow_event_fails_closed (__main__.CaptureTests.test_inotify_overflow_event_fails_closed) ... ok
+test_open_writer_at_stop_is_not_complete (__main__.CaptureTests.test_open_writer_at_stop_is_not_complete) ... ok
+test_source_directory_move_is_rejected (__main__.CaptureTests.test_source_directory_move_is_rejected) ... ok
+test_symlink_request_is_rejected (__main__.CaptureTests.test_symlink_request_is_rejected) ... ok
+test_truncated_inotify_records_are_rejected (__main__.CaptureTests.test_truncated_inotify_records_are_rejected) ... ok
+test_unrecoverable_rotated_away_requests_fail (__main__.CaptureTests.test_unrecoverable_rotated_away_requests_fail) ... ok
+
+----------------------------------------------------------------------
+Ran 9 tests in 1.383s
+
+OK

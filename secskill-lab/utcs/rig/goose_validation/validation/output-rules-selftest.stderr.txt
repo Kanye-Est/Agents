@@ -1,0 +1,42 @@
+test_destination_restriction_is_rejected (__main__.OutputRulesTests.test_destination_restriction_is_rejected) ... ok
+test_duplicate_path_option_is_rejected (__main__.OutputRulesTests.test_duplicate_path_option_is_rejected) ... ok
+test_empty_expected_path_is_rejected (__main__.OutputRulesTests.test_empty_expected_path_is_rejected) ... ok
+test_empty_output_is_rejected (__main__.OutputRulesTests.test_empty_output_is_rejected) ... ok
+test_expected_values_are_not_trimmed (__main__.OutputRulesTests.test_expected_values_are_not_trimmed) ... ok
+test_explicit_all_protocol_option_is_not_accepted (__main__.OutputRulesTests.test_explicit_all_protocol_option_is_not_accepted) ... ok
+test_goto_instead_of_jump_is_rejected (__main__.OutputRulesTests.test_goto_instead_of_jump_is_rejected) ... ok
+test_invalid_utf8_preserves_hash_and_fails_closed (__main__.OutputRulesTests.test_invalid_utf8_preserves_hash_and_fails_closed) ... ok
+test_ipv6_chain_uses_same_exact_verifier (__main__.OutputRulesTests.test_ipv6_chain_uses_same_exact_verifier) ... ok
+test_leading_slash_is_not_normalized (__main__.OutputRulesTests.test_leading_slash_is_not_normalized) ... ok
+test_missing_final_newline_is_not_synthesized (__main__.OutputRulesTests.test_missing_final_newline_is_not_synthesized) ... ok
+test_negated_cgroup_is_rejected (__main__.OutputRulesTests.test_negated_cgroup_is_rejected) ... ok
+test_nul_is_rejected (__main__.OutputRulesTests.test_nul_is_rejected) ... ok
+test_original_rule_whitespace_and_crlf_are_retained (__main__.OutputRulesTests.test_original_rule_whitespace_and_crlf_are_retained) ... ok
+test_other_chain_does_not_supply_an_output_rule (__main__.OutputRulesTests.test_other_chain_does_not_supply_an_output_rule) ... ok
+test_path_prefix_cannot_match (__main__.OutputRulesTests.test_path_prefix_cannot_match) ... ok
+test_policy_only_is_rejected (__main__.OutputRulesTests.test_policy_only_is_rejected) ... ok
+test_prior_accept_is_rejected (__main__.OutputRulesTests.test_prior_accept_is_rejected) ... ok
+test_protocol_restriction_is_rejected (__main__.OutputRulesTests.test_protocol_restriction_is_rejected) ... ok
+test_quoted_and_unquoted_paths_have_identical_tokens (__main__.OutputRulesTests.test_quoted_and_unquoted_paths_have_identical_tokens) ... ok
+test_quoted_chain_is_equivalent (__main__.OutputRulesTests.test_quoted_chain_is_equivalent) ... ok
+test_reordered_tokens_are_rejected (__main__.OutputRulesTests.test_reordered_tokens_are_rejected) ... ok
+test_saved_stdout_direct_replay_and_provenance (__main__.OutputRulesTests.test_saved_stdout_direct_replay_and_provenance) ... ok
+test_single_quoted_path_is_equivalent (__main__.OutputRulesTests.test_single_quoted_path_is_equivalent) ... ok
+test_string_source_is_not_silently_encoded (__main__.OutputRulesTests.test_string_source_is_not_silently_encoded) ... ok
+test_subsequent_output_rules_do_not_change_first_rule (__main__.OutputRulesTests.test_subsequent_output_rules_do_not_change_first_rule) ... ok
+test_trailing_comment_is_not_stripped (__main__.OutputRulesTests.test_trailing_comment_is_not_stripped) ... ok
+test_unclosed_quote_after_valid_rule_fails_closed (__main__.OutputRulesTests.test_unclosed_quote_after_valid_rule_fails_closed) ... ok
+test_unclosed_quote_before_valid_rule_fails_closed (__main__.OutputRulesTests.test_unclosed_quote_before_valid_rule_fails_closed) ... ok
+test_wrong_chain_is_rejected (__main__.OutputRulesTests.test_wrong_chain_is_rejected) ... ok
+test_wrong_path_is_rejected (__main__.OutputRulesTests.test_wrong_path_is_rejected) ... ok
+test_cli_direct_replay_preserves_saved_source (__main__.OutputRulesCliTests.test_cli_direct_replay_preserves_saved_source) ... ok
+test_cli_does_not_follow_output_symlink (__main__.OutputRulesCliTests.test_cli_does_not_follow_output_symlink) ... ok
+test_cli_failure_exits_two_and_saves_error (__main__.OutputRulesCliTests.test_cli_failure_exits_two_and_saves_error) ... ok
+test_cli_missing_source_saves_read_error (__main__.OutputRulesCliTests.test_cli_missing_source_saves_read_error) ... ok
+test_cli_never_overwrites_existing_output (__main__.OutputRulesCliTests.test_cli_never_overwrites_existing_output) ... ok
+test_cli_source_cannot_be_overwritten_as_output (__main__.OutputRulesCliTests.test_cli_source_cannot_be_overwritten_as_output) ... ok
+
+----------------------------------------------------------------------
+Ran 37 tests in 0.223s
+
+OK

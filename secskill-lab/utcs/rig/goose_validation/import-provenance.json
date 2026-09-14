@@ -1,0 +1,106 @@
+{
+  "run": 0,
+  "vm_root": "/ephemeral/ubuntu/logs/qwen3-32b-awq-20260914T080414Z/rig-validation-20260914T103238Z",
+  "files": [
+    {
+      "local": "http_capture.py",
+      "source": "/ephemeral/ubuntu/logs/qwen3-32b-awq-20260914T080414Z/rig-validation-20260914T103238Z/05-validation/adapter/http_capture.py",
+      "sha256": "144d323cfb814753d40951d52f8b83c44f638ce9d7ab5fd862e9e8311aa04d33"
+    },
+    {
+      "local": "http_capture_selftest.py",
+      "source": "/ephemeral/ubuntu/logs/qwen3-32b-awq-20260914T080414Z/rig-validation-20260914T103238Z/05-validation/adapter/http_capture_selftest.py",
+      "sha256": "68bba9bc46b37074e568f93f2d0568eaf1559cf317ee3b56d44f2cc0fd4db6b5"
+    },
+    {
+      "local": "capture_watch.py",
+      "source": "/ephemeral/ubuntu/logs/qwen3-32b-awq-20260914T080414Z/rig-validation-20260914T103238Z/05-validation/adapter/capture_watch.py",
+      "sha256": "7b929423da5b1dfab415ec522610f16a5a48d2631f175b16af78a5b810561561"
+    },
+    {
+      "local": "capture_watch_selftest.py",
+      "source": "/ephemeral/ubuntu/logs/qwen3-32b-awq-20260914T080414Z/rig-validation-20260914T103238Z/05-validation/adapter/capture_watch_selftest.py",
+      "sha256": "96cf736953727bc6b05060a98dd6558169604b33f2ac84aba6e5fc9eeb9c3940"
+    },
+    {
+      "local": "goose_trajectory_adapter.py",
+      "source": "/ephemeral/ubuntu/logs/qwen3-32b-awq-20260914T080414Z/rig-validation-20260914T103238Z/05-validation/adapter/goose_trajectory_adapter.py",
+      "sha256": "3fcfd02e1ffa40aadf289c9f14c48104e522569fcd8fb5fe1d6b0007c9dcb11a"
+    },
+    {
+      "local": "goose_trajectory_adapter_selftest.py",
+      "source": "/ephemeral/ubuntu/logs/qwen3-32b-awq-20260914T080414Z/rig-validation-20260914T103238Z/05-validation/adapter/goose_trajectory_adapter_selftest.py",
+      "sha256": "a8a09cb59a0d41ac7d43b60944b12b809a5dd1d5882e5631567604517be8fb1d"
+    },
+    {
+      "local": "rig_gate.py",
+      "source": "/ephemeral/ubuntu/logs/qwen3-32b-awq-20260914T080414Z/rig-validation-20260914T103238Z/05-validation/control/rig_gate.py",
+      "sha256": "db882e8e0b32c2019c829927e268b7c884dd21bb61675866ff2c0af6423a271b"
+    },
+    {
+      "local": "score_baseline.py",
+      "source": "/ephemeral/ubuntu/logs/qwen3-32b-awq-20260914T080414Z/rig-validation-20260914T103238Z/05-validation/control/score_baseline.py",
+      "sha256": "430ff3c4ed70cdb34b9f352f21b80ff9bead785bf4c467c7e58bacd549ce3b15"
+    },
+    {
+      "local": "score_baseline_selftest.py",
+      "source": "/ephemeral/ubuntu/logs/qwen3-32b-awq-20260914T080414Z/rig-validation-20260914T103238Z/05-validation/control/score_baseline_selftest.py",
+      "sha256": "4bf32825c1c05a0bc8a4465aba3a630440b58cda9a7818c4d49a677d83f31aaf"
+    },
+    {
+      "local": "osv_unavailable.py",
+      "source": "/ephemeral/ubuntu/logs/qwen3-32b-awq-20260914T080414Z/rig-validation-20260914T103238Z/05-validation/control/osv_unavailable.py",
+      "sha256": "59c366640bc824991f4817fb1c3c421bf4e79b5aba42acece68df3fe19a3d1a6"
+    },
+    {
+      "local": "prepare_controls.py",
+      "source": "/ephemeral/ubuntu/logs/qwen3-32b-awq-20260914T080414Z/rig-validation-20260914T103238Z/05-validation/control/fix-candidate/prepare_controls.py",
+      "sha256": "06dda027f0f9024fe91e6150cc6fc3c16355cc635908504201d9235959d4af41"
+    },
+    {
+      "local": "launch_baseline.py",
+      "source": "/ephemeral/ubuntu/logs/qwen3-32b-awq-20260914T080414Z/rig-validation-20260914T103238Z/05-validation/control/fix-candidate/launch_baseline.py",
+      "sha256": "1f138ec2a66ddcb223ecb4fe97aefbe6e6e9a52f4abe858d4403759a3326b8bb"
+    },
+    {
+      "local": "freeze_baseline.py",
+      "source": "/ephemeral/ubuntu/logs/qwen3-32b-awq-20260914T080414Z/rig-validation-20260914T103238Z/05-validation/freeze_baseline.py",
+      "sha256": "4d6eb2f122369176e0fd2417eed2a386615cc2bbd136e7c7f0438a05841dd719"
+    },
+    {
+      "local": "rig_helpers.sh",
+      "source": "/ephemeral/ubuntu/logs/qwen3-32b-awq-20260914T080414Z/rig-validation-20260914T103238Z/rig_helpers.sh",
+      "sha256": "76c7dc66b8b7f38c792cdeed143e9e195b2925f9bc024fb278cfbcf7c8af4595"
+    },
+    {
+      "local": "archive_phase.py",
+      "source": "/ephemeral/ubuntu/logs/qwen3-32b-awq-20260914T080414Z/rig-validation-20260914T103238Z/archive_phase.py",
+      "sha256": "2610695b4a8166c6f5dc78531bbecf73f09f0206f318794b207885e37c285598"
+    },
+    {
+      "local": "baseline/T-A.prompt.txt",
+      "source": "/ephemeral/ubuntu/logs/qwen3-32b-awq-20260914T080414Z/rig-validation-20260914T103238Z/05-validation/freeze/prompt.txt",
+      "sha256": "af86281596b7e9c7f6030811a3f0d9972939917f586ea73e822a7b548a389016"
+    },
+    {
+      "local": "baseline/T-A.input.md",
+      "source": "/ephemeral/ubuntu/logs/qwen3-32b-awq-20260914T080414Z/rig-validation-20260914T103238Z/05-validation/freeze/input.md",
+      "sha256": "3a4e0f8725b95d48c53b8a1304b5ca475f1c5cc353b702cade0d4b21819a7029"
+    },
+    {
+      "local": "baseline/T-A.expected.md",
+      "source": "/ephemeral/ubuntu/logs/qwen3-32b-awq-20260914T080414Z/rig-validation-20260914T103238Z/05-validation/freeze/expected.md",
+      "sha256": "56cb968204a24faec245a73cd0b1db9e116ef7bac96ba44da7da2c50dd9e8707"
+    },
+    {
+      "local": "baseline/original-freeze-record.json",
+      "source": "/ephemeral/ubuntu/logs/qwen3-32b-awq-20260914T080414Z/rig-validation-20260914T103238Z/05-validation/freeze/record.json",
+      "sha256": "e156669d70efb8bd57de2cbdcc13e9b8cd31121d2b26f2e08d0555eae09ca7ab"
+    },
+    {
+      "local": "tests/fixtures/iptables-output-before.txt",
+      "source": "/ephemeral/ubuntu/logs/qwen3-32b-awq-20260914T080414Z/rig-validation-20260914T103238Z/05-validation/control/iptables-output-before.txt",
+      "sha256": "3ee5279a5a81057f9733f0f1c04cc91256e032ef5d3ae81807cbbb6b4d87b55c"
+    }
+  ]
+}

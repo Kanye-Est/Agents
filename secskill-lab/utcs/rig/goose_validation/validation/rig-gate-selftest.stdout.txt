@@ -1,0 +1,119 @@
+{
+  "all_pass": true,
+  "fixtures": "pure functions and mocked sockets only",
+  "passed": 27,
+  "run": 0,
+  "schema": "utcs_rig_gate_selftest_v1",
+  "tests": [
+    {
+      "name": "tcp_positive_success",
+      "passed": true
+    },
+    {
+      "name": "tcp_positive_refusal_fails",
+      "passed": true
+    },
+    {
+      "name": "tcp_negative_refusal_passes",
+      "passed": true
+    },
+    {
+      "name": "tcp_negative_admin_denial_passes",
+      "passed": true
+    },
+    {
+      "name": "ipv6_negative_admin_denial_passes",
+      "passed": true
+    },
+    {
+      "name": "tcp_negative_success_fails",
+      "passed": true
+    },
+    {
+      "name": "tcp_negative_timeout_fails",
+      "passed": true
+    },
+    {
+      "name": "tcp_negative_unrelated_errno_fails",
+      "passed": true
+    },
+    {
+      "name": "udp_send_denial_passes",
+      "passed": true
+    },
+    {
+      "name": "udp_receive_denial_non_dns_payload",
+      "passed": true
+    },
+    {
+      "name": "udp_connect_denial_insufficient",
+      "passed": true
+    },
+    {
+      "name": "udp_returned_data_fails",
+      "passed": true
+    },
+    {
+      "name": "udp_receive_timeout_fails",
+      "passed": true
+    },
+    {
+      "name": "cgroup_v2_path",
+      "passed": true
+    },
+    {
+      "name": "root_cgroup_rejected",
+      "passed": true
+    },
+    {
+      "name": "cgroup_v1_rejected",
+      "passed": true
+    },
+    {
+      "name": "abstract_unix_address_preserved",
+      "passed": true
+    },
+    {
+      "name": "unix_fd_allowed",
+      "passed": true
+    },
+    {
+      "name": "inherited_ipv4_rejected",
+      "passed": true
+    },
+    {
+      "name": "inherited_ipv6_rejected",
+      "passed": true
+    },
+    {
+      "name": "privilege_requirement",
+      "passed": true
+    },
+    {
+      "name": "capability_requirement",
+      "passed": true
+    },
+    {
+      "name": "writable_cgroup_rejected",
+      "passed": true
+    },
+    {
+      "name": "release_hash_required",
+      "passed": true
+    },
+    {
+      "name": "release_valid_hashes",
+      "passed": true
+    },
+    {
+      "name": "release_duplicate_json_rejected",
+      "passed": true
+    },
+    {
+      "name": "abort_prevents_socket_creation",
+      "passed": true
+    }
+  ],
+  "total": 27,
+  "wrapper_version": "1.0.0"
+}

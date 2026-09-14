@@ -1,0 +1,37 @@
+{
+  "run": 0,
+  "recorded_at_utc": "2026-09-14T12:46:10.128082+00:00",
+  "argv": [
+    "/usr/bin/python3",
+    "/home/forks/AResearch/Agent/hello-agents-lab/secskill-lab/utcs/rig/goose_validation/output_rules.py",
+    "--rules-file",
+    "/home/forks/AResearch/Agent/hello-agents-lab/secskill-lab/utcs/rig/goose_validation/tests/fixtures/iptables-output-before.txt",
+    "--expected-cgroup",
+    "system.slice/utcs-rig-ta-20260914-103238.service",
+    "--expected-chain",
+    "UTCS_RIG4_103238",
+    "--output",
+    "/home/forks/AResearch/Agent/hello-agents-lab/secskill-lab/utcs/rig/goose_validation/validation/original-output-replay.corrected-call.json"
+  ],
+  "exit_code": 0,
+  "input_bytes": 115,
+  "input_sha256": "3ee5279a5a81057f9733f0f1c04cc91256e032ef5d3ae81807cbbb6b4d87b55c",
+  "verifier_sha256": "5ef49b873a4d5bb04e53f1ff733c33ef3c0012a895979950ccba62cb8114da9b",
+  "input_matches_original_command_stdout": true,
+  "original_rule_first_line": [
+    "-A",
+    "OUTPUT",
+    "-m",
+    "cgroup",
+    "--path",
+    "system.slice/utcs-rig-ta-20260914-103238.service",
+    "-j",
+    "UTCS_RIG4_103238"
+  ],
+  "correction_note": "Initial replay invocation mistakenly supplied an absolute expected cgroup. That invocation was rejected and retained. This corrected invocation uses the cgroup-root-relative path required by iptables --path and already used by the original controller (cg.lstrip(\"/\")). Input bytes and verifier source were not changed; no rule was relaxed.",
+  "initial_invocation_report": "original-output-replay.json",
+  "successful_replay_report": "original-output-replay.corrected-call.json",
+  "fresh_iptables_command_executed": false,
+  "network_calls": 0,
+  "model_calls": 0
+}

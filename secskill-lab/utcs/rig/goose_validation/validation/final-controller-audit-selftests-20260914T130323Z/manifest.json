@@ -1,0 +1,51 @@
+{
+  "run": 0,
+  "kind": "local offline instrument validation; no VM or model invocation",
+  "python": "3.14.7 (main, Aug 10 2026, 07:46:56) [GCC 16.1.1 20260728]",
+  "results": [
+    {
+      "name": "controllers_selftest",
+      "started_at_utc": "2026-09-14T13:03:23.155473+00:00",
+      "finished_at_utc": "2026-09-14T13:03:23.286465+00:00",
+      "exit_code": 0,
+      "argv": [
+        "/usr/bin/python3",
+        "-B",
+        "/home/forks/AResearch/Agent/hello-agents-lab/secskill-lab/utcs/rig/goose_validation/controllers_selftest.py"
+      ],
+      "selftest_sha256_before": "2eaf1ab8268f1e91e0457c04f7fe06c49db0892ebeef165bf2009256ca751053",
+      "selftest_sha256_after": "2eaf1ab8268f1e91e0457c04f7fe06c49db0892ebeef165bf2009256ca751053",
+      "stdout": {
+        "file": "controllers_selftest.stdout.txt",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stderr": {
+        "file": "controllers_selftest.stderr.txt",
+        "sha256": "b80267439184c1f3acb394579c1b146171e0b5d30021dfa5f944cc701fde4ea3"
+      },
+      "summary_tail": "even_if_root_has_no_pids (__main__.ControllersTest.test_tree_drain_checks_descendants_even_if_root_has_no_pids) ... ok\ntest_tree_without_events_is_not_assumed_empty (__main__.ControllersTest.test_tree_without_events_is_not_assumed_empty) ... ok\ntest_undrained_failure_keeps_capture_and_original_error (__main__.ControllersTest.test_undrained_failure_keeps_capture_and_original_error) ... ok\ntest_watcher_zero_early_exit_rejected (__main__.ControllersTest.test_watcher_zero_early_exit_rejected) ... ok\n\n----------------------------------------------------------------------\nRan 38 tests in 0.010s\n\nOK\n"
+    },
+    {
+      "name": "audit_baseline_envelope_selftest",
+      "started_at_utc": "2026-09-14T13:03:23.155745+00:00",
+      "finished_at_utc": "2026-09-14T13:03:23.280545+00:00",
+      "exit_code": 0,
+      "argv": [
+        "/usr/bin/python3",
+        "-B",
+        "/home/forks/AResearch/Agent/hello-agents-lab/secskill-lab/utcs/rig/goose_validation/audit_baseline_envelope_selftest.py"
+      ],
+      "selftest_sha256_before": "5135f37f6be0dace4d709ccd08de66be57d354d1aeab75438c88262570bb9904",
+      "selftest_sha256_after": "5135f37f6be0dace4d709ccd08de66be57d354d1aeab75438c88262570bb9904",
+      "stdout": {
+        "file": "audit_baseline_envelope_selftest.stdout.txt",
+        "sha256": "a288d33506c9267731da96457a1a7ed39ad91e54e3109714080bedbb4fc5ca5c"
+      },
+      "stderr": {
+        "file": "audit_baseline_envelope_selftest.stderr.txt",
+        "sha256": "3d05426d952e4143b88e420d7bea81cf981bbc78a0a7478073618e2f073bcd90"
+      },
+      "summary_tail": "uditTests.test_nested_workspace_entries_are_reported) ... ok\ntest_reject_growth_is_a_reported_anomaly (__main__.AuditTests.test_reject_growth_is_a_reported_anomaly) ... ok\ntest_snapshot_command_error_is_preserved (__main__.AuditTests.test_snapshot_command_error_is_preserved) ... ok\ntest_timeout_partial_output_is_preserved (__main__.AuditTests.test_timeout_partial_output_is_preserved) ... ok\ntest_workspace_symlink_is_not_followed (__main__.AuditTests.test_workspace_symlink_is_not_followed) ... ok\n\n----------------------------------------------------------------------\nRan 48 tests in 0.016s\n\nOK\n"
+    }
+  ]
+}

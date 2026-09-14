@@ -1,0 +1,43 @@
+test_atomic_new_bytes_never_overwrites (__main__.ControllersTest.test_atomic_new_bytes_never_overwrites) ... ok
+test_atomic_new_bytes_preserves_exact_raw (__main__.ControllersTest.test_atomic_new_bytes_preserves_exact_raw) ... ok
+test_capture_and_watcher_alive (__main__.ControllersTest.test_capture_and_watcher_alive) ... ok
+test_command_output_bytes_and_failure_preserved_once (__main__.ControllersTest.test_command_output_bytes_and_failure_preserved_once) ... ok
+test_completion_publication_race_is_accepted (__main__.ControllersTest.test_completion_publication_race_is_accepted) ... ok
+test_drained_failure_stops_instrumentation_once (__main__.ControllersTest.test_drained_failure_stops_instrumentation_once) ... ok
+test_existing_control_cannot_be_reused (__main__.ControllersTest.test_existing_control_cannot_be_reused) ... ok
+test_exited_wrapper_without_completion_stops (__main__.ControllersTest.test_exited_wrapper_without_completion_stops) ... ok
+test_inactive_wrapper_without_completion_stops (__main__.ControllersTest.test_inactive_wrapper_without_completion_stops) ... ok
+test_manifest_absolute_path_fails (__main__.ControllersTest.test_manifest_absolute_path_fails) ... ok
+test_manifest_change_must_not_be_masked_by_output_rules (__main__.ControllersTest.test_manifest_change_must_not_be_masked_by_output_rules) ... ok
+test_manifest_changed_code_fails (__main__.ControllersTest.test_manifest_changed_code_fails) ... ok
+test_manifest_duplicate_fails (__main__.ControllersTest.test_manifest_duplicate_fails) ... ok
+test_manifest_omitted_nested_helper_fails (__main__.ControllersTest.test_manifest_omitted_nested_helper_fails) ... ok
+test_manifest_parent_escape_fails (__main__.ControllersTest.test_manifest_parent_escape_fails) ... ok
+test_manifest_self_reference_fails (__main__.ControllersTest.test_manifest_self_reference_fails) ... ok
+test_manifest_symlink_outside_fails (__main__.ControllersTest.test_manifest_symlink_outside_fails) ... ok
+test_manifest_valid_all_code_and_support (__main__.ControllersTest.test_manifest_valid_all_code_and_support) ... ok
+test_osv_extra_ipv6_listener_stops (__main__.ControllersTest.test_osv_extra_ipv6_listener_stops) ... ok
+test_osv_ready_pid_mismatch_stops (__main__.ControllersTest.test_osv_ready_pid_mismatch_stops) ... ok
+test_osv_reuse_checks_proc_source_and_never_restarts (__main__.ControllersTest.test_osv_reuse_checks_proc_source_and_never_restarts) ... ok
+test_osv_source_hash_mismatch_stops (__main__.ControllersTest.test_osv_source_hash_mismatch_stops) ... ok
+test_osv_systemd_pid_mismatch_stops (__main__.ControllersTest.test_osv_systemd_pid_mismatch_stops) ... ok
+test_osv_wildcard_listener_stops (__main__.ControllersTest.test_osv_wildcard_listener_stops) ... ok
+test_precreated_logs_owned_and_exclusive (__main__.ControllersTest.test_precreated_logs_owned_and_exclusive) ... ok
+test_prepared_inputs_detect_environment_and_workspace_changes (__main__.ControllersTest.test_prepared_inputs_detect_environment_and_workspace_changes) ... ok
+test_real_saved_rule_bytes_use_same_runtime_parser (__main__.ControllersTest.test_real_saved_rule_bytes_use_same_runtime_parser) ... ok
+test_real_saved_rule_rejects_wrong_cgroup (__main__.ControllersTest.test_real_saved_rule_rejects_wrong_cgroup) ... ok
+test_service_env_duplicate_stops (__main__.ControllersTest.test_service_env_duplicate_stops) ... ok
+test_service_env_quotes_are_data_not_shell (__main__.ControllersTest.test_service_env_quotes_are_data_not_shell) ... ok
+test_stop_capture_nonzero_early_exit_preserved (__main__.ControllersTest.test_stop_capture_nonzero_early_exit_preserved) ... ok
+test_stop_capture_only_signals_verified_pid (__main__.ControllersTest.test_stop_capture_only_signals_verified_pid) ... ok
+test_stop_capture_zero_early_exit_never_attests_completion (__main__.ControllersTest.test_stop_capture_zero_early_exit_never_attests_completion) ... ok
+test_tcpdump_zero_early_exit_rejected (__main__.ControllersTest.test_tcpdump_zero_early_exit_rejected) ... ok
+test_tree_drain_checks_descendants_even_if_root_has_no_pids (__main__.ControllersTest.test_tree_drain_checks_descendants_even_if_root_has_no_pids) ... ok
+test_tree_without_events_is_not_assumed_empty (__main__.ControllersTest.test_tree_without_events_is_not_assumed_empty) ... ok
+test_undrained_failure_keeps_capture_and_original_error (__main__.ControllersTest.test_undrained_failure_keeps_capture_and_original_error) ... ok
+test_watcher_zero_early_exit_rejected (__main__.ControllersTest.test_watcher_zero_early_exit_rejected) ... ok
+
+----------------------------------------------------------------------
+Ran 38 tests in 0.010s
+
+OK

@@ -1,0 +1,38 @@
+{
+  "errors": [
+    {
+      "code": "first_output_rule_mismatch",
+      "message": "The first -A OUTPUT rule must exactly match the unrestricted cgroup jump"
+    }
+  ],
+  "expected_cgroup": "/system.slice/utcs-rig-ta-20260914-103238.service",
+  "expected_chain": "UTCS_RIG4_103238",
+  "expected_tokens": [
+    "-A",
+    "OUTPUT",
+    "-m",
+    "cgroup",
+    "--path",
+    "/system.slice/utcs-rig-ta-20260914-103238.service",
+    "-j",
+    "UTCS_RIG4_103238"
+  ],
+  "first_rule_line_number": 2,
+  "first_rule_raw": "-A OUTPUT -m cgroup --path \"system.slice/utcs-rig-ta-20260914-103238.service\" -j UTCS_RIG4_103238\n",
+  "first_rule_tokens": [
+    "-A",
+    "OUTPUT",
+    "-m",
+    "cgroup",
+    "--path",
+    "system.slice/utcs-rig-ta-20260914-103238.service",
+    "-j",
+    "UTCS_RIG4_103238"
+  ],
+  "output_file": "/home/forks/AResearch/Agent/hello-agents-lab/secskill-lab/utcs/rig/goose_validation/validation/original-output-replay.json",
+  "passed": false,
+  "raw_byte_count": 115,
+  "raw_sha256": "3ee5279a5a81057f9733f0f1c04cc91256e032ef5d3ae81807cbbb6b4d87b55c",
+  "rules_file": "/home/forks/AResearch/Agent/hello-agents-lab/secskill-lab/utcs/rig/goose_validation/tests/fixtures/iptables-output-before.txt",
+  "schema": "utcs_output_rules_verification_v1"
+}

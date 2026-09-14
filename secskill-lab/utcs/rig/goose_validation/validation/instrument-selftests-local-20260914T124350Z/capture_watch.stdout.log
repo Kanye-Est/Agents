@@ -1,0 +1,10 @@
+{
+  "scope": "synthetic filesystem/inotify fixtures only; no Goose/model/network",
+  "tests_run": 9,
+  "failures": 0,
+  "errors": 0,
+  "successful": true,
+  "watcher_sha256": "7b929423da5b1dfab415ec522610f16a5a48d2631f175b16af78a5b810561561",
+  "selftest_sha256": "96cf736953727bc6b05060a98dd6558169604b33f2ac84aba6e5fc9eeb9c3940",
+  "python_version": "3.14.7"
+}

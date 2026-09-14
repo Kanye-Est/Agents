@@ -1,0 +1,130 @@
+{
+  "all_pass": true,
+  "fixtures": "in-memory synthetic only",
+  "passed": 30,
+  "run": 0,
+  "schema": "utcs_http_capture_selftest_v1",
+  "tests": [
+    {
+      "name": "content_length_json_raw_preservation",
+      "passed": true
+    },
+    {
+      "name": "chunked_sse_unicode_reasoning_raw_arguments_and_trailers",
+      "passed": true
+    },
+    {
+      "name": "two_posts_keepalive",
+      "passed": true
+    },
+    {
+      "name": "out_of_order_and_consistent_retransmission",
+      "passed": true
+    },
+    {
+      "name": "overlap_conflict_rejected",
+      "passed": true
+    },
+    {
+      "name": "missing_segment_rejected",
+      "passed": true
+    },
+    {
+      "name": "ack_reveals_missing_tail",
+      "passed": true
+    },
+    {
+      "name": "truncated_pcap_record",
+      "passed": true
+    },
+    {
+      "name": "snaplen_truncation_rejected",
+      "passed": true
+    },
+    {
+      "name": "nonzero_kernel_drops_rejected",
+      "passed": true
+    },
+    {
+      "name": "missing_tcpdump_statistics_rejected",
+      "passed": true
+    },
+    {
+      "name": "truncated_content_length",
+      "passed": true
+    },
+    {
+      "name": "missing_sse_done",
+      "passed": true
+    },
+    {
+      "name": "unterminated_sse_done",
+      "passed": true
+    },
+    {
+      "name": "unknown_dlt_rejected",
+      "passed": true
+    },
+    {
+      "name": "sll_sll2_null_loop_raw",
+      "passed": true
+    },
+    {
+      "name": "big_endian_nanosecond_pcap",
+      "passed": true
+    },
+    {
+      "name": "unknown_ipv6_filtered_packet_rejected",
+      "passed": true
+    },
+    {
+      "name": "close_delimited_requires_fin",
+      "passed": true
+    },
+    {
+      "name": "conflicting_content_length_rejected",
+      "passed": true
+    },
+    {
+      "name": "te_plus_cl_rejected",
+      "passed": true
+    },
+    {
+      "name": "missing_final_http_chunk",
+      "passed": true
+    },
+    {
+      "name": "tcp_sequence_wrap",
+      "passed": true
+    },
+    {
+      "name": "ancillary_http_and_cross_connection_request_order",
+      "passed": true
+    },
+    {
+      "name": "missing_syn_rejected",
+      "passed": true
+    },
+    {
+      "name": "model_http_error_rejected",
+      "passed": true
+    },
+    {
+      "name": "informational_response_pairing",
+      "passed": true
+    },
+    {
+      "name": "tcp_reset_rejected",
+      "passed": true
+    },
+    {
+      "name": "duplicate_json_key_rejected",
+      "passed": true
+    },
+    {
+      "name": "window_attestation_separate_from_byte_completeness",
+      "passed": true
+    }
+  ],
+  "total": 30
+}

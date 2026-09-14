@@ -1,0 +1,13 @@
+{
+  "scope": "saved stdout replay and synthetic local parser/CLI fixtures; no VM/network/Goose/model",
+  "run": 0,
+  "tests_run": 37,
+  "failures": 0,
+  "errors": 0,
+  "successful": true,
+  "fixture_sha256": "3ee5279a5a81057f9733f0f1c04cc91256e032ef5d3ae81807cbbb6b4d87b55c",
+  "provenance_sha256": "6966c58836f64cd60a0258825243d72ed71d452d1d2df23ba8026ce49dfdf738",
+  "module_sha256": "5ef49b873a4d5bb04e53f1ff733c33ef3c0012a895979950ccba62cb8114da9b",
+  "selftest_sha256": "ccf2d3b3001b9d0ed84c28b18f2418f1325ce0c2ca9e729145ddc0a70a95f4f6",
+  "python_version": "3.14.7"
+}
