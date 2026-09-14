@@ -1,0 +1,292 @@
+{
+  "schema": "utcs_goose_adapter_selftest_v1",
+  "synthetic_only": true,
+  "model_calls_executed": 0,
+  "network_calls_executed": 0,
+  "run": 0,
+  "tests": [
+    {
+      "name": "complete_streaming_pipeline_all_seven_sources_raw_args",
+      "passed": true
+    },
+    {
+      "name": "byte_deterministic_repeat_adaptation",
+      "passed": true
+    },
+    {
+      "name": "missing_preserved_log_refused",
+      "passed": true
+    },
+    {
+      "name": "missing_http_exchange_refused",
+      "passed": true
+    },
+    {
+      "name": "truncated_session_refused",
+      "passed": true
+    },
+    {
+      "name": "native_hash_mismatch_refused",
+      "passed": true
+    },
+    {
+      "name": "hardlink_inode_mismatch_refused",
+      "passed": true
+    },
+    {
+      "name": "unlisted_log_refused",
+      "passed": true
+    },
+    {
+      "name": "duplicate_preserved_inode_refused",
+      "passed": true
+    },
+    {
+      "name": "capture_started_late_refused",
+      "passed": true
+    },
+    {
+      "name": "watcher_not_finalized_refused",
+      "passed": true
+    },
+    {
+      "name": "watcher_error_refused",
+      "passed": true
+    },
+    {
+      "name": "preexisting_request_logs_refused",
+      "passed": true
+    },
+    {
+      "name": "goose_failure_refused",
+      "passed": true
+    },
+    {
+      "name": "upstream_capture_incomplete_refused",
+      "passed": true
+    },
+    {
+      "name": "wire_projection_must_rederive_from_actual_pcap",
+      "passed": true
+    },
+    {
+      "name": "duplicate_exchange_id_refused",
+      "passed": true
+    },
+    {
+      "name": "duplicate_json_key_in_native_log_refused",
+      "passed": true
+    },
+    {
+      "name": "native_partial_final_line_refused",
+      "passed": true
+    },
+    {
+      "name": "native_response_crosscheck_refuses_changed_output",
+      "passed": true
+    },
+    {
+      "name": "native_provider_error_refused",
+      "passed": true
+    },
+    {
+      "name": "unknown_native_block_refused",
+      "passed": true
+    },
+    {
+      "name": "tool_result_error_refused",
+      "passed": true
+    },
+    {
+      "name": "duplicate_session_message_id_refused",
+      "passed": true
+    },
+    {
+      "name": "missing_tool_result_crosscheck_refused",
+      "passed": true
+    },
+    {
+      "name": "actual_wire_prompt_must_match_frozen_bytes",
+      "passed": true
+    },
+    {
+      "name": "tool_full_name_mismatch_refused",
+      "passed": true
+    },
+    {
+      "name": "unknown_backend_field_refused",
+      "passed": true
+    },
+    {
+      "name": "length_finish_refused",
+      "passed": true
+    },
+    {
+      "name": "duplicate_completion_id_refused",
+      "passed": true
+    },
+    {
+      "name": "invalid_tool_arguments_refused",
+      "passed": true
+    },
+    {
+      "name": "model_request_timestamp_bound_to_goose_window",
+      "passed": true
+    },
+    {
+      "name": "permitted_message_metadata_is_retained_in_T",
+      "passed": true
+    },
+    {
+      "name": "native_complete_text_but_missing_final_usage_refused",
+      "passed": true
+    },
+    {
+      "name": "missing_required_log_hash_refused",
+      "passed": true
+    },
+    {
+      "name": "missing_frozen_prompt_hash_refused",
+      "passed": true
+    },
+    {
+      "name": "missing_expected_model_identity_refused",
+      "passed": true
+    },
+    {
+      "name": "vllm_sse_null_metadata_retained_in_envelope_and_T",
+      "passed": true
+    },
+    {
+      "name": "vllm_sse_nonnull_metadata_retained_in_envelope_and_T",
+      "passed": true
+    },
+    {
+      "name": "vllm_prompt_token_ids_scalar_refused",
+      "passed": true
+    },
+    {
+      "name": "vllm_prompt_token_ids_string_refused",
+      "passed": true
+    },
+    {
+      "name": "vllm_prompt_token_ids_object_refused",
+      "passed": true
+    },
+    {
+      "name": "vllm_prompt_token_ids_boolean_element_refused",
+      "passed": true
+    },
+    {
+      "name": "vllm_prompt_token_ids_float_element_refused",
+      "passed": true
+    },
+    {
+      "name": "vllm_prompt_token_ids_null_element_refused",
+      "passed": true
+    },
+    {
+      "name": "vllm_token_ids_scalar_refused",
+      "passed": true
+    },
+    {
+      "name": "vllm_token_ids_string_refused",
+      "passed": true
+    },
+    {
+      "name": "vllm_token_ids_object_refused",
+      "passed": true
+    },
+    {
+      "name": "vllm_token_ids_boolean_element_refused",
+      "passed": true
+    },
+    {
+      "name": "vllm_token_ids_float_element_refused",
+      "passed": true
+    },
+    {
+      "name": "vllm_token_ids_null_element_refused",
+      "passed": true
+    },
+    {
+      "name": "vllm_stop_reason_boolean_refused",
+      "passed": true
+    },
+    {
+      "name": "vllm_stop_reason_float_refused",
+      "passed": true
+    },
+    {
+      "name": "vllm_stop_reason_object_refused",
+      "passed": true
+    },
+    {
+      "name": "vllm_stop_reason_array_refused",
+      "passed": true
+    },
+    {
+      "name": "vllm_prompt_token_ids_wrong_layer_refused",
+      "passed": true
+    },
+    {
+      "name": "vllm_token_ids_wrong_layer_refused",
+      "passed": true
+    },
+    {
+      "name": "vllm_stop_reason_wrong_layer_refused",
+      "passed": true
+    },
+    {
+      "name": "unknown_top_level_null_field_still_refused",
+      "passed": true
+    },
+    {
+      "name": "unknown_choice_nonnull_field_still_refused",
+      "passed": true
+    },
+    {
+      "name": "final_turn_reasoning_content_cross_chunk_marker_contiguous",
+      "passed": true
+    },
+    {
+      "name": "final_turn_reasoning_cross_chunk_marker_contiguous",
+      "passed": true
+    },
+    {
+      "name": "both_backend_reasoning_fields_retained",
+      "passed": true
+    },
+    {
+      "name": "complete_nonstream_json_pipeline",
+      "passed": true
+    },
+    {
+      "name": "vllm_json_null_metadata_retained_in_envelope_and_T",
+      "passed": true
+    },
+    {
+      "name": "vllm_json_nonnull_metadata_retained_in_envelope_and_T",
+      "passed": true
+    },
+    {
+      "name": "vllm_json_prompt_token_ids_boolean_refused",
+      "passed": true
+    },
+    {
+      "name": "vllm_json_token_ids_float_refused",
+      "passed": true
+    },
+    {
+      "name": "vllm_json_stop_reason_object_refused",
+      "passed": true
+    }
+  ],
+  "passed": 69,
+  "total": 69,
+  "all_pass": true,
+  "adapter_sha256": "6a4064f32279c1b255f1d580053063bd35739ec1211b6d6b530a51ae03c3142a",
+  "selftest_sha256": "3613cc793e0b8cd9d2a85163d1d2299b1303b9a8ecc9d053afd8611897a37310",
+  "http_decoder_sha256": "144d323cfb814753d40951d52f8b83c44f638ce9d7ab5fd862e9e8311aa04d33",
+  "consumer_sha256": "49c5a0eb7f2939c4dc05a5473db4da15db96bf6d34e686a0182436987e40a586"
+}

@@ -1,0 +1,1 @@
+{"capture_complete": true, "errors": [], "events": 49, "output_dir": "/ephemeral/ubuntu/logs/qwen3-32b-awq-20260914T080414Z/rig-validation-20260914T103238Z/07-adapter-v1_2-replay-20260914T134814Z/trajectory-v1_2", "trajectory_absent_assessed": false, "run": 0}

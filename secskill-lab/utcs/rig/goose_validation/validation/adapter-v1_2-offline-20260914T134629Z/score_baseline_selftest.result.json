@@ -1,0 +1,133 @@
+{
+  "adapter_sha256": "6a4064f32279c1b255f1d580053063bd35739ec1211b6d6b530a51ae03c3142a",
+  "all_pass": true,
+  "passed": 30,
+  "real_model_calls": 0,
+  "run": 0,
+  "scorer_sha256": "9fde778de29633e02a8985facb3c3f6bd9f60467bbc0ad1c0820e01be028eaef",
+  "selftest_sha256": "ebdb7b6f016231cbcff581e7470177940bc926edf3ba220a83ad2d01b9db72ff",
+  "synthetic_only": true,
+  "tests": [
+    {
+      "name": "exact_positive_stream_fragments_crlf",
+      "passed": true
+    },
+    {
+      "name": "final_missing_lf_no_repair",
+      "passed": true
+    },
+    {
+      "name": "final_extra_lf_no_strip",
+      "passed": true
+    },
+    {
+      "name": "outer_fence_not_removed",
+      "passed": true
+    },
+    {
+      "name": "native_text_blocks_join_lf_positive",
+      "passed": true
+    },
+    {
+      "name": "native_text_blocks_do_not_concatenate",
+      "passed": true
+    },
+    {
+      "name": "function_mismatch_independent_of_final_task",
+      "passed": true
+    },
+    {
+      "name": "changed_args_same_result_diagnostic",
+      "passed": true
+    },
+    {
+      "name": "args_return_fidelity_separate_from_function",
+      "passed": true
+    },
+    {
+      "name": "named_tool_choice_fails",
+      "passed": true
+    },
+    {
+      "name": "required_forced_any_fails",
+      "passed": true
+    },
+    {
+      "name": "legacy_named_function_fails",
+      "passed": true
+    },
+    {
+      "name": "namespace_derived_from_published_schema",
+      "passed": true
+    },
+    {
+      "name": "other_tool_not_permitted",
+      "passed": true
+    },
+    {
+      "name": "published_descriptor_mismatch",
+      "passed": true
+    },
+    {
+      "name": "unused_other_advertised_schema_is_recorded_not_a_call",
+      "passed": true
+    },
+    {
+      "name": "missing_native_response",
+      "passed": true
+    },
+    {
+      "name": "missing_wire_refeed",
+      "passed": true
+    },
+    {
+      "name": "changed_wire_refeed",
+      "passed": true
+    },
+    {
+      "name": "changed_history_call",
+      "passed": true
+    },
+    {
+      "name": "native_execution_error",
+      "passed": true
+    },
+    {
+      "name": "wire_projection_raw_http_crosscheck",
+      "passed": true
+    },
+    {
+      "name": "incomplete_capture_rejected",
+      "passed": true
+    },
+    {
+      "name": "frozen_hash_mismatch",
+      "passed": true
+    },
+    {
+      "name": "name_leakage_recomputed",
+      "passed": true
+    },
+    {
+      "name": "missing_selected_call",
+      "passed": true
+    },
+    {
+      "name": "unverified_module_not_executed",
+      "passed": true
+    },
+    {
+      "name": "cli_zero_no_overwrite",
+      "passed": true
+    },
+    {
+      "name": "cli_two_preserves_failure_facts",
+      "passed": true
+    },
+    {
+      "name": "actual_frozen_bytes_synthetic_session_wire",
+      "passed": true
+    }
+  ],
+  "total": 30
+}

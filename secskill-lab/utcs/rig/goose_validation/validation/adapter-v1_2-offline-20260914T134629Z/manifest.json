@@ -1,0 +1,54 @@
+{
+  "run": 0,
+  "kind": "B-line offline adapter repair and shared-parser scoring regression; no model/Goose calls",
+  "python": "3.14.7 (main, Aug 10 2026, 07:46:56) [GCC 16.1.1 20260728]",
+  "node_version": "v25.2.1",
+  "parent_instrument_commit": "ec435749c75552561fe93d1d163ddc6534d0c63f",
+  "source_sha256": {
+    "goose_trajectory_adapter.py": "6a4064f32279c1b255f1d580053063bd35739ec1211b6d6b530a51ae03c3142a",
+    "goose_trajectory_adapter_selftest.py": "3613cc793e0b8cd9d2a85163d1d2299b1303b9a8ecc9d053afd8611897a37310",
+    "score_baseline.py": "9fde778de29633e02a8985facb3c3f6bd9f60467bbc0ad1c0820e01be028eaef",
+    "score_baseline_selftest.py": "ebdb7b6f016231cbcff581e7470177940bc926edf3ba220a83ad2d01b9db72ff",
+    "http_capture.py": "144d323cfb814753d40951d52f8b83c44f638ce9d7ab5fd862e9e8311aa04d33"
+  },
+  "results": [
+    {
+      "argv": [
+        "/usr/bin/python3",
+        "-B",
+        "/home/forks/AResearch/Agent/hello-agents-lab/secskill-lab/utcs/rig/goose_validation/goose_trajectory_adapter_selftest.py",
+        "--output",
+        "/home/forks/AResearch/Agent/hello-agents-lab/secskill-lab/utcs/rig/goose_validation/validation/adapter-v1_2-offline-20260914T134629Z/goose_trajectory_adapter_selftest.result.json"
+      ],
+      "started_at_utc": "2026-09-14T13:46:29.073264+00:00",
+      "finished_at_utc": "2026-09-14T13:46:30.106168+00:00",
+      "exit_code": 0,
+      "passed": 69,
+      "total": 69,
+      "all_pass": true,
+      "result_file": "goose_trajectory_adapter_selftest.result.json",
+      "result_sha256": "aaca729f3525595789e668cfaa86ae74a469b15f79b524f0faf1635e76309b72",
+      "stdout_sha256": "1545df2f83d197c1603a7d10ad58b9c5a6de92435e4c53186c9d2e04d8abd72c",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "/usr/bin/python3",
+        "-B",
+        "/home/forks/AResearch/Agent/hello-agents-lab/secskill-lab/utcs/rig/goose_validation/score_baseline_selftest.py",
+        "--output",
+        "/home/forks/AResearch/Agent/hello-agents-lab/secskill-lab/utcs/rig/goose_validation/validation/adapter-v1_2-offline-20260914T134629Z/score_baseline_selftest.result.json"
+      ],
+      "started_at_utc": "2026-09-14T13:46:29.073422+00:00",
+      "finished_at_utc": "2026-09-14T13:46:39.888930+00:00",
+      "exit_code": 0,
+      "passed": 30,
+      "total": 30,
+      "all_pass": true,
+      "result_file": "score_baseline_selftest.result.json",
+      "result_sha256": "604bac25b8eda79315d29a23dd2fe4035fd1334457b2518ef2d285d6e4eb1a6a",
+      "stdout_sha256": "5d87665cefab077520e28a4f159eb51e5c6c60611229faa6037f03812081bbd5",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ]
+}

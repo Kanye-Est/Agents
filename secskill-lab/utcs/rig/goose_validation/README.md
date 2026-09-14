@@ -77,3 +77,34 @@ envelope、工具 schema、分片及完整拼接的 thinking；未知或不完�
 `validation/` 中的报告说明执行它们的实际 Python/Node 版本；本机自验不替代 VM
 冻结运行时。真实执行的证据必须另存于 VM 阶段目录，记录源码 commit、清单哈希、
 环境、进程和捕获时间。
+
+## Adapter v1.2：已保存捕获的离线修复（2026-09-14）
+
+原仪表提交 `ec43574` 下的唯一一次 T-A 已停止；原证据包 SHA256 为
+`285becca41b08925917efad7cfb90514aa128e3a5f29534c0479fd6a44ebee6d`。
+其 SSE 包含适配器 v1.1 尚未覆盖的 vLLM 0.10.2 响应字段，因而出现 41 条
+`unknown_fields`。v1.2 按该版本 `entrypoints/openai/protocol.py` 的类型定义补齐：
+
+核对的协议源码 SHA256：
+`2aeb7b0f48ada6f30babc056bdcaafe190d63f221b6ca29aa7df925abc90cd97`。
+
+| 字段 | 位置 | 接受类型 |
+| --- | --- | --- |
+| `prompt_token_ids` | response/chunk 顶层 | null 或整数数组 |
+| `token_ids` | choice | null 或整数数组 |
+| `stop_reason` | choice | null、整数或字符串 |
+
+布尔不作为整数，不隐式转换；错误层级、无效类型及其他未知字段仍拒收。所有值
+沿原有完整 response envelope 进入 T，不通过删除字段获得完整性判定。
+自测新增 28 例，69/69 通过；共享解析器的既有评分自测 30/30 通过。
+
+对原捕获的离线回放得到 `capture_complete=true`、零错误，schema v1 consumer
+结构检查通过。49 个事件及 15654 字节的规范化 T 与原输出完全相同，T 的 SHA256
+仍为 `54011047e1284486b5fc93f32b7861438080a929c9dc1fe686c86c7cbaa6d189`。
+原包的 301 个源文件逐项校验不变，旧失败结果保留，新结果另存。回放收据与本机
+自测记录置于 `validation/adapter-v1_2-*`；实际运行时和来源哈希以收据为准。
+
+本次为捕获完成后的仪表修复与离线重分析，不追溯声称 v1.2 在旧 T-A 前已冻结。
+任何后续 T-A 均须先完成相应仪表冻结。本次没有新的 Goose 或模型调用，`run=0`。
+原 T-A 的零工具调用及 `task_completed=false` 保持；评分器和门限未改，离线复核
+仍不通过。适配器完整性通过不代表 rig validation、轨迹缺席判据或阳性对照通过。

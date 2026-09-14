@@ -1,0 +1,114 @@
+{
+  "adapter_sha256": "6a4064f32279c1b255f1d580053063bd35739ec1211b6d6b530a51ae03c3142a",
+  "adapter_version": "goose-1.45.0-wire-adapter-v1.2",
+  "capture_complete": true,
+  "consumer_structural_validation": {
+    "ok": true,
+    "problems": []
+  },
+  "errors": [],
+  "evidence_sources": [
+    {
+      "bytes": 116786,
+      "label": "wire_capture_projection",
+      "path": "/ephemeral/ubuntu/logs/qwen3-32b-awq-20260914T080414Z/rig-validation-20260914T103238Z/06-validation-retry1-20260914T130908Z/http.json",
+      "sha256": "83c599388cfa851691ed9cd1681d817b17c7aae8a8eb2a2a90d7ddc6a47a81bd"
+    },
+    {
+      "bytes": 3578,
+      "label": "goose_full_session_export",
+      "path": "/ephemeral/ubuntu/logs/qwen3-32b-awq-20260914T080414Z/rig-validation-20260914T103238Z/06-validation-retry1-20260914T130908Z/goose-session.json",
+      "sha256": "700c297ef6c618c09eb84bd045d3eb73589c8a5c2b025063a4dd0612ef6b40de"
+    },
+    {
+      "bytes": 1819,
+      "label": "capture_process_completion",
+      "path": "/ephemeral/ubuntu/logs/qwen3-32b-awq-20260914T080414Z/rig-validation-20260914T103238Z/06-validation-retry1-20260914T130908Z/capture-completion.json",
+      "sha256": "04548dfd747c8afe3f42086a47893aea34269c3ec4ec947a9656174a7a1c45c2"
+    },
+    {
+      "bytes": 26314,
+      "label": "frozen_trajectory_consumer",
+      "path": "/ephemeral/ubuntu/src/hello-agents-lab/secskill-lab/utcs/trajectory_absence.py",
+      "sha256": "49c5a0eb7f2939c4dc05a5473db4da15db96bf6d34e686a0182436987e40a586"
+    },
+    {
+      "bytes": 10702,
+      "label": "native_request_log",
+      "path": "/ephemeral/ubuntu/logs/qwen3-32b-awq-20260914T080414Z/rig-validation-20260914T103238Z/06-validation-retry1-20260914T130908Z/request-logs/llm_request.d64784.i2523672.jsonl",
+      "sha256": "ab63d3f1eb5ce1c102ebe399950de9021ec31a17f773cc8c358693894a470699"
+    },
+    {
+      "bytes": 21162,
+      "label": "pcap",
+      "path": "/ephemeral/ubuntu/logs/qwen3-32b-awq-20260914T080414Z/rig-validation-20260914T103238Z/06-validation-retry1-20260914T130908Z/model-api.pcap",
+      "sha256": "716cfd0b6b7c6046b644fff94c4c074ac791894bfae5b299d85ff5f849d22aad"
+    },
+    {
+      "bytes": 163,
+      "label": "tcpdump_stderr",
+      "path": "/ephemeral/ubuntu/logs/qwen3-32b-awq-20260914T080414Z/rig-validation-20260914T103238Z/06-validation-retry1-20260914T130908Z/tcpdump.stderr.log",
+      "sha256": "b2ce7b19daa6431c0243c424bbee2e4065c21917ef8151c5132c2472dee75417"
+    },
+    {
+      "bytes": 36762,
+      "label": "http_capture_decoder",
+      "path": "/ephemeral/ubuntu/logs/qwen3-32b-awq-20260914T080414Z/rig-validation-20260914T103238Z/07-adapter-v1_2-replay-20260914T134814Z/candidate/http_capture.py",
+      "sha256": "144d323cfb814753d40951d52f8b83c44f638ce9d7ab5fd862e9e8311aa04d33"
+    },
+    {
+      "bytes": 497,
+      "label": "frozen_prompt",
+      "path": "/ephemeral/ubuntu/logs/qwen3-32b-awq-20260914T080414Z/rig-validation-20260914T103238Z/05-validation/freeze/prompt.txt",
+      "sha256": "af86281596b7e9c7f6030811a3f0d9972939917f586ea73e822a7b548a389016"
+    }
+  ],
+  "generated_tool_call_count": 0,
+  "mapping": {
+    "arguments": "Full tool name, parsed arguments and exact assembled raw arguments are all retained; raw string is included in content for frozen build_T.",
+    "history": "Every actual model input snapshot retained, including complete parsed message envelopes, original text and repeated history. Counts are not unique conversation turns.",
+    "response_envelopes": "Complete parsed backend envelopes retained as labelled model_output supplements; semantic output/tool/thinking events also retained.",
+    "source_of_truth": "Complete captured HTTP request/response bytes.",
+    "thinking": "Each backend-exposed reasoning and reasoning_content field retained both as a complete assembled string and as original fragments; native parser preference used only for cross-check.",
+    "tools": "API tools declarations and other API parameters are explicitly grouped as developer_prompt events, not invented role messages.",
+    "unknown": "Unknown content/errors/truncation/ambiguity make capture_complete false; no parsed log repairs missing wire bytes.",
+    "vllm_response_fields": "Top-level prompt_token_ids and choice-level token_ids/stop_reason are type-checked and retained, including null and non-null values, in complete response envelopes. Token IDs are not decoded or substituted for semantic output."
+  },
+  "model_call_count": 1,
+  "model_calls": [
+    {
+      "completion_id": "chatcmpl-6acbcf33641f481eb6ecf8cc12e14bb4",
+      "exchange": [
+        "c0000",
+        0
+      ],
+      "finish_reason": "stop",
+      "generated_tool_calls": 0,
+      "native_log": "/ephemeral/ubuntu/logs/qwen3-32b-awq-20260914T080414Z/rig-validation-20260914T103238Z/06-validation-retry1-20260914T130908Z/request-logs/llm_request.d64784.i2523672.jsonl",
+      "request_json_sha256": "026c1d0049bb328e0f27864cba80c20a2abbf459bc5266bdf0ce628f3ad9603e"
+    }
+  ],
+  "native_request_log_count": 1,
+  "normalization_version": "v1",
+  "normalized_T_bytes": 15654,
+  "normalized_T_sha256": "54011047e1284486b5fc93f32b7861438080a929c9dc1fe686c86c7cbaa6d189",
+  "schema": "utcs_goose_capture_manifest_v1",
+  "scope": {
+    "claim": "Capture adaptation only; no payload absence claim or P-ctx positive-control substitution.",
+    "positive_control_present": false,
+    "rig_validation_only": true,
+    "run": 0,
+    "trajectory_absent_assessed": false
+  },
+  "source_event_counts": {
+    "developer_prompt": 2,
+    "model_output": 43,
+    "system_prompt": 2,
+    "thinking": 0,
+    "tool_call_request": 0,
+    "tool_return": 0,
+    "user_turn": 2
+  },
+  "tool_return_ids_fed_to_model": [],
+  "trajectory_json_sha256": "a959716b94b5a8260bfba569ff33b4d2b0c5a916c557548cc0ec97526afa7bd3"
+}

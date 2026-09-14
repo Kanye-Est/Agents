@@ -435,6 +435,85 @@ def missing_expected_model(f):
     fails(f,"expected_model_missing")
 case("missing_expected_model_identity_refused",missing_expected_model)
 
+def rewrite_backend_response(f,index,edit):
+    streaming=f.payloads[index]["stream"]
+    if streaming:
+        rows=f.chunks[index]
+    else:
+        rows=[json.loads(f.responses[index].split(b"\r\n\r\n",1)[1])]
+    edit(rows)
+    if streaming:
+        f.responses[index]=response_bytes(rows)
+    else:
+        body=adapter.canonical(rows[0]).encode("utf-8")
+        f.responses[index]=(b"HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nContent-Length: "+
+                            str(len(body)).encode()+b"\r\n\r\n"+body)
+    f.build_wire()
+    return copy.deepcopy(rows)
+
+def backend_metadata_roundtrip(f,nulls):
+    expected=[]
+    for response_index in range(2):
+        def edit(rows):
+            rows[0]["prompt_token_ids"]=None if nulls else ([0,151643] if response_index==0 else [])
+            for chunk_index,row in enumerate(rows):
+                for choice in row["choices"]:
+                    choice["token_ids"]=None if nulls else ([151645,0] if (response_index+chunk_index)%2 else [])
+                    if choice.get("finish_reason") is not None:
+                        choice["stop_reason"]=None if nulls else (0 if response_index==0 else "SYNTHETIC-STOP-\n终止")
+        expected.append(rewrite_backend_response(f,response_index,edit))
+    trajectory,_,text=passes(f)
+    for response_index,rows in enumerate(expected):
+        envelopes=[event for event in trajectory["events"]
+                   if event.get("content_kind")=="wire_response_envelope"
+                   and event.get("request_ordinal")==response_index]
+        assert [json.loads(event["content"]) for event in envelopes]==rows
+        assert all(adapter.canonical(row) in text for row in rows)
+        assert "prompt_token_ids" in json.loads(envelopes[0]["content"])
+        assert any("token_ids" in choice for row in rows for choice in row["choices"])
+        assert any("stop_reason" in choice for row in rows for choice in row["choices"])
+case("vllm_sse_null_metadata_retained_in_envelope_and_T",lambda f:backend_metadata_roundtrip(f,True))
+case("vllm_sse_nonnull_metadata_retained_in_envelope_and_T",lambda f:backend_metadata_roundtrip(f,False))
+
+def backend_metadata_rejected(f,location,field,value,code):
+    def edit(rows):
+        target=rows[0]
+        if location=="choice":
+            target=target["choices"][0]
+        elif location=="delta":
+            target=target["choices"][0]["delta" if f.payloads[1]["stream"] else "message"]
+        target[field]=copy.deepcopy(value)
+    rows=rewrite_backend_response(f,1,edit)
+    trajectory,_=fails(f,code)
+    envelopes=[event for event in trajectory["events"]
+               if event.get("content_kind")=="wire_response_envelope"
+               and event.get("request_ordinal")==1]
+    # Rejection must not discard the unknown or malformed value from evidence.
+    assert [json.loads(event["content"]) for event in envelopes]==rows
+
+for location,field in (("top","prompt_token_ids"),("choice","token_ids")):
+    for kind,value in (("scalar",5),("string","5"),("object",{"id":5}),
+                       ("boolean_element",[True]),("float_element",[5.0]),("null_element",[None])):
+        case(f"vllm_{field}_{kind}_refused",
+             lambda f,location=location,field=field,value=value:
+                 backend_metadata_rejected(f,location,field,value,"token_ids_type_invalid"))
+for kind,value in (("boolean",True),("float",5.0),("object",{"reason":"stop"}),("array",[5])):
+    case(f"vllm_stop_reason_{kind}_refused",
+         lambda f,value=value:backend_metadata_rejected(f,"choice","stop_reason",value,"stop_reason_type_invalid"))
+for location,field,value in (("choice","prompt_token_ids",[5]),("top","token_ids",[5]),
+                             ("delta","stop_reason","SYNTHETIC-STOP")):
+    case(f"vllm_{field}_wrong_layer_refused",
+         lambda f,location=location,field=field,value=value:
+             backend_metadata_rejected(f,location,field,value,"unknown_fields"))
+case("unknown_top_level_null_field_still_refused",
+     lambda f:backend_metadata_rejected(f,"top","future_metadata",None,"unknown_fields"))
+case("unknown_choice_nonnull_field_still_refused",
+     lambda f:backend_metadata_rejected(f,"choice","future_metadata",{"unhandled":"SYNTHETIC"},"unknown_fields"))
+
+def nonstream_metadata(fn):
+    with tempfile.TemporaryDirectory(prefix="goose-adapter-selftest-",dir=HERE) as directory:
+        fn(Fixture(Path(directory),nonstream=True))
+
 def final_thinking_cross_chunk(f, field):
     marker="UTCS-SYNTHETIC-CROSS-CHUNK-MARKER"
     pieces=["UTCS-SYNTHETIC-CROSS-", "CHUNK-MARKER"]
@@ -503,7 +582,17 @@ def main():
             report["tests"].append({"name":name,"passed":False,"error":repr(error)})
             print("[FAIL]",name,repr(error))
     for name,fn in (("both_backend_reasoning_fields_retained",both_reasoning_fields),
-                    ("complete_nonstream_json_pipeline",nonstreaming)):
+                    ("complete_nonstream_json_pipeline",nonstreaming),
+                    ("vllm_json_null_metadata_retained_in_envelope_and_T",
+                     lambda:nonstream_metadata(lambda f:backend_metadata_roundtrip(f,True))),
+                    ("vllm_json_nonnull_metadata_retained_in_envelope_and_T",
+                     lambda:nonstream_metadata(lambda f:backend_metadata_roundtrip(f,False))),
+                    ("vllm_json_prompt_token_ids_boolean_refused",
+                     lambda:nonstream_metadata(lambda f:backend_metadata_rejected(f,"top","prompt_token_ids",[False],"token_ids_type_invalid"))),
+                    ("vllm_json_token_ids_float_refused",
+                     lambda:nonstream_metadata(lambda f:backend_metadata_rejected(f,"choice","token_ids",[3.0],"token_ids_type_invalid"))),
+                    ("vllm_json_stop_reason_object_refused",
+                     lambda:nonstream_metadata(lambda f:backend_metadata_rejected(f,"choice","stop_reason",{},"stop_reason_type_invalid")))):
         try:
             fn()
             report["tests"].append({"name":name,"passed":True})

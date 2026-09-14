@@ -29,7 +29,7 @@ import re
 import sys
 
 sys.dont_write_bytecode = True
-VERSION = "goose-1.45.0-wire-adapter-v1.1"
+VERSION = "goose-1.45.0-wire-adapter-v1.2"
 SOURCES = (
     "system_prompt", "developer_prompt", "user_turn", "model_output",
     "tool_call_request", "tool_return", "thinking",
@@ -43,7 +43,7 @@ REQUEST_KEYS = {
 }
 CHUNK_KEYS = {
     "id", "object", "created", "model", "choices", "usage",
-    "system_fingerprint", "service_tier", "prompt_logprobs",
+    "system_fingerprint", "service_tier", "prompt_logprobs", "prompt_token_ids",
 }
 DELTA_KEYS = {
     "role", "content", "tool_calls", "reasoning", "reasoning_content",
@@ -294,6 +294,14 @@ def verify_http_part(part, audit, where, request=False):
         return body, audit.obj(value, where)
     return body, part.get("json")
 
+def validate_token_ids(value, audit, where):
+    # Frozen vLLM 0.10.2 entrypoints/openai/protocol.py declares Optional[list[int]]
+    # for top-level prompt_token_ids and choice-level token_ids in both SSE/JSON.
+    # Validate JSON types without coercion, tokenizer loading, or range inference.
+    audit.check(value is None or (isinstance(value, list) and all(type(token) is int for token in value)),
+                "token_ids_type_invalid", where,
+                "expected null or an array of JSON integers; booleans are not integers")
+
 def parse_response(response, request, audit, where):
     body, recorded_json = verify_http_part(response, audit, where)
     response = audit.obj(response, where)
@@ -328,6 +336,8 @@ def parse_response(response, request, audit, where):
         label = f"{where}.chunk[{index}]"
         value = audit.obj(raw, label)
         audit.keys(value, CHUNK_KEYS, label)
+        if "prompt_token_ids" in value:
+            validate_token_ids(value["prompt_token_ids"], audit, label + ".prompt_token_ids")
         if "error" in value:
             audit.check(False, "model_error", label, value["error"])
         identity = value.get("id")
@@ -346,9 +356,19 @@ def parse_response(response, request, audit, where):
         if not audit.check(isinstance(choices, list), "choices_not_list", label):
             continue
         audit.check(len(choices) <= 1, "multiple_model_choices", label)
-        for raw_choice in choices:
+        for choice_index, raw_choice in enumerate(choices):
             choice = audit.obj(raw_choice, label)
-            audit.keys(choice, {"index", "delta" if streaming else "message", "finish_reason", "logprobs"}, label)
+            choice_label = f"{label}.choices[{choice_index}]"
+            audit.keys(choice, {"index", "delta" if streaming else "message", "finish_reason", "logprobs",
+                                "token_ids", "stop_reason"}, choice_label)
+            if "token_ids" in choice:
+                validate_token_ids(choice["token_ids"], audit, choice_label + ".token_ids")
+            if "stop_reason" in choice:
+                # The pinned vLLM choice schema is Optional[Union[int, str]].
+                # Strings are stop sequences, not an enum of finish reasons.
+                audit.check(choice["stop_reason"] is None or type(choice["stop_reason"]) in (int, str),
+                            "stop_reason_type_invalid", choice_label + ".stop_reason",
+                            "expected null, a JSON integer, or a string; booleans are not integers")
             audit.check(choice.get("index") == 0, "choice_index_not_zero", label)
             audit.check(choice.get("logprobs") in (None, []), "unsupported_logprobs", label)
             finish = choice.get("finish_reason")
@@ -794,6 +814,7 @@ def adapt(wire_path, request_dir, session_path, completion_path, consumer_path):
             "source_of_truth":"Complete captured HTTP request/response bytes.",
             "history":"Every actual model input snapshot retained, including complete parsed message envelopes, original text and repeated history. Counts are not unique conversation turns.",
             "response_envelopes":"Complete parsed backend envelopes retained as labelled model_output supplements; semantic output/tool/thinking events also retained.",
+            "vllm_response_fields":"Top-level prompt_token_ids and choice-level token_ids/stop_reason are type-checked and retained, including null and non-null values, in complete response envelopes. Token IDs are not decoded or substituted for semantic output.",
             "tools":"API tools declarations and other API parameters are explicitly grouped as developer_prompt events, not invented role messages.",
             "arguments":"Full tool name, parsed arguments and exact assembled raw arguments are all retained; raw string is included in content for frozen build_T.",
             "thinking":"Each backend-exposed reasoning and reasoning_content field retained both as a complete assembled string and as original fragments; native parser preference used only for cross-check.",
@@ -838,4 +859,3 @@ def main(argv=None):
 
 if __name__=="__main__":
     raise SystemExit(main())
-
