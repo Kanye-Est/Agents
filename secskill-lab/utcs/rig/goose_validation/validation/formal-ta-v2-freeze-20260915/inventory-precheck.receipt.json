@@ -1,0 +1,12 @@
+{
+  "run": 0,
+  "phase": "local source inventory before freeze; no VM control or baseline request",
+  "initial_inventory_check": "refused to include ignored Python bytecode caches",
+  "raw_error": "Traceback (most recent call last):\n  File \"<stdin>\", line 26, in <module>\nAssertionError\n",
+  "excluded_ignored_paths": [
+    "__pycache__/calibration_resume.cpython-314.pyc",
+    "__pycache__/prepare_controls.cpython-314.pyc"
+  ],
+  "resolution": "Enumerate Git tracked plus nonignored new instrumentation files; leave ignored caches untouched. No source code, test result, original manifest or protocol prefix was changed by the failed inventory attempt.",
+  "all_source_hashes_still_match_test_receipts": true
+}

@@ -1,0 +1,428 @@
+{
+  "archive_sha256": "fe3d07ccc52fa97f2b16c893c0c9e9a71589a0efdcb675ef45d821fdfc1593f6",
+  "cases_replayed": 10,
+  "passed": true,
+  "references": {
+    "ta-wording-calibration-complete/STOP.json": {
+      "bytes": 1617,
+      "sha256": "312130fc688be1903ea5f9b15abe84bbc8084b1859debe59e7436c320f3a4c87"
+    },
+    "ta-wording-calibration-complete/cases/C01/baseline-score.json": {
+      "bytes": 18792,
+      "sha256": "045b3fa7bed6c2d42f32f9b994a22afa1087dd9a046844320f651cbf50cef9cd"
+    },
+    "ta-wording-calibration-complete/cases/C01/bounded-review.json": {
+      "bytes": 7001,
+      "sha256": "61535258f778d32109fc36bfb296d494314ad08cd4287751bc1b4ef3b18fc6d1"
+    },
+    "ta-wording-calibration-complete/cases/C01/calibration-observation.json": {
+      "bytes": 65197,
+      "sha256": "b1da0fb6b2aaaaa4a3604d7cb026bb1d7ffd1e201cf1bbc7bbad57c1545a2906"
+    },
+    "ta-wording-calibration-complete/cases/C01/case-attempt.json": {
+      "bytes": 266,
+      "sha256": "022b5307567cb765e4a42f9f1862e3845616536acf852f0658a292d1c8e28d37"
+    },
+    "ta-wording-calibration-complete/cases/C01/envelope-audit.json": {
+      "bytes": 259811,
+      "sha256": "a5d56b036aea2b0a76229b9657095988d5a3767d2ebc7ee77a619fdf55d0569e"
+    },
+    "ta-wording-calibration-complete/cases/C01/goose-session.json": {
+      "bytes": 3587,
+      "sha256": "e294c4b5db2b1b2d91ce0e8c0f57a707b27e2f8021d3c03447c7d9531e8114ad"
+    },
+    "ta-wording-calibration-complete/cases/C01/grant_event.json": {
+      "bytes": 857,
+      "sha256": "bd4ac13a704b9fb5a1b06a0b3882e863589e2c0ca350a75f4461a5cd254c67c4"
+    },
+    "ta-wording-calibration-complete/cases/C01/http.json": {
+      "bytes": 116679,
+      "sha256": "42696b90e3d9228b18349f3f7f30c49120436d05533cdacd5d0d0ba1a2f8ffc0"
+    },
+    "ta-wording-calibration-complete/cases/C01/request-invariants.json": {
+      "bytes": 438,
+      "sha256": "47dffbc45845188fa7bd5e7eda8c4bd0193048b892d5b13edab9822d193b2f41"
+    },
+    "ta-wording-calibration-complete/cases/C01/trajectory/capture_manifest.json": {
+      "bytes": 5817,
+      "sha256": "84c1eabe2fe4752dc08d6d7ae42e105219da39c35c69b9589d6e1c9da0f3d9e2"
+    },
+    "ta-wording-calibration-complete/cases/C02/baseline-score.json": {
+      "bytes": 18792,
+      "sha256": "7f0937174b437b4d6d62acac2b585fdac4612a802f90e99cddbb9707e12e2b20"
+    },
+    "ta-wording-calibration-complete/cases/C02/bounded-review.json": {
+      "bytes": 7001,
+      "sha256": "92336be77dcd4ffdaa1eaef17b2545edddf5a35f5b7c0c6360a88abe6be9dbb9"
+    },
+    "ta-wording-calibration-complete/cases/C02/calibration-observation.json": {
+      "bytes": 65197,
+      "sha256": "5e3b25e7946dba77564734c6f7bfbc065e047651134ef3e8273abb557fc6dc28"
+    },
+    "ta-wording-calibration-complete/cases/C02/case-attempt.json": {
+      "bytes": 266,
+      "sha256": "f0ad156f35ba55a8b68b17645b7eccc320591f1210aa75789eb39c9e254f0f3c"
+    },
+    "ta-wording-calibration-complete/cases/C02/envelope-audit.json": {
+      "bytes": 259759,
+      "sha256": "d6f31ceae44f7208a95aef9e30a9cfb00bd9f19412542be2e3e85349658dd9d2"
+    },
+    "ta-wording-calibration-complete/cases/C02/goose-session.json": {
+      "bytes": 3596,
+      "sha256": "a686ac7706bd7eae41b4f1955971e21c29601ae560b19aaa953d5704d54fd88c"
+    },
+    "ta-wording-calibration-complete/cases/C02/grant_event.json": {
+      "bytes": 857,
+      "sha256": "7f4ad0557bb692941f0d7d292ae3f93d661ae99fd3db451a37c03825e41cf859"
+    },
+    "ta-wording-calibration-complete/cases/C02/http.json": {
+      "bytes": 116738,
+      "sha256": "6fac2a91887db963f5b66112b96b043f85b0a39563bab9d367b422a6a04bdbe8"
+    },
+    "ta-wording-calibration-complete/cases/C02/request-invariants.json": {
+      "bytes": 438,
+      "sha256": "2c0a55bd062c1cb00fd2ecf5c71bcda16830c9d79eba8b7f01c9193c200f9347"
+    },
+    "ta-wording-calibration-complete/cases/C02/trajectory/capture_manifest.json": {
+      "bytes": 5817,
+      "sha256": "926292ceffcc6def82a6e14efcd22415bd93c968eb3a63f8828943d8823c6a3d"
+    },
+    "ta-wording-calibration-complete/cases/C03/baseline-score.json": {
+      "bytes": 18812,
+      "sha256": "d0f97d4c89a2d813cf402e556a9165953089ccead453bf69627d6b8a94ce2bb8"
+    },
+    "ta-wording-calibration-complete/cases/C03/bounded-review.json": {
+      "bytes": 7586,
+      "sha256": "6c5d77fe7d7df62fb15b8bcbc9428edeb4259d5952fe0257025b80247a6e3792"
+    },
+    "ta-wording-calibration-complete/cases/C03/calibration-observation.json": {
+      "bytes": 65217,
+      "sha256": "ad34e515aed53ba58d7921aa769437088262b145c2250f440df750816ed30ce7"
+    },
+    "ta-wording-calibration-complete/cases/C03/case-attempt.json": {
+      "bytes": 266,
+      "sha256": "0416873e2f93e58026e69301c48691803225605d43cf0228e4738a9ae9f2ffc1"
+    },
+    "ta-wording-calibration-complete/cases/C03/envelope-audit.json": {
+      "bytes": 261547,
+      "sha256": "0eca12c1f10dbef033fbff3e0ff791b0d15541737daec0b4140b26c6afb8e93a"
+    },
+    "ta-wording-calibration-complete/cases/C03/goose-session.json": {
+      "bytes": 3594,
+      "sha256": "629b12151509a33e48d3e02b8154092381f00f807699d5448f8673d845ac866d"
+    },
+    "ta-wording-calibration-complete/cases/C03/grant_event.json": {
+      "bytes": 857,
+      "sha256": "3ae3d21be424bdbf50dcbb3eb6694817bfba85400417e7298a4acdf9755f5b13"
+    },
+    "ta-wording-calibration-complete/cases/C03/http.json": {
+      "bytes": 119011,
+      "sha256": "a978efd9804a38db9f6787bc01bff76414f133caf12f70d2b49b6d7ad361b3c8"
+    },
+    "ta-wording-calibration-complete/cases/C03/request-invariants.json": {
+      "bytes": 438,
+      "sha256": "46ab26974aba7ea31a4261f3df7ccb819b7ff7bee261094d6b22281a7f64e2fd"
+    },
+    "ta-wording-calibration-complete/cases/C03/trajectory/capture_manifest.json": {
+      "bytes": 5817,
+      "sha256": "7cb000977da29e8d44fd326476a80ba8211063bf24855baa3103e0287e383707"
+    },
+    "ta-wording-calibration-complete/cases/C04/baseline-score.json": {
+      "bytes": 27450,
+      "sha256": "a565fd98b8f90bdc994dddc1a82e7c2c6dade02ad27bcd4282f3c7dc0a848b2a"
+    },
+    "ta-wording-calibration-complete/cases/C04/bounded-review.json": {
+      "bytes": 8085,
+      "sha256": "d01dd04ee3154e517431aaa12983db4aa6570d0682336152382a56be82a4e3a1"
+    },
+    "ta-wording-calibration-complete/cases/C04/calibration-observation.json": {
+      "bytes": 1283,
+      "sha256": "c6ee7c9856d64a89841b2e8f86bb3e07bb4a6c99b73cec834f161edb157fb034"
+    },
+    "ta-wording-calibration-complete/cases/C04/case-attempt.json": {
+      "bytes": 266,
+      "sha256": "36a5fdfc17cf201ec2a73689b753dbc2ec938d146b0067877dec2347a8b567d1"
+    },
+    "ta-wording-calibration-complete/cases/C04/envelope-audit.json": {
+      "bytes": 410065,
+      "sha256": "8c7fcdab4c5939242723eae83d7ced168dcb579fceb5878f52ff16901fa04c4d"
+    },
+    "ta-wording-calibration-complete/cases/C04/goose-session.json": {
+      "bytes": 5439,
+      "sha256": "9e0a58325bc4d7bc500c1dbecbda02f187e7694c1e69a553238acd6f2b094c5a"
+    },
+    "ta-wording-calibration-complete/cases/C04/grant_event.json": {
+      "bytes": 857,
+      "sha256": "bbbf1c5f330f5652760a30c91eeb9426c3c78a1e4c4605e85eb0fbb5c4431642"
+    },
+    "ta-wording-calibration-complete/cases/C04/http.json": {
+      "bytes": 362614,
+      "sha256": "b59a52da64f7d9cc0ded993e61cb84954efb354936ccae4cb4c4d06aa566c4ab"
+    },
+    "ta-wording-calibration-complete/cases/C04/request-invariants.json": {
+      "bytes": 438,
+      "sha256": "f0c40305633cfd618e1c014d5a3aaefa155b4318fff5749013755ef60fea3e55"
+    },
+    "ta-wording-calibration-complete/cases/C04/trajectory/capture_manifest.json": {
+      "bytes": 6727,
+      "sha256": "ad9d04ecbe43ec5535c9799f0c1b20be8a88c6aee47ebc4ef64a828acd818c18"
+    },
+    "ta-wording-calibration-complete/cases/C05/baseline-score.json": {
+      "bytes": 18792,
+      "sha256": "c4bf07169b9f8461e99cd3cb8b88621de8a1b5d5796a06257d59d951b7a460a7"
+    },
+    "ta-wording-calibration-complete/cases/C05/bounded-review.json": {
+      "bytes": 7278,
+      "sha256": "418a1d36fde0aca963cf74d5482482f9c58ddc05b6750ba3e64f80e38fd5e4f8"
+    },
+    "ta-wording-calibration-complete/cases/C05/calibration-observation.json": {
+      "bytes": 65209,
+      "sha256": "51c47724cb6e434ef24302c26c06891b970750e7ede99745eb4d001c0d3c20d3"
+    },
+    "ta-wording-calibration-complete/cases/C05/case-attempt.json": {
+      "bytes": 266,
+      "sha256": "fab93717ba7789eb914da8d12c7ff11082cda87b6f87dc884855861e5c326199"
+    },
+    "ta-wording-calibration-complete/cases/C05/envelope-audit.json": {
+      "bytes": 259773,
+      "sha256": "35daf9a84391a02a3337d67a28dd1a2cbf616d979019878bac8495b7a70f1d0c"
+    },
+    "ta-wording-calibration-complete/cases/C05/goose-session.json": {
+      "bytes": 3585,
+      "sha256": "939389745969601aa25cbcf278ae2fd26a46d0633858e292e3bdde0f6c347064"
+    },
+    "ta-wording-calibration-complete/cases/C05/grant_event.json": {
+      "bytes": 857,
+      "sha256": "54acfa18338d712843b4c68c932a1a06cae597076418b8125bcfd5469af456da"
+    },
+    "ta-wording-calibration-complete/cases/C05/http.json": {
+      "bytes": 116679,
+      "sha256": "a0b1152f04fe6c5e921448656a95e5c46a54065e178acafb13ba1743644ed362"
+    },
+    "ta-wording-calibration-complete/cases/C05/request-invariants.json": {
+      "bytes": 438,
+      "sha256": "a29d0d48d0e1247105d6282f4d0dd8bc13156c2b3a370913e1c2890679ca753a"
+    },
+    "ta-wording-calibration-complete/cases/C05/trajectory/capture_manifest.json": {
+      "bytes": 5817,
+      "sha256": "513b13ed74260fbd505d5e4169d348154542a3d90e5b62496f50027a79160b63"
+    },
+    "ta-wording-calibration-complete/cases/C06/baseline-score.json": {
+      "bytes": 27452,
+      "sha256": "d2dcfb8a718c093df71a83b2e02027aeefacf3e7482af15d3577262c312afa8b"
+    },
+    "ta-wording-calibration-complete/cases/C06/bounded-review.json": {
+      "bytes": 7474,
+      "sha256": "7de1caa9a676f5fa4c4c10e44d71098607d435527514e25f898b557c69422a91"
+    },
+    "ta-wording-calibration-complete/cases/C06/calibration-observation.json": {
+      "bytes": 77542,
+      "sha256": "830d5a93c6073127f1889f26bfb1a3e0ea55305c009836f8a00ab9b92baba9ee"
+    },
+    "ta-wording-calibration-complete/cases/C06/case-attempt.json": {
+      "bytes": 266,
+      "sha256": "ac3cb047e06d071fe45cdfaf594c3d76b2cf4e74814ee3fc31eb09b3ab79426b"
+    },
+    "ta-wording-calibration-complete/cases/C06/envelope-audit.json": {
+      "bytes": 410160,
+      "sha256": "1ab72ac45eb0894addde6afe75be6297591665c45db89673dce43f103ca927a3"
+    },
+    "ta-wording-calibration-complete/cases/C06/goose-session.json": {
+      "bytes": 5420,
+      "sha256": "591321001f659c124d5f4b395e273ad00559751148d8d5da7da8c588d1199ac5"
+    },
+    "ta-wording-calibration-complete/cases/C06/grant_event.json": {
+      "bytes": 857,
+      "sha256": "579d3dc5bfae769c9cd560a60688fc8e7192bdda4301e36d374ba6c13fe6d6df"
+    },
+    "ta-wording-calibration-complete/cases/C06/http.json": {
+      "bytes": 362276,
+      "sha256": "02b9f689fb8917c8ac16855a8341890214c4d52eb88d7a10acd577aea632c4a8"
+    },
+    "ta-wording-calibration-complete/cases/C06/request-invariants.json": {
+      "bytes": 438,
+      "sha256": "196568ddbbf7a36d4ceb4896a80a197657214f2b71a0eaadfb8f73ad792f869e"
+    },
+    "ta-wording-calibration-complete/cases/C06/trajectory/capture_manifest.json": {
+      "bytes": 6727,
+      "sha256": "650f23e581a128ddb180abdc461b48a076ea68709e158a2013cdc2a218281cd9"
+    },
+    "ta-wording-calibration-complete/cases/C07/baseline-score.json": {
+      "bytes": 18742,
+      "sha256": "be91d8862c8a42672ab0eb2f3035dd436f62d938183041c0c87bdc042f9cf11b"
+    },
+    "ta-wording-calibration-complete/cases/C07/bounded-review.json": {
+      "bytes": 7278,
+      "sha256": "5c32e450ad398732fd26f87ce3c8a737ddae4c5b52dc6ecc0174dd72b129537d"
+    },
+    "ta-wording-calibration-complete/cases/C07/calibration-observation.json": {
+      "bytes": 65167,
+      "sha256": "7d7334e9f715812805c4e9e5feb5cb1cbe5c3b76cf27db858b1776e67ebccafe"
+    },
+    "ta-wording-calibration-complete/cases/C07/case-attempt.json": {
+      "bytes": 266,
+      "sha256": "c295a6e04645d54067a9b7889f8920497f82e6ec7ee81e21dc1a489a86d86834"
+    },
+    "ta-wording-calibration-complete/cases/C07/envelope-audit.json": {
+      "bytes": 256276,
+      "sha256": "815d0451d7caa5e9a4fb3b350e60b80f0fabcdd2f9d7b678baefefaebf63fb3c"
+    },
+    "ta-wording-calibration-complete/cases/C07/goose-session.json": {
+      "bytes": 3572,
+      "sha256": "c6a512ce68e58bf1a199398e6b3b49f8a192c85f08d5e921c0b89fe54eb7572a"
+    },
+    "ta-wording-calibration-complete/cases/C07/grant_event.json": {
+      "bytes": 857,
+      "sha256": "6bdfe6d6f63897972a5e3d5279d465bdae0081b27d281f4c472b27e71d75c937"
+    },
+    "ta-wording-calibration-complete/cases/C07/http.json": {
+      "bytes": 111961,
+      "sha256": "3a11e6b7cfcda237cc22356052871cb941462e9a0c0456d2de3c8029ea101352"
+    },
+    "ta-wording-calibration-complete/cases/C07/request-invariants.json": {
+      "bytes": 438,
+      "sha256": "08ce80e15d5b50e82b7857b714e4f1fb7fda87c8e75cfb8bd09e4e97826422bb"
+    },
+    "ta-wording-calibration-complete/cases/C07/trajectory/capture_manifest.json": {
+      "bytes": 5817,
+      "sha256": "90f59f7f9618d47a7bc81f53cd64bcf9161f60dcee818b0cd4ef0167ffb20404"
+    },
+    "ta-wording-calibration-complete/cases/C08/baseline-score.json": {
+      "bytes": 27496,
+      "sha256": "31d22223bc4bc24377bb4dd6b126d0a116d3bc2c06b706d3ef52958ea9d08214"
+    },
+    "ta-wording-calibration-complete/cases/C08/bounded-review.json": {
+      "bytes": 7278,
+      "sha256": "935b0f43d6d8c901f3db7f185360d4ac9a5bbeeb0c6f8021823a2a02f305dd52"
+    },
+    "ta-wording-calibration-complete/cases/C08/calibration-observation.json": {
+      "bytes": 77577,
+      "sha256": "a527cd9db60b8206b373efab21b3f510783575e4f3c85502cf1a7958e043ede7"
+    },
+    "ta-wording-calibration-complete/cases/C08/case-attempt.json": {
+      "bytes": 266,
+      "sha256": "3dc8bf1f69d9ffb433e8eb350800780202906cb3166a517fcd44d0b1f0e721a0"
+    },
+    "ta-wording-calibration-complete/cases/C08/envelope-audit.json": {
+      "bytes": 408334,
+      "sha256": "38152045d256cb861d4eb40b224d85d527d9b08d90cf016cceb0ae2075064880"
+    },
+    "ta-wording-calibration-complete/cases/C08/goose-session.json": {
+      "bytes": 5459,
+      "sha256": "ae77e228a119b0c01c1b61d504020db03d2e6fc5ca40ff05b13b467d8922d596"
+    },
+    "ta-wording-calibration-complete/cases/C08/grant_event.json": {
+      "bytes": 857,
+      "sha256": "ee40a3be0ef4728f04a0a9bcb8b9854af5e1e23a5240a2744306c3e90f6a052e"
+    },
+    "ta-wording-calibration-complete/cases/C08/http.json": {
+      "bytes": 360354,
+      "sha256": "acdf3ca6f1535c84220390d9e9a98f83551e7da6b6b0c7d74a5b02e53fb0ba60"
+    },
+    "ta-wording-calibration-complete/cases/C08/request-invariants.json": {
+      "bytes": 438,
+      "sha256": "f0f941de78221509d232d8e837bf93870b3798eaef4aa45b5cc79b2086871657"
+    },
+    "ta-wording-calibration-complete/cases/C08/trajectory/capture_manifest.json": {
+      "bytes": 6727,
+      "sha256": "32db65e296d7afee92e5c0aac790432c7721bffaaf22ed458adf62c3e036c384"
+    },
+    "ta-wording-calibration-complete/cases/C09/baseline-score.json": {
+      "bytes": 18780,
+      "sha256": "402315db55d48308c9b263f89a000aad50a59b34b7baaf6dfca170bda56e8035"
+    },
+    "ta-wording-calibration-complete/cases/C09/bounded-review.json": {
+      "bytes": 7278,
+      "sha256": "43f31e80d8a82e836163ce67a1c7305edd5f3575963b69da297e08096a39c4ed"
+    },
+    "ta-wording-calibration-complete/cases/C09/calibration-observation.json": {
+      "bytes": 65197,
+      "sha256": "94b744130acade1eb5aea814561cc487294873dde637d836265ff49323b5e51d"
+    },
+    "ta-wording-calibration-complete/cases/C09/case-attempt.json": {
+      "bytes": 266,
+      "sha256": "2457b382c92ab28b70748aed2d632c259140c65249db89573b496833efa022c1"
+    },
+    "ta-wording-calibration-complete/cases/C09/envelope-audit.json": {
+      "bytes": 259906,
+      "sha256": "d35385c7eb59ade5db035a4ceba019149e4754b0f128f32196d863de3c846f04"
+    },
+    "ta-wording-calibration-complete/cases/C09/goose-session.json": {
+      "bytes": 3588,
+      "sha256": "2315a23dbd3ea908f9b264f2efb90500b87b24e3d6fe7472ff79b1d383690422"
+    },
+    "ta-wording-calibration-complete/cases/C09/grant_event.json": {
+      "bytes": 857,
+      "sha256": "6f5ebc3ac5701fadd8572ae276e41f37a7a39e1484fc188b0b8b24ebd74ddfa2"
+    },
+    "ta-wording-calibration-complete/cases/C09/http.json": {
+      "bytes": 116661,
+      "sha256": "49ceeba723358a2e03ddbcfdc75331aa6c96fa333c1a87f211703205c32081e7"
+    },
+    "ta-wording-calibration-complete/cases/C09/request-invariants.json": {
+      "bytes": 438,
+      "sha256": "af69a84d5da7d760a1afa5860db5535f4cb5c75be0e20bbdd466ec1134ea46bd"
+    },
+    "ta-wording-calibration-complete/cases/C09/trajectory/capture_manifest.json": {
+      "bytes": 5817,
+      "sha256": "99499189813e9945d4a3b1e3aef78397084669f7a80c62a187af7c55776cbf7f"
+    },
+    "ta-wording-calibration-complete/cases/C10/baseline-score.json": {
+      "bytes": 18792,
+      "sha256": "40652452904e03786eddc0d78f3e3ba5fe6b27b11f6f23cfa7e17c00eda0a4ab"
+    },
+    "ta-wording-calibration-complete/cases/C10/bounded-review.json": {
+      "bytes": 7478,
+      "sha256": "5a532227c72cf81ac6c6bb3f9cbc5acb6785c510057f241a6ac404b49660cc24"
+    },
+    "ta-wording-calibration-complete/cases/C10/calibration-observation.json": {
+      "bytes": 65209,
+      "sha256": "07c0a084524b4aff14054b8802096d27fd3279bcf678eb4f31d887b56eb5fa70"
+    },
+    "ta-wording-calibration-complete/cases/C10/case-attempt.json": {
+      "bytes": 266,
+      "sha256": "7f4e05d7f3092137ad312585b9795c6039ec48e1a2ab6dffe507d022c88e2c8a"
+    },
+    "ta-wording-calibration-complete/cases/C10/envelope-audit.json": {
+      "bytes": 259733,
+      "sha256": "0aac0e175d419c8ec5db754fbefb498dfa20235261e66b59c67245007a5a1657"
+    },
+    "ta-wording-calibration-complete/cases/C10/goose-session.json": {
+      "bytes": 3594,
+      "sha256": "117d928005487089b7c1461946ea64b4bb2fe63d452ded5fb2b8a82361892870"
+    },
+    "ta-wording-calibration-complete/cases/C10/grant_event.json": {
+      "bytes": 857,
+      "sha256": "02bbeab8b58adedc055cd9a181b031ae226c695e62829148d21b16a1aee58e70"
+    },
+    "ta-wording-calibration-complete/cases/C10/http.json": {
+      "bytes": 116704,
+      "sha256": "6166d313df7c90989e4c8eb6d291623cb959bda5dc2d86f018fe247e1d8b1f32"
+    },
+    "ta-wording-calibration-complete/cases/C10/request-invariants.json": {
+      "bytes": 438,
+      "sha256": "28ee1a9a0f8e2fd66dc7b606016f18bfe96d4baf98df0eb610ed1a88515bfd06"
+    },
+    "ta-wording-calibration-complete/cases/C10/trajectory/capture_manifest.json": {
+      "bytes": 5817,
+      "sha256": "7184afc48bed65ca8249ef9212686250e26884c36869234a8f46465885f13b28"
+    },
+    "ta-wording-calibration-complete/observer-repair-c04-20260914/C04-calibration-observation.json": {
+      "bytes": 77523,
+      "sha256": "5677f45ef7904dce351f156cffe582b8b2562ee4ca709c890c3852bef99d5207"
+    },
+    "ta-wording-calibration-complete/observer-repair-c04-20260914/STOP.source-manifest-resolved-a78.json": {
+      "bytes": 1526,
+      "sha256": "e59c1c00ceebf3f8c58ca53535fa21856210aa5f4e29cb69b7fe397a0f4228c9"
+    },
+    "ta-wording-calibration-complete/observer-repair-c04-20260914/resume-init.json": {
+      "bytes": 96443,
+      "sha256": "c756c438c8e8ecb389b2bc901efd30ffe7572fc66c312fdcb7dfd47d1682dac4"
+    }
+  },
+  "run": 0,
+  "scope": "offline replay of preserved calibration evidence; no model requests",
+  "selected_case_id": "C04",
+  "summary_sha256": "ba50435b66fcc5422e7bf65e997cbf192fc4fc12be8f4e8b0056394f9daa865c",
+  "unique_referenced_members_verified": 104
+}

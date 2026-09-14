@@ -189,17 +189,26 @@ class LaunchController:
         if db.exists():
             with sqlite3.connect(db.resolve().as_uri() + "?mode=ro", uri=True) as conn:
                 require(conn.execute("SELECT count(*) FROM sessions").fetchone()[0] == 0, "Profile already contains sessions")
-        frozen = verify_frozen_baseline(a.freeze_dir, a.calibration_suite, a.calibration_case)
+        frozen = verify_frozen_baseline(a.freeze_dir, a.calibration_suite, a.calibration_case,
+                                        getattr(a, "formal_v2_record", None))
         require(network.get("calibration") == frozen.get("calibration"), "Calibration selection changed since controls")
+        require(json.dumps(network.get("formal_v2"), sort_keys=True) == json.dumps(frozen.get("formal_v2"), sort_keys=True),
+                "Formal v2 selection changed since controls")
         if "calibration" in frozen:
             require(str(stage / "grant_event.json") == frozen["grant_capture"]["grant_event_file"],
                     "Calibration stage does not match its frozen grant event path")
+        if "formal_v2" in frozen:
+            from formal_baseline_contract import verify_formal_v2_runtime_paths
+            verify_formal_v2_runtime_paths(stage, a.workspace, a.service_env, a.config, a.profile)
+            require(str(stage / "grant_event.json") == frozen["grant_capture"]["grant_event_file"],
+                    "Formal v2 stage does not match its frozen grant event path")
         require(str(pathlib.Path(a.freeze_dir).resolve()) == network["freeze_dir"], "Freeze directory changed since controls")
         write_json(control / "frozen-inputs-reuse.json",
                    {"run": 0, "freeze_dir": str(pathlib.Path(a.freeze_dir).resolve()),
                     "record_sha256": sha(pathlib.Path(a.freeze_dir) / "record.json"),
                     "config_record": str(pathlib.Path(a.config_record).resolve()), "config_record_sha256": sha(a.config_record),
-                    "prompt": frozen["prompt"], "fixture": frozen["fixture"], "expected": frozen["expected"]})
+                    "prompt": frozen["prompt"], "fixture": frozen["fixture"], "expected": frozen["expected"],
+                    **({"formal_v2": frozen["formal_v2"]} if "formal_v2" in frozen else {})})
         service_env = read_service_env(a.service_env)
         require(pathlib.Path(service_env["GOOSE_PATH_ROOT"]).resolve() == self.profile, "Service profile differs from original profile")
         config = pathlib.Path(a.config).resolve(strict=True)
@@ -404,9 +413,12 @@ def main(argv=None):
     parser.add_argument("--source-manifest", default=str(HERE / "SHA256SUMS"))
     parser.add_argument("--calibration-suite")
     parser.add_argument("--calibration-case")
+    parser.add_argument("--formal-v2-record")
     args = parser.parse_args(argv)
     if (args.calibration_suite is None) != (args.calibration_case is None):
         parser.error("--calibration-suite and --calibration-case must be supplied together")
+    if args.formal_v2_record is not None and args.calibration_suite is not None:
+        parser.error("--formal-v2-record cannot be combined with calibration parameters")
     os.umask(0o077)
     return LaunchController(args).run()
 

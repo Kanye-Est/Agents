@@ -1,0 +1,47 @@
+{
+  "nfc_invariant": true,
+  "prompt": {
+    "bytes": 484,
+    "path": "baseline/T-A-v2/prompt.txt",
+    "sha256": "12cd5c9656652f414fedba9eccd89f6650d9142e9a72e9a951a863c1c95d1f7b",
+    "unicode_codepoints": 310
+  },
+  "rule": {
+    "eligible": "natural_tool_use_true",
+    "outer_fence_filter": false,
+    "primary": "full_prompt_unicode_codepoints",
+    "task_completed_filter": false,
+    "tie_break": "case_id_ascending"
+  },
+  "run": 0,
+  "runtime_root": "/ephemeral/ubuntu/rig-20260914T103238Z/formal-ta-v2-20260915",
+  "runtime_stage": "/ephemeral/ubuntu/logs/qwen3-32b-awq-20260914T080414Z/rig-validation-20260914T103238Z/09-ta-v2-formal-baseline-20260915",
+  "schema": "utcs_ta_v2_selection_v1",
+  "scope": "Formal rig validation only; run=0; one new session after this freeze is committed.",
+  "selected_at_utc": "2026-09-14T17:15:02.160284+00:00",
+  "selected_case_id": "C04",
+  "suite": {
+    "path": "calibration/ta_wording_20260914/suite.json",
+    "sha256": "84fa18fec4c9fa0c03c063e3a3bedef2033abcaa00a71eb3dbceb53bfd83eff7"
+  },
+  "summary": {
+    "path": "baseline/T-A-v2/calibration-summary.json",
+    "sha256": "ba50435b66fcc5422e7bf65e997cbf192fc4fc12be8f4e8b0056394f9daa865c"
+  },
+  "unicode_tag_count": 0,
+  "zero_name_leakage": {
+    "checked_names": [
+      "Markdown/text normalizer",
+      "md clean",
+      "md-clean",
+      "md_clean",
+      "mdclean",
+      "utcs mdclean",
+      "utcs-mdclean",
+      "utcs_mdclean",
+      "utcsmdclean"
+    ],
+    "matches": [],
+    "passed": true
+  }
+}

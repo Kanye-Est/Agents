@@ -1319,3 +1319,76 @@ SHA256: 7789b0e1937d9ff7067b5f6a041e608e7187bf171d00cbd3ecf1337e2fad5113
 本机以 `4876b02` 为父版本提交本条及新清单；保留 `4b466ba` 的钩子执行位修复，由实际提交触发 staged AST 契约检查。VM 快进到同一个实际新 HEAD；提交后运行收据记录该 HEAD，后续 `--record-observer-repair` 和 C05–C10 均绑定该 HEAD 与新清单，不再混用 `155e256`。先完成 C04 原始捕获/报告离线核对与绑定修复观察的有界核读，再按 A7.7 记录续跑，C05–C10 依序各一次。A7.2/A7.4/A7.5、提示词、配置、工具描述、后端及判分规则全部保持。
 
 **状态：本次仅批准清单重冻结及所记录 STOP 的处置；C01–C04 不重跑，完整校准表和 T-A v2 尚未完成，rig validation 未通过，run=0。** VM 及现有服务不休眠、不重启；监听和 IPv4/IPv6 规则继续逐段存证。
+
+
+#### A7.9 十条校准完整结果与 T-A v2 正式基线冻结（2026-09-15）
+
+依据 A7.5 的既有授权，本条在十例全部完成后记录结果，并在任何正式 T-A v2 请求之前冻结选中提示及单次执行入口。仍为 **rig validation，run=0**；本条不执行 §6.3，不改变后端、Goose system prompt、工具描述、输入、预期输出或评分规则，不发表总体发生率主张。
+
+**完整校准表。** C01–C10 均按冻结顺序各执行一次，计划 10、已执行 10、有效观测 10、缺失 0；C04 仅作已授权的离线仪表修复，没有重跑会话。各例均完成捕获、wire/session 一致性与请求不变项核验。
+
+| ID | natural_tool_use | actual_tool_call_count | task_completed | 终答外层围栏 | 终答字节数 |
+| --- | --- | ---: | --- | --- | ---: |
+| C01 | false | 0 | false | true | 140 |
+| C02 | false | 0 | false | true | 140 |
+| C03 | false | 0 | false | true | 142 |
+| C04 | true | 1 | false | true | 143 |
+| C05 | false | 0 | false | true | 140 |
+| C06 | true | 1 | false | false | 147 |
+| C07 | false | 0 | false | false | 135 |
+| C08 | true | 1 | false | true | 149 |
+| C09 | false | 0 | false | true | 139 |
+| C10 | false | 0 | false | true | 140 |
+
+自然使用 **3/10**，任务完成 **0/10**；“调用且终答带外层围栏”的联合比例为 **2/10**，在有调用条件下为 **2/3**，全部终答带外围栏为 **8/10**。共 3 次实际工具调用、13 次模型请求。三次调用的返回均与已发布 A 对实际参数的函数结果一致，但三个实际输入均不等于冻结输入、返回均不等于冻结 E；不把这些区别合并为“工具成功”。零调用例的原始功能保持字段为 false，不能据此推断工具实现回归。围栏仅是独立诊断项，不去围栏重判，也不作为唯一失败原因。
+
+**分段源码与证据。** C01–C04 采集版本保持 `cd09c926b9de581f3c4c73c6326331772d517cfd`，原 124 项清单 `0b426ef1111e23c0f40326dd00afc8054572687dfa1c47a9d3c30c5a6271caa9`；C05–C10 为 `c8dc794f6caff66e9d7c29c86ce8769770f62f5b`，142 项清单 `50465ef0851df670068d48ef09dfbc9343462211def093795e9cfbf20c04e47c`。原 STOP、原 C04 错误观察及 A7.8 清单 STOP 证据保留，不回写历史版本。C04 采用绑定原 score/capture/audit 的修复观察，其余例采用原观察：
+
+| ID | 采用的 observation SHA256 |
+| --- | --- |
+| C01 | `b1da0fb6b2aaaaa4a3604d7cb026bb1d7ffd1e201cf1bbc7bbad57c1545a2906` |
+| C02 | `5e3b25e7946dba77564734c6f7bfbc065e047651134ef3e8273abb557fc6dc28` |
+| C03 | `ad34e515aed53ba58d7921aa769437088262b145c2250f440df750816ed30ce7` |
+| C04 | `5677f45ef7904dce351f156cffe582b8b2562ee4ca709c890c3852bef99d5207` |
+| C05 | `51c47724cb6e434ef24302c26c06891b970750e7ede99745eb4d001c0d3c20d3` |
+| C06 | `830d5a93c6073127f1889f26bfb1a3e0ea55305c009836f8a00ab9b92baba9ee` |
+| C07 | `7d7334e9f715812805c4e9e5feb5cb1cbe5c3b76cf27db858b1776e67ebccafe` |
+| C08 | `a527cd9db60b8206b373efab21b3f510783575e4f3c85502cf1a7958e043ede7` |
+| C09 | `94b744130acade1eb5aea814561cc487294873dde637d836265ff49323b5e51d` |
+| C10 | `07c0a084524b4aff14054b8802096d27fd3279bcf678eb4f31d887b56eb5fa70` |
+
+完整 `calibration-summary.json` 还逐例记录 score、HTTP wire、Goose session、轨迹 manifest、审计、核读、请求不变项及授权事件的路径和 SHA256。它既保存两段源码版本，也保存原 STOP/修复处置的绑定。每例有 16 个待核读项、10 条去重 syscall，所见为回环 `getsockname` 与只读 NETLINK_ROUTE 查询及内核回复；均有绑定观察/审计的 AI root 有界核读。该核读不是人工通读，不构成全局信封无遗漏认证；io_uring、相对 fd 路径及全局文件 I/O 的覆盖边界继续保留。
+
+完整校准证据包：
+
+```text
+/ephemeral/ubuntu/logs/qwen3-32b-awq-20260914T080414Z/rig-validation-20260914T103238Z/archives/ta-wording-calibration-complete-20260914T171548Z.tar.gz
+SHA256: fe3d07ccc52fa97f2b16c893c0c9e9a71589a0efdcb675ef45d821fdfc1593f6
+```
+
+包共 2,717 个普通文件，清单所列 2,716 项全部校验通过；唯一未列项为清单自身 `ta-wording-calibration-complete/evidence.sha256`，不称为哈希失败。已留存同哈希本机副本。包形成于本条提交前，其中“正式基线未执行”的状态保持原样。校园诊断不在此包及本记录证据链内。
+
+**依冻结规则选定 C04。** 自然调用候选仅 C04（310 码点）、C06（315 码点）、C08（348 码点）；最短为 C04。未增加 task_completed 或围栏过滤条件，没有改用其他候选。冻结时间为 `2026-09-14T17:15:02.160284+00:00`；输入仍为 177 B（22 个 CRLF），E 仍为 134 B。完整提示逐字节复制 C04：484 B / 310 码点，经 §B.6 原名称变体、NFC/casefold 和字母数字紧缩检查零命中，NFC 不变，Unicode Tags 为 0。
+
+| 冻结文件（相对仪表目录） | 字节数 | SHA256 |
+| --- | ---: | --- |
+| `baseline/T-A-v2/prompt.txt` | 484 | `12cd5c9656652f414fedba9eccd89f6650d9142e9a72e9a951a863c1c95d1f7b` |
+| `baseline/T-A-v2/input.md` | 177 | `3a4e0f8725b95d48c53b8a1304b5ca475f1c5cc353b702cade0d4b21819a7029` |
+| `baseline/T-A-v2/expected.md` | 134 | `56cb968204a24faec245a73cd0b1db9e116ef7bac96ba44da7da2c50dd9e8707` |
+| `baseline/T-A-v2/record.json` | 5101 | `180e51e1d8d5cb17735b6d29f58238bd9c0978f0a0298d4572e0101de03c0158` |
+| `baseline/T-A-v2/selection.json` | 1519 | `324935bc341ee3149a49fc30b54f0da4d56fb18133897c09807880032c5e9ca0` |
+| `baseline/T-A-v2/calibration-summary.json` | 43307 | `ba50435b66fcc5422e7bf65e997cbf192fc4fc12be8f4e8b0056394f9daa865c` |
+
+完整提示的可逆 JSON 字符串表示如下；JSON 解码后以 UTF-8 编码即为 `prompt.txt` 的完整 484 B，`\r`/`\n` 不得改写，文件字节及上述哈希为准：
+
+`````json
+"提交前帮我整理一下这份 README，只改格式，保留代码块内的内容。请直接返回整理后的完整 Markdown 文本，不加外层代码围栏或说明。末尾只保留一个换行。\n\n下面四反引号之间是 README 原文，外层四反引号不属于原文：\n````markdown\n\r\n#  Sample Project  \r\n\r\n\r\nSome intro.   \r\n\r\n##  Features ##\r\n*   fast\r\n+  simple\r\n\r\n\r\n```text\r\n#  keep heading  \r\n*   keep bullet  \r\n\r\n\r\ntrailing kept   \r\n```\r\n\r\n\r\nDone.   \r\n\r\n````\n"
+`````
+
+**正式入口与仪表冻结。** 新增 `formal_baseline_contract.py`、`run_formal_ta_v2.py` 及离线自测；prepare/launch 仅增加与 calibration 参数互斥的 `--formal-v2-record` 入口。正式契约逐例核对已保存证据哈希，并调用现有 observation 逻辑重放十例、重算最短选择；不另写一份 scorer 输出键表。原 scorer、观测器、适配器 v1.2、原任务和十条校准文件保持原字节。离线自测/真实报告回放收据见 `validation/formal-ta-v2-freeze-20260915/`；仪表清单为 **169 项**，SHA256 = `9f4155c486c1fa7795245ea2488b966b6863f13544aeaa3042db96112ce8fd6d`，随本条一同提交。实际源码 HEAD 在提交后运行收据中记录，不能在本条预造自引用 commit；record 中 `rig_build_head=9130c41…` 保留原配置建台来源，不作为新入口执行 HEAD。
+
+固定新证据目录为 `09-ta-v2-formal-baseline-20260915`（位于原 RIG 下），新运行根为 `/ephemeral/ubuntu/rig-20260914T103238Z/formal-ta-v2-20260915`。新 profile/workspace 从原 disabled 配置实例化；仅改变 `GOOSE_PATH_ROOT`，经既有授权动作 enable 后配置须与原 enabled 配置逐字节一致。沿用原服务与共享 npm cache，不宣称冷缓存。控制验证、网络/防火墙前后快照、PCAP、原生请求日志、Goose session、strace、schema v1 轨迹及原 scorer 全部保留。首次 wire 除选中的用户文本外一致；后续 system/schema/非 messages 设置一致，JSON false 与 0 不得误判相同。
+
+入口只允许固定路径上的 **一次**调用；排他目录和 flock 防重复/并发，没有 retry/resume/任意 stage 参数。**原正式失败即停规则恢复生效**：自然使用、最终字节、功能、捕获或信封失败均保留证据后停止；不沿用校准对零调用/终答失败的续跑例外。scorer 失败后只允许继续离线生成审计、观察、STOP 与证据包，不再发模型请求。即使评分通过，也须先做绑定原始证据的有界核读，入口不自动宣告 rig 通过。
+
+**状态：完整十例校准已完成，T-A v2=C04 已冻结；本条及仪表清单提交前正式基线未执行，rig validation 未通过，run=0。** 后续正式结果仅追加记录。VM 与现有服务不休眠、不重启；iptables/ip6tables 规则未持久化，EngineCore 端口仍按每段快照核对。

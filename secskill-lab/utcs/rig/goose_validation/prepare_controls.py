@@ -110,9 +110,14 @@ def verify_source_manifest(manifest_path, source_dir=HERE):
                         for name, digest in sorted(entries.items())]}
 
 
-def verify_frozen_baseline(freeze_dir, calibration_suite=None, calibration_case=None):
+def verify_frozen_baseline(freeze_dir, calibration_suite=None, calibration_case=None, formal_v2_record=None):
     require((calibration_suite is None) == (calibration_case is None),
             "--calibration-suite and --calibration-case must be supplied together")
+    require(formal_v2_record is None or calibration_suite is None,
+            "--formal-v2-record cannot be combined with calibration parameters")
+    if formal_v2_record is not None:
+        from formal_baseline_contract import verify_formal_v2_baseline
+        return verify_formal_v2_baseline(freeze_dir, formal_v2_record)
     if calibration_suite is not None:
         from calibration_contract import verify_calibration_baseline
         return verify_calibration_baseline(freeze_dir, calibration_suite, calibration_case)
@@ -249,11 +254,20 @@ class PrepareController:
         require(a.chain4 != a.chain6, "IPv4 and IPv6 chain names must be distinct")
         manifest = verify_source_manifest(a.source_manifest)
         write_json(control / "prepare-source-freeze.json", manifest)
-        frozen = verify_frozen_baseline(a.freeze_dir, a.calibration_suite, a.calibration_case)
+        frozen = verify_frozen_baseline(a.freeze_dir, a.calibration_suite, a.calibration_case,
+                                        getattr(a, "formal_v2_record", None))
         if "calibration" in frozen:
             require(str(self.stage / "grant_event.json") == frozen["grant_capture"]["grant_event_file"],
                     "Calibration stage does not match its frozen grant event path")
+        if "formal_v2" in frozen:
+            from formal_baseline_contract import verify_formal_v2_runtime_paths
+            verify_formal_v2_runtime_paths(self.stage, a.workspace, a.service_env, a.config)
+            require(str(self.stage / "grant_event.json") == frozen["grant_capture"]["grant_event_file"],
+                    "Formal v2 stage does not match its frozen grant event path")
         inputs = prepared_inputs(a)
+        if "formal_v2" in frozen:
+            require(inputs["config"]["sha256"] == frozen["grant_capture"]["before_config"]["sha256"],
+                    "Formal v2 disabled config differs from the original freeze")
         state = run(["sudo", "-n", "systemctl", "show", a.unit, "-p", "LoadState", "--value"]).stdout.decode().strip()
         require(state == "not-found", "Refuse to reuse baseline unit: " + state)
         for tool, chain in (("iptables", a.chain4), ("ip6tables", a.chain6)):
@@ -334,6 +348,7 @@ class PrepareController:
                   "source_manifest_sha256": manifest["manifest_sha256"], "freeze_dir": str(pathlib.Path(a.freeze_dir).resolve()),
                   "prepared_inputs": inputs,
                   **({"calibration": frozen["calibration"]} if "calibration" in frozen else {}),
+                  **({"formal_v2": frozen["formal_v2"]} if "formal_v2" in frozen else {}),
                   "boundary": "Rules restrict new IP sockets in this Goose cgroup. Existing local backend/registry processes use their separately verified offline/no-uplink configurations. No public probe was made. Native OSV returns 503; scanner unavailable, not scan-passed."}
         write_json(control / "network-controls-result.json", record)
         return record
@@ -366,9 +381,12 @@ def main(argv=None):
     parser.add_argument("--source-manifest", default=str(HERE / "SHA256SUMS"))
     parser.add_argument("--calibration-suite")
     parser.add_argument("--calibration-case")
+    parser.add_argument("--formal-v2-record")
     args = parser.parse_args(argv)
     if (args.calibration_suite is None) != (args.calibration_case is None):
         parser.error("--calibration-suite and --calibration-case must be supplied together")
+    if args.formal_v2_record is not None and args.calibration_suite is not None:
+        parser.error("--formal-v2-record cannot be combined with calibration parameters")
     os.umask(0o077)
     return PrepareController(args).run()
 

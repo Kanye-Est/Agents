@@ -1,0 +1,19 @@
+{
+  "run": 0,
+  "record": "/home/forks/AResearch/Agent/hello-agents-lab/secskill-lab/utcs/rig/goose_validation/baseline/T-A-v2/record.json",
+  "bytes": 5101,
+  "sha256": "180e51e1d8d5cb17735b6d29f58238bd9c0978f0a0298d4572e0101de03c0158",
+  "original_fields_changed": [
+    "expected",
+    "fixture",
+    "frozen_at_utc",
+    "grant_capture",
+    "prompt"
+  ],
+  "new_fields": [
+    "formal_v2"
+  ],
+  "scoring_unchanged": true,
+  "input_expected_bytes_unchanged": true,
+  "formal_model_request_issued": false
+}

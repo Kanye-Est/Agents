@@ -1,0 +1,22 @@
+{
+  "run": 0,
+  "reviewer": "independent AI agent /root/rig_baseline_review",
+  "mode": "read-only source and local byte review; no execution or human read-through",
+  "no_blocking_findings": true,
+  "reviewed_runner_sha256": "80796d7b8b759b2419d77ba25692643957412b5c1b06b4425d5a8b109c9e991b",
+  "reviewed_runner_selftest_sha256": "1cdc416901ba909f99a44df56ff601e77b0735b40fd7f85983677d430755ea38",
+  "findings": [
+    "C04 prompt is exact 484 B / 310 codepoints; original input, expected bytes and scoring unchanged.",
+    "Fixed paths, exclusive stage and flock prevent duplicate/concurrent invocation.",
+    "Original scorer exit controls formal STOP; calibration observation leniency cannot turn a formal failure into success.",
+    "Formal controller parameters are mutually exclusive with calibration and bind paths; original captures, source and network checks are reused.",
+    "A successful score only awaits bounded review; no automatic rig pass.",
+    "A7.9 candidate prompt JSON and all six artifact hashes match; manifest placeholders must be resolved before append."
+  ],
+  "sources": {
+    "formal_baseline_contract.py": "b273ab5cac1d8b99100454e46a788ae0b69b6436575638da81ef24536a3d7fd3",
+    "prepare_controls.py": "b774cee8c27fec86ca58b70dcb6c5f57f9e2b36ec5383d897f6e71e49b68c7c0",
+    "launch_baseline.py": "189d6f7da21cb3e454eb7215059810b0474a1c910f1d81fbcbb22b3001e76548",
+    "run_formal_ta_v2.py": "80796d7b8b759b2419d77ba25692643957412b5c1b06b4425d5a8b109c9e991b"
+  }
+}

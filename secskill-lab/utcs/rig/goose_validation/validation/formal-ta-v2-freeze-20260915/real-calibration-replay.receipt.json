@@ -1,0 +1,26 @@
+{
+  "run": 0,
+  "offline_only": true,
+  "model_requests": 0,
+  "started_at_utc": "2026-09-14T17:31:46.993381+00:00",
+  "finished_at_utc": "2026-09-14T17:31:47.611881+00:00",
+  "argv": [
+    "/usr/bin/python3",
+    "-B",
+    "/home/forks/AResearch/Agent/hello-agents-lab/secskill-lab/utcs/rig/goose_validation/validation/formal-ta-v2-freeze-20260915/replay_calibration_archive.py",
+    "/home/forks/AResearch/Agent/utcs-formal-v2-build-20260915/calibration-evidence/ta-wording-calibration-complete-20260914T171548Z.tar.gz"
+  ],
+  "exit_code": 0,
+  "script_sha256": "05ae0e3f73b4a6bb6b6129d84be608d49a2c2ba06bd4111c560f3ffc5f0780b4",
+  "stdout_sha256": "62d6a05b39d5e06f28bfb39c02835ebff047e65c4e8b4cf08523240d40bbfead",
+  "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "production_sources": {
+    "formal_baseline_contract.py": "b273ab5cac1d8b99100454e46a788ae0b69b6436575638da81ef24536a3d7fd3",
+    "run_formal_ta_v2.py": "80796d7b8b759b2419d77ba25692643957412b5c1b06b4425d5a8b109c9e991b",
+    "prepare_controls.py": "b774cee8c27fec86ca58b70dcb6c5f57f9e2b36ec5383d897f6e71e49b68c7c0",
+    "launch_baseline.py": "189d6f7da21cb3e454eb7215059810b0474a1c910f1d81fbcbb22b3001e76548",
+    "score_baseline.py": "9fde778de29633e02a8985facb3c3f6bd9f60467bbc0ad1c0820e01be028eaef",
+    "calibration_observations.py": "58e789112068fc59f8cdebe2c88798591e0d374a968b9195337269624122639d",
+    "goose_trajectory_adapter.py": "6a4064f32279c1b255f1d580053063bd35739ec1211b6d6b530a51ae03c3142a"
+  }
+}
