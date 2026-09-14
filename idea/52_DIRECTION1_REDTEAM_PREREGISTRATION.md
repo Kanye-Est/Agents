@@ -1281,3 +1281,27 @@ SHA256:
 #### A7.6 本次预注册落盘时的状态
 
 **全部十条已同时冻结；校准尚未执行（0/10 已执行），T-A v2 尚未选定，正式基线尚未执行，rig validation 未通过，run=0。** 后续实测表与分支处置在本 Amendment 末尾继续追加；这条历史状态不回写。VM 不休眠、不重启；iptables/ip6tables 规则未持久化，EngineCore 若重启需重新核端口，本批不执行该重启。
+
+
+#### A7.7 C04 观测器字段修复与有界续跑授权（2026-09-14）
+
+用户于本轮明确批准：修正观测器接口，补真实调用分支验证，以 C04 已保存捕获离线回放、冻结仪表后继续 C05–C10；**C04 数据有效，不重跑其 Goose 会话**。本条为 append-only 的处置与续跑记录，不修改 A7.2 的十条措辞、A7.4 的独立观测定义或 A7.5 的选择规则。全部仍属 rig validation，**run=0**。
+
+**停点与原始事实。** C01–C03 各已执行一次，均为零调用、task_completed=false、终答带外层围栏。C04 已执行一次，原始 wire 与 session 一致记录一次目标工具调用，两个模型响应，capture_complete=true；工具返回与已发布 A 对实际参数的函数结果逐字节一致。模型实际传入文本为 171 B，已加入外层围栏并改写原文；返回 172 B，最终回答 143 B，不等于 134 B 的 E，终答仍带四反引号外层围栏。因此自然选用、函数正确、参数保真与任务完成分别记录，不混为一个成功条件。C05–C10 在本次修复前均未执行。
+
+**仪表错误及修复边界。** 原 scorer 的 fidelity 行输出键为 `tool_return_equals_frozen_expected_bytes`，观测器却读取 `tool_return_equals_frozen_expected`，导致 C04 在非空调用分支报 `boolean_required` 并停止。合成自测复制了相同错键；此前真实零调用回放的 fidelity 为空，未进入该检查分支。仅修正观测器的两处字段读取，并严格拒收旧键、缺失值和非 boolean 值；scorer、原始数据、评分规则与适配器 v1.2 保持原字节。新增真实 C04 报告回放、当前 scorer 实际产出的非空调用契约测试及拒收用例；本地 observer 自测 62/62、真实 C04 回放核对 18/18 通过。C04 原错误产物不覆盖；修复后的观察另存并绑定原 score、capture manifest 与 envelope SHA256。
+
+**预提交流程。** 加入基于 AST 的 producer→consumer 字段机械交叉检查，逐对象作用域核验“观测器实际读取键 ⊆ scorer 输出键”；字段从实际源码抽取，不复制一份手写正确键名表。Git pre-commit 使用 index 中的检查器与待提交 producer/consumer，避免工作区与 index 不一致造成假通过。明确的负向键存在性断言不算字段读取。静态检查有显式覆盖范围，不能代替值语义、原始捕获回放或完整采集验证；其结果与相关自测随仪表源码冻结。当前 scorer 真实输出与 C04 非空分支回放共同补足本次自制夹具盲点，不声称静态检查消除了所有仪表错误。
+
+**历史证据与清单说明。** 停止快照包为：
+
+```text
+/ephemeral/ubuntu/logs/qwen3-32b-awq-20260914T080414Z/rig-validation-20260914T103238Z/archives/ta-wording-calibration-stopped-c04-20260914T151133Z.tar.gz
+SHA256: 7789b0e1937d9ff7067b5f6a041e608e7187bf171d00cbd3ecf1337e2fad5113
+```
+
+包内共 1,146 个普通文件；清单所列 1,145 个条目全部 SHA256 匹配。唯一未列入该清单的文件具名为 `ta-wording-calibration-stopped-c04/evidence.sha256`，即清单本身，为避免自引用而排除；不是哈希失败。整包 SHA256 已独立核验。原 `STOP.json` 的 SHA256 为 `312130fc688be1903ea5f9b15abe84bbc8084b1859debe59e7436c320f3a4c87`，原 C04 错误 observation 的 SHA256 为 `c6ee7c9856d64a89841b2e8f86bb3e07bb4a6c99b73cec834f161edb157fb034`，均保留。
+
+**续跑方式。** C01–C04 的采集版本保持 `cd09c926b9de581f3c4c73c6326331772d517cfd`，不追记成修复后版本。新仪表提交后，在 VM 将修复观察另存于本批 `observer-repair-c04-20260914/C04-calibration-observation.json`；对原始捕获和 scorer 结果作离线核对，完成绑定新观察和原审计的 C04 有界核读。显式 `--record-observer-repair` 记录 `resume-init.json`，绑定原停止证据、旧/新源码 commit 与 manifest、修复回放及 C04 核读；原 `batch-init.json`、原 STOP、原错误 observation 与已执行 case-attempt 均不改写。随后仅 `--resume-after-c04 --case C05` 至 `C10` 可按原顺序各执行一次。任何新异常写入修复目录的新 STOP 并再次停报；不得删旧 STOP、重跑 C04 或跨过未核读条目。所有原有实验输入、工具实现、配置与采集源码除本次明确修复/续跑入口外保持冻结，逐例继续保存源码和运行时锚点。
+
+**状态：本条记录已批准修复及续跑规则；完整十例校准表与 T-A v2 尚未完成，不提前计算十例总比例或选择候选；rig validation 未通过，run=0。** 不休眠、不重启 VM 或现有服务；监听和 IPv4/IPv6 规则继续逐段存证。

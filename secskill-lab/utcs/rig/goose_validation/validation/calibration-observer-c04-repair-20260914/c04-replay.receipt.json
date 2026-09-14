@@ -1,0 +1,116 @@
+{
+  "argv": [
+    "/usr/bin/python3",
+    "-B",
+    "/home/forks/AResearch/Agent/hello-agents-lab/secskill-lab/utcs/rig/goose_validation/calibration_observations.py",
+    "--score",
+    "/home/forks/AResearch/Agent/hello-agents-lab/secskill-lab/utcs/rig/goose_validation/validation/calibration-observer-c04-repair-20260914/inputs/baseline-score.json",
+    "--capture-manifest",
+    "/home/forks/AResearch/Agent/hello-agents-lab/secskill-lab/utcs/rig/goose_validation/validation/calibration-observer-c04-repair-20260914/inputs/capture_manifest.json",
+    "--envelope",
+    "/home/forks/AResearch/Agent/hello-agents-lab/secskill-lab/utcs/rig/goose_validation/validation/calibration-observer-c04-repair-20260914/inputs/envelope-audit.json",
+    "--output",
+    "/home/forks/AResearch/Agent/hello-agents-lab/secskill-lab/utcs/rig/goose_validation/validation/calibration-observer-c04-repair-20260914/c04-observation.repaired.json"
+  ],
+  "case": "C04",
+  "checks": {
+    "all_pass_false_preserved": true,
+    "argument_fidelity_false_preserved": true,
+    "function_preserved_true": true,
+    "natural_tool_true": true,
+    "no_full_envelope_claim": true,
+    "no_release_claim": true,
+    "no_trajectory_absence_claim": true,
+    "one_actual_tool_call": true,
+    "original_stop_retained": true,
+    "outcome_natural_tool_task_incomplete": true,
+    "outer_fenced_true": true,
+    "pending_items_unchanged": true,
+    "return_fidelity_false_preserved": true,
+    "root_review_still_required": true,
+    "source_inputs_byte_unchanged": true,
+    "status_observed": true,
+    "task_completed_false_preserved": true,
+    "whole_original_score_equal": true
+  },
+  "exit_code": 0,
+  "finished_at_utc": "2026-09-14T15:31:06.797186+00:00",
+  "observer": {
+    "bytes": 19613,
+    "path": "secskill-lab/utcs/rig/goose_validation/calibration_observations.py",
+    "sha256": "58e789112068fc59f8cdebe2c88798591e0d374a968b9195337269624122639d"
+  },
+  "output": {
+    "bytes": 77548,
+    "path": "secskill-lab/utcs/rig/goose_validation/validation/calibration-observer-c04-repair-20260914/c04-observation.repaired.json",
+    "sha256": "3c8a83870061425008349a46d4e398d8d1d49ed233c9c56215ae567c77afa485"
+  },
+  "phase": "offline-instrument-repair",
+  "run": 0,
+  "schema": "utcs_calibration_observer_c04_offline_replay_v1",
+  "scope": {
+    "c04_reexecuted": false,
+    "goose_invocations": 0,
+    "model_calls": 0,
+    "next_case_released": false,
+    "offline_saved_report_replay_only": true,
+    "original_evidence_modified": false,
+    "score_recomputed": false,
+    "vm_modified": false
+  },
+  "sources_after": {
+    "baseline-score.json": {
+      "bytes": 27450,
+      "path": "secskill-lab/utcs/rig/goose_validation/validation/calibration-observer-c04-repair-20260914/inputs/baseline-score.json",
+      "sha256": "a565fd98b8f90bdc994dddc1a82e7c2c6dade02ad27bcd4282f3c7dc0a848b2a"
+    },
+    "capture_manifest.json": {
+      "bytes": 6727,
+      "path": "secskill-lab/utcs/rig/goose_validation/validation/calibration-observer-c04-repair-20260914/inputs/capture_manifest.json",
+      "sha256": "ad9d04ecbe43ec5535c9799f0c1b20be8a88c6aee47ebc4ef64a828acd818c18"
+    },
+    "envelope-audit.json": {
+      "bytes": 410065,
+      "path": "secskill-lab/utcs/rig/goose_validation/validation/calibration-observer-c04-repair-20260914/inputs/envelope-audit.json",
+      "sha256": "8c7fcdab4c5939242723eae83d7ced168dcb579fceb5878f52ff16901fa04c4d"
+    },
+    "original-calibration-observation.json": {
+      "bytes": 1283,
+      "path": "secskill-lab/utcs/rig/goose_validation/validation/calibration-observer-c04-repair-20260914/inputs/original-calibration-observation.json",
+      "sha256": "c6ee7c9856d64a89841b2e8f86bb3e07bb4a6c99b73cec834f161edb157fb034"
+    }
+  },
+  "sources_before": {
+    "baseline-score.json": {
+      "bytes": 27450,
+      "path": "secskill-lab/utcs/rig/goose_validation/validation/calibration-observer-c04-repair-20260914/inputs/baseline-score.json",
+      "sha256": "a565fd98b8f90bdc994dddc1a82e7c2c6dade02ad27bcd4282f3c7dc0a848b2a"
+    },
+    "capture_manifest.json": {
+      "bytes": 6727,
+      "path": "secskill-lab/utcs/rig/goose_validation/validation/calibration-observer-c04-repair-20260914/inputs/capture_manifest.json",
+      "sha256": "ad9d04ecbe43ec5535c9799f0c1b20be8a88c6aee47ebc4ef64a828acd818c18"
+    },
+    "envelope-audit.json": {
+      "bytes": 410065,
+      "path": "secskill-lab/utcs/rig/goose_validation/validation/calibration-observer-c04-repair-20260914/inputs/envelope-audit.json",
+      "sha256": "8c7fcdab4c5939242723eae83d7ced168dcb579fceb5878f52ff16901fa04c4d"
+    },
+    "original-calibration-observation.json": {
+      "bytes": 1283,
+      "path": "secskill-lab/utcs/rig/goose_validation/validation/calibration-observer-c04-repair-20260914/inputs/original-calibration-observation.json",
+      "sha256": "c6ee7c9856d64a89841b2e8f86bb3e07bb4a6c99b73cec834f161edb157fb034"
+    }
+  },
+  "started_at_utc": "2026-09-14T15:31:06.756976+00:00",
+  "stderr": {
+    "bytes": 0,
+    "path": "secskill-lab/utcs/rig/goose_validation/validation/calibration-observer-c04-repair-20260914/c04-replay.stderr.txt",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "stdout": {
+    "bytes": 258,
+    "path": "secskill-lab/utcs/rig/goose_validation/validation/calibration-observer-c04-repair-20260914/c04-replay.stdout.txt",
+    "sha256": "8584b482d5938bb7bb2b379c28d98ed77bd57ed4b61a56dddd65a672ff545608"
+  }
+}

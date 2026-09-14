@@ -1,0 +1,1 @@
+{"schema": "utcs_calibration_observations_v1", "run": 0, "status": "observed", "output": "/home/forks/AResearch/Agent/hello-agents-lab/secskill-lab/utcs/rig/goose_validation/validation/calibration-observer-c04-repair-20260914/c04-observation.repaired.json"}

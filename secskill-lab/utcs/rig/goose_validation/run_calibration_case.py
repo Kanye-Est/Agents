@@ -184,10 +184,14 @@ def request_invariants(stage, prompt):
     return record
 
 
-def execute_case(cid):
-    require(not (BATCH / "STOP.json").exists(), "Batch is stopped; no automatic retry")
-    initialization = json.loads((BATCH / "batch-init.json").read_bytes())
+def execute_case(cid, resume_after_c04=False):
     manifest = source_freeze()
+    if resume_after_c04:
+        from calibration_resume import load_repair
+        initialization = load_repair(BATCH, manifest, HERE, cid)
+    else:
+        require(not (BATCH / "STOP.json").exists(), "Batch is stopped; no automatic retry")
+        initialization = json.loads((BATCH / "batch-init.json").read_bytes())
     require(manifest["git_commit"] == initialization["source_freeze"]["git_commit"], "Source commit changed during calibration")
     require(manifest["manifest_sha256"] == initialization["source_freeze"]["manifest_sha256"], "Source manifest changed during calibration")
     suite = json.loads(SUITE.read_bytes())
@@ -199,7 +203,11 @@ def execute_case(cid):
         review = json.loads((previous_stage / "bounded-review.json").read_bytes())
         require(review.get("case_id") == previous and review.get("allow_next_preregistered_case") is True,
                 "Previous case lacks explicit bounded review")
-        require(review.get("observation_sha256") == sha(previous_stage / "calibration-observation.json"),
+        observation_path = previous_stage / "calibration-observation.json"
+        if resume_after_c04 and previous == "C04":
+            from calibration_resume import corrected_observation
+            observation_path = corrected_observation(BATCH)
+        require(review.get("observation_sha256") == sha(observation_path),
                 "Previous review does not bind to its observation")
         require(review.get("envelope_sha256") == sha(previous_stage / "envelope-audit.json"),
                 "Previous review does not bind to its envelope evidence")
@@ -257,19 +265,39 @@ def main():
     action = parser.add_mutually_exclusive_group(required=True)
     action.add_argument("--initialize", action="store_true")
     action.add_argument("--case", choices=[f"C{i:02d}" for i in range(1, 11)])
+    action.add_argument("--record-observer-repair", action="store_true")
+    parser.add_argument("--resume-after-c04", action="store_true")
     args = parser.parse_args()
+    if args.resume_after_c04 and args.case is None:
+        parser.error("--resume-after-c04 requires --case")
     os.umask(0o077)
     BATCH.mkdir(parents=False, exist_ok=True)
     with (BATCH / ".orchestration.lock").open("a") as lock:
         fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
         try:
-            initialize() if args.initialize else execute_case(args.case)
+            if args.initialize:
+                initialize()
+            elif args.record_observer_repair:
+                from calibration_resume import DIRECTORY, record_repair
+                directory = BATCH / DIRECTORY
+                snapshot(directory, "before-resume-authorization")
+                record = record_repair(BATCH, source_freeze(), HERE, verify_anchors())
+                print(json.dumps({"run": 0, "state": "observer-repair-recorded-no-model-call",
+                                  "source_commit": record["source_freeze"]["git_commit"],
+                                  "remaining_cases": record["authorized_remaining_cases"]}, indent=2), flush=True)
+            else:
+                execute_case(args.case, args.resume_after_c04)
         except BaseException as error:
             failure = {"run": 0, "case_id": args.case, "status": "STOP; no automatic retry",
                        "error": str(error), "traceback": traceback.format_exc(),
                        "recorded_at_utc": datetime.now(timezone.utc).isoformat()}
-            if not (BATCH / "STOP.json").exists():
-                write_json(BATCH / "STOP.json", failure)
+            stop_path = BATCH / "STOP.json"
+            if args.record_observer_repair or args.resume_after_c04:
+                from calibration_resume import DIRECTORY
+                (BATCH / DIRECTORY).mkdir(exist_ok=True)
+                stop_path = BATCH / DIRECTORY / "STOP.json"
+            if not stop_path.exists():
+                write_json(stop_path, failure)
             print(json.dumps(failure, ensure_ascii=False, indent=2), flush=True)
             return 1
     return 0

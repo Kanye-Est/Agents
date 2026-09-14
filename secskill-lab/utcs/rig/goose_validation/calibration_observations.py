@@ -217,10 +217,13 @@ def observe(score, capture_manifest, envelope_report):
     for index, row in enumerate(fidelity):
         row = object_value(row, f"score.argument_and_frozen_return_fidelity[{index}]")
         require(row.get("id") == session_ids[index], "fidelity_id_mismatch", f"score.fidelity[{index}]")
-        for key in ("actual_args_text_equals_fixture_bytes", "tool_return_equals_frozen_expected"):
+        require("tool_return_equals_frozen_expected" not in row,
+                "legacy_fidelity_key", f"score.fidelity[{index}].tool_return_equals_frozen_expected",
+                "Use the scorer's tool_return_equals_frozen_expected_bytes field.")
+        for key in ("actual_args_text_equals_fixture_bytes", "tool_return_equals_frozen_expected_bytes"):
             boolean(row.get(key), f"score.fidelity[{index}].{key}")
     for key, field in (("all_actual_args_text_equal_fixture", "actual_args_text_equals_fixture_bytes"),
-                       ("all_tool_returns_equal_frozen_expected", "tool_return_equals_frozen_expected")):
+                       ("all_tool_returns_equal_frozen_expected", "tool_return_equals_frozen_expected_bytes")):
         require(summary[key] == (bool(fidelity) and all(row[field] for row in fidelity)),
                 "fidelity_summary_mismatch", "score.summary." + key)
     choices = list_value(score.get("wire_tool_choices"), "score.wire_tool_choices")

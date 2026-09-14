@@ -1,0 +1,26 @@
+#!/bin/sh
+# Check the exact index snapshot, including the checker itself. No checkout or
+# stash is needed, and unstaged repairs cannot conceal a broken staged contract.
+set -eu
+exec python3 -I - <<'PY'
+import pathlib
+import subprocess
+import sys
+
+name = "secskill-lab/utcs/rig/goose_validation/check_score_observation_contract.py"
+root = subprocess.run(["git", "rev-parse", "--show-toplevel"],
+                      stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+if root.returncode:
+    sys.stderr.buffer.write(root.stderr)
+    raise SystemExit(2)
+repo = root.stdout.decode().strip()
+source = subprocess.run(["git", "-C", repo, "show", ":" + name],
+                        stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+if source.returncode:
+    sys.stderr.write("pre-commit: staged AST contract checker is missing/unmerged; refusing commit.\n")
+    sys.stderr.buffer.write(source.stderr)
+    raise SystemExit(2)
+__file__ = str(pathlib.Path(repo) / name)
+sys.argv = [__file__, "--staged", "--repo", repo]
+exec(compile(source.stdout, __file__, "exec"), globals(), globals())
+PY

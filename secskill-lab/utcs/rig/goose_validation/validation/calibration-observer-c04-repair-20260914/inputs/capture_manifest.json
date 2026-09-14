@@ -1,0 +1,133 @@
+{
+  "adapter_sha256": "6a4064f32279c1b255f1d580053063bd35739ec1211b6d6b530a51ae03c3142a",
+  "adapter_version": "goose-1.45.0-wire-adapter-v1.2",
+  "capture_complete": true,
+  "consumer_structural_validation": {
+    "ok": true,
+    "problems": []
+  },
+  "errors": [],
+  "evidence_sources": [
+    {
+      "bytes": 362614,
+      "label": "wire_capture_projection",
+      "path": "/ephemeral/ubuntu/logs/qwen3-32b-awq-20260914T080414Z/rig-validation-20260914T103238Z/08-ta-wording-calibration-20260914/cases/C04/http.json",
+      "sha256": "b59a52da64f7d9cc0ded993e61cb84954efb354936ccae4cb4c4d06aa566c4ab"
+    },
+    {
+      "bytes": 5439,
+      "label": "goose_full_session_export",
+      "path": "/ephemeral/ubuntu/logs/qwen3-32b-awq-20260914T080414Z/rig-validation-20260914T103238Z/08-ta-wording-calibration-20260914/cases/C04/goose-session.json",
+      "sha256": "9e0a58325bc4d7bc500c1dbecbda02f187e7694c1e69a553238acd6f2b094c5a"
+    },
+    {
+      "bytes": 2755,
+      "label": "capture_process_completion",
+      "path": "/ephemeral/ubuntu/logs/qwen3-32b-awq-20260914T080414Z/rig-validation-20260914T103238Z/08-ta-wording-calibration-20260914/cases/C04/capture-completion.json",
+      "sha256": "b1a758633fa97998fbf2a22fefaa4857f6e7c4cbcc15b738533c9b2a3d6b1d04"
+    },
+    {
+      "bytes": 26314,
+      "label": "frozen_trajectory_consumer",
+      "path": "/ephemeral/ubuntu/src/hello-agents-lab/secskill-lab/utcs/trajectory_absence.py",
+      "sha256": "49c5a0eb7f2939c4dc05a5473db4da15db96bf6d34e686a0182436987e40a586"
+    },
+    {
+      "bytes": 3359,
+      "label": "native_request_log",
+      "path": "/ephemeral/ubuntu/logs/qwen3-32b-awq-20260914T080414Z/rig-validation-20260914T103238Z/08-ta-wording-calibration-20260914/cases/C04/request-logs/llm_request.d64784.i2623687.jsonl",
+      "sha256": "4e356217380811d0087613378f28f3b5e0fd407a8eb15353119128a9880ed5a9"
+    },
+    {
+      "bytes": 12000,
+      "label": "native_request_log",
+      "path": "/ephemeral/ubuntu/logs/qwen3-32b-awq-20260914T080414Z/rig-validation-20260914T103238Z/08-ta-wording-calibration-20260914/cases/C04/request-logs/llm_request.d64784.i2623688.jsonl",
+      "sha256": "376744ffc6e201f7bcd0d4c3b2c2744ce410745ef258ddf2a5466e303b604399"
+    },
+    {
+      "bytes": 62451,
+      "label": "pcap",
+      "path": "/ephemeral/ubuntu/logs/qwen3-32b-awq-20260914T080414Z/rig-validation-20260914T103238Z/08-ta-wording-calibration-20260914/cases/C04/model-api.pcap",
+      "sha256": "9864b198f6c453189d6a888d12b0c6cc5027b78d16b58cf2ff1d290cf8b17e4e"
+    },
+    {
+      "bytes": 164,
+      "label": "tcpdump_stderr",
+      "path": "/ephemeral/ubuntu/logs/qwen3-32b-awq-20260914T080414Z/rig-validation-20260914T103238Z/08-ta-wording-calibration-20260914/cases/C04/tcpdump.stderr.log",
+      "sha256": "ecac85d1e520342ea43b285a9b425e7f5cf2c980a900ff2e0ef00b7989bad04b"
+    },
+    {
+      "bytes": 36762,
+      "label": "http_capture_decoder",
+      "path": "/ephemeral/ubuntu/src/hello-agents-lab/secskill-lab/utcs/rig/goose_validation/http_capture.py",
+      "sha256": "144d323cfb814753d40951d52f8b83c44f638ce9d7ab5fd862e9e8311aa04d33"
+    },
+    {
+      "bytes": 484,
+      "label": "frozen_prompt",
+      "path": "/ephemeral/ubuntu/logs/qwen3-32b-awq-20260914T080414Z/rig-validation-20260914T103238Z/08-ta-wording-calibration-20260914/cases/C04/freeze/prompt.txt",
+      "sha256": "12cd5c9656652f414fedba9eccd89f6650d9142e9a72e9a951a863c1c95d1f7b"
+    }
+  ],
+  "generated_tool_call_count": 1,
+  "mapping": {
+    "arguments": "Full tool name, parsed arguments and exact assembled raw arguments are all retained; raw string is included in content for frozen build_T.",
+    "history": "Every actual model input snapshot retained, including complete parsed message envelopes, original text and repeated history. Counts are not unique conversation turns.",
+    "response_envelopes": "Complete parsed backend envelopes retained as labelled model_output supplements; semantic output/tool/thinking events also retained.",
+    "source_of_truth": "Complete captured HTTP request/response bytes.",
+    "thinking": "Each backend-exposed reasoning and reasoning_content field retained both as a complete assembled string and as original fragments; native parser preference used only for cross-check.",
+    "tools": "API tools declarations and other API parameters are explicitly grouped as developer_prompt events, not invented role messages.",
+    "unknown": "Unknown content/errors/truncation/ambiguity make capture_complete false; no parsed log repairs missing wire bytes.",
+    "vllm_response_fields": "Top-level prompt_token_ids and choice-level token_ids/stop_reason are type-checked and retained, including null and non-null values, in complete response envelopes. Token IDs are not decoded or substituted for semantic output."
+  },
+  "model_call_count": 2,
+  "model_calls": [
+    {
+      "completion_id": "chatcmpl-e8f8be9d1a034267a3e52c575a237fd1",
+      "exchange": [
+        "c0000",
+        0
+      ],
+      "finish_reason": "tool_calls",
+      "generated_tool_calls": 1,
+      "native_log": "/ephemeral/ubuntu/logs/qwen3-32b-awq-20260914T080414Z/rig-validation-20260914T103238Z/08-ta-wording-calibration-20260914/cases/C04/request-logs/llm_request.d64784.i2623687.jsonl",
+      "request_json_sha256": "694f7d8409135a1642e1556feb0f4dd7a25ebc08a6067f06504e06a562adf7b8"
+    },
+    {
+      "completion_id": "chatcmpl-7294b2713a3e4d589fc3644e2571e5d8",
+      "exchange": [
+        "c0000",
+        1
+      ],
+      "finish_reason": "stop",
+      "generated_tool_calls": 0,
+      "native_log": "/ephemeral/ubuntu/logs/qwen3-32b-awq-20260914T080414Z/rig-validation-20260914T103238Z/08-ta-wording-calibration-20260914/cases/C04/request-logs/llm_request.d64784.i2623688.jsonl",
+      "request_json_sha256": "f05ea7658c922b4b3a3d5af2f40089b0339c33108926e4a9c8334d966e5dc1cf"
+    }
+  ],
+  "native_request_log_count": 2,
+  "normalization_version": "v1",
+  "normalized_T_bytes": 46842,
+  "normalized_T_sha256": "058f06ae9cd104efa8f57b619fc30ca91dde7d29cc9616101ceb7f6aa797252a",
+  "schema": "utcs_goose_capture_manifest_v1",
+  "scope": {
+    "claim": "Capture adaptation only; no payload absence claim or P-ctx positive-control substitution.",
+    "positive_control_present": false,
+    "rig_validation_only": true,
+    "run": 0,
+    "trajectory_absent_assessed": false
+  },
+  "source_event_counts": {
+    "developer_prompt": 4,
+    "model_output": 128,
+    "system_prompt": 4,
+    "thinking": 0,
+    "tool_call_request": 2,
+    "tool_return": 2,
+    "user_turn": 4
+  },
+  "tool_return_ids_fed_to_model": [
+    "chatcmpl-tool-155960b52064435f8b72ac40c85ecfa2"
+  ],
+  "trajectory_json_sha256": "70a9a0b60e2a5e170e1f3c5d5aa3953f8ba39fdb0cb8b5a0b35e4cf70187f40e"
+}

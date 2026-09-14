@@ -1,0 +1,11 @@
+{
+  "run": 0,
+  "file": "idea/52_DIRECTION1_REDTEAM_PREREGISTRATION.md",
+  "append_only": true,
+  "original_bytes": 106876,
+  "original_sha256": "8f72ee49307c96b82e7a67c8c325ae51ecf883423c3fc417720aaa7c955428e9",
+  "appended_bytes": 4710,
+  "appended_sha256": "0f9cbf336528cc92e1635f73f6dd091ba1a31c584d193a5c5f873f40a66773ef",
+  "result_bytes": 111586,
+  "result_sha256": "108eddcc8f87cb2601b100e93a273af89146e0005dbbbe9392337ed86e1f587a"
+}

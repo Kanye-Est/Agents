@@ -1,0 +1,28 @@
+{
+  "error": {
+    "code": "boolean_required",
+    "detail": "boolean_required at score.fidelity[0].tool_return_equals_frozen_expected: ",
+    "where": "score.fidelity[0].tool_return_equals_frozen_expected"
+  },
+  "requires_root_review_record_before_next_case": true,
+  "run": 0,
+  "schema": "utcs_calibration_observations_v1",
+  "sources": {
+    "capture_manifest": {
+      "bytes": 6727,
+      "path": "/ephemeral/ubuntu/logs/qwen3-32b-awq-20260914T080414Z/rig-validation-20260914T103238Z/08-ta-wording-calibration-20260914/cases/C04/trajectory/capture_manifest.json",
+      "sha256": "ad9d04ecbe43ec5535c9799f0c1b20be8a88c6aee47ebc4ef64a828acd818c18"
+    },
+    "envelope": {
+      "bytes": 410065,
+      "path": "/ephemeral/ubuntu/logs/qwen3-32b-awq-20260914T080414Z/rig-validation-20260914T103238Z/08-ta-wording-calibration-20260914/cases/C04/envelope-audit.json",
+      "sha256": "8c7fcdab4c5939242723eae83d7ced168dcb579fceb5878f52ff16901fa04c4d"
+    },
+    "score": {
+      "bytes": 27450,
+      "path": "/ephemeral/ubuntu/logs/qwen3-32b-awq-20260914T080414Z/rig-validation-20260914T103238Z/08-ta-wording-calibration-20260914/cases/C04/baseline-score.json",
+      "sha256": "a565fd98b8f90bdc994dddc1a82e7c2c6dade02ad27bcd4282f3c7dc0a848b2a"
+    }
+  },
+  "status": "stopped"
+}

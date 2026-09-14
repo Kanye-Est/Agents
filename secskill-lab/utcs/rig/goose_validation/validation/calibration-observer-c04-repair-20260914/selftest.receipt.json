@@ -1,0 +1,50 @@
+{
+  "argv": [
+    "/usr/bin/python3",
+    "-B",
+    "/home/forks/AResearch/Agent/hello-agents-lab/secskill-lab/utcs/rig/goose_validation/calibration_observations_selftest.py"
+  ],
+  "exit_code": 0,
+  "finished_at_utc": "2026-09-14T15:30:20.014899+00:00",
+  "python_version": "3.14.7 (main, Aug 10 2026, 07:46:56) [GCC 16.1.1 20260728]",
+  "run": 0,
+  "schema": "utcs_calibration_observer_repair_selftest_v1",
+  "scope": {
+    "c04_reexecuted": false,
+    "goose_invocations": 0,
+    "model_calls": 0,
+    "offline_only": true,
+    "pure_node_oracle_only": true,
+    "vm_modified": false
+  },
+  "sources": {
+    "calibration_observations.py": {
+      "bytes": 19613,
+      "sha256": "58e789112068fc59f8cdebe2c88798591e0d374a968b9195337269624122639d"
+    },
+    "calibration_observations_selftest.py": {
+      "bytes": 29819,
+      "sha256": "318d56d0a540a24e5b08c02eedf4db9370c35db0f8a296267528b5dba0561133"
+    },
+    "score_baseline.py": {
+      "bytes": 33723,
+      "sha256": "9fde778de29633e02a8985facb3c3f6bd9f60467bbc0ad1c0820e01be028eaef"
+    },
+    "score_baseline_selftest.py": {
+      "bytes": 16862,
+      "sha256": "ebdb7b6f016231cbcff581e7470177940bc926edf3ba220a83ad2d01b9db72ff"
+    }
+  },
+  "started_at_utc": "2026-09-14T15:30:19.047475+00:00",
+  "stderr": {
+    "bytes": 7438,
+    "path": "secskill-lab/utcs/rig/goose_validation/validation/calibration-observer-c04-repair-20260914/selftest.stderr.txt",
+    "sha256": "8a400e6144f0693e6154aeadb5bb6f9ecec3f2979de5480330cf1e68c6382da1"
+  },
+  "stdout": {
+    "bytes": 0,
+    "path": "secskill-lab/utcs/rig/goose_validation/validation/calibration-observer-c04-repair-20260914/selftest.stdout.txt",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "tests_run": 62
+}

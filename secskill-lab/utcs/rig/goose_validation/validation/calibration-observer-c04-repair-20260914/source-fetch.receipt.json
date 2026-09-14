@@ -1,0 +1,53 @@
+{
+  "case": "C04",
+  "files": [
+    {
+      "bytes": 27450,
+      "copied_byte_exactly": true,
+      "local_path": "secskill-lab/utcs/rig/goose_validation/validation/calibration-observer-c04-repair-20260914/inputs/baseline-score.json",
+      "name": "baseline-score.json",
+      "sha256": "a565fd98b8f90bdc994dddc1a82e7c2c6dade02ad27bcd4282f3c7dc0a848b2a",
+      "source": "/ephemeral/ubuntu/logs/qwen3-32b-awq-20260914T080414Z/rig-validation-20260914T103238Z/08-ta-wording-calibration-20260914/cases/C04/baseline-score.json"
+    },
+    {
+      "bytes": 6727,
+      "copied_byte_exactly": true,
+      "local_path": "secskill-lab/utcs/rig/goose_validation/validation/calibration-observer-c04-repair-20260914/inputs/capture_manifest.json",
+      "name": "capture_manifest.json",
+      "sha256": "ad9d04ecbe43ec5535c9799f0c1b20be8a88c6aee47ebc4ef64a828acd818c18",
+      "source": "/ephemeral/ubuntu/logs/qwen3-32b-awq-20260914T080414Z/rig-validation-20260914T103238Z/08-ta-wording-calibration-20260914/cases/C04/trajectory/capture_manifest.json"
+    },
+    {
+      "bytes": 410065,
+      "copied_byte_exactly": true,
+      "local_path": "secskill-lab/utcs/rig/goose_validation/validation/calibration-observer-c04-repair-20260914/inputs/envelope-audit.json",
+      "name": "envelope-audit.json",
+      "sha256": "8c7fcdab4c5939242723eae83d7ced168dcb579fceb5878f52ff16901fa04c4d",
+      "source": "/ephemeral/ubuntu/logs/qwen3-32b-awq-20260914T080414Z/rig-validation-20260914T103238Z/08-ta-wording-calibration-20260914/cases/C04/envelope-audit.json"
+    },
+    {
+      "bytes": 1283,
+      "copied_byte_exactly": true,
+      "local_path": "secskill-lab/utcs/rig/goose_validation/validation/calibration-observer-c04-repair-20260914/inputs/original-calibration-observation.json",
+      "name": "original-calibration-observation.json",
+      "sha256": "c6ee7c9856d64a89841b2e8f86bb3e07bb4a6c99b73cec834f161edb157fb034",
+      "source": "/ephemeral/ubuntu/logs/qwen3-32b-awq-20260914T080414Z/rig-validation-20260914T103238Z/08-ta-wording-calibration-20260914/cases/C04/calibration-observation.json"
+    }
+  ],
+  "finished_at_utc": "2026-09-14T15:26:01.418390+00:00",
+  "run": 0,
+  "schema": "utcs_calibration_observer_c04_source_copy_v1",
+  "scope": {
+    "c04_reexecuted": false,
+    "goose_invocations": 0,
+    "model_calls": 0,
+    "original_evidence_modified": false,
+    "vm_modified": false
+  },
+  "source_case": "/ephemeral/ubuntu/logs/qwen3-32b-awq-20260914T080414Z/rig-validation-20260914T103238Z/08-ta-wording-calibration-20260914/cases/C04",
+  "source_host": "ubuntu@62.169.159.229",
+  "ssh_stderr_bytes": 0,
+  "ssh_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "started_at_utc": "2026-09-14T15:25:57.196889+00:00",
+  "transport": "existing SSH BatchMode channel, read-only source reads"
+}
