@@ -69,7 +69,7 @@ node -e '
   const p = process.argv[1], reg = process.argv[2];
   const j = JSON.parse(fs.readFileSync(p, "utf8"));
   delete j.private;
-  j.publishConfig = Object.assign({}, j.publishConfig, { registry: reg }  // unscoped pkg: npm forbids access:"restricted" (EUNSCOPED); registry is loopback-private anyway);
+  j.publishConfig = Object.assign({}, j.publishConfig, { registry: reg });
   fs.writeFileSync(p, JSON.stringify(j, null, 2) + "\n");
 ' "$STAGE/package.json" "$REGISTRY"
 
