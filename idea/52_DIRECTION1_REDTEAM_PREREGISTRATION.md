@@ -1305,3 +1305,17 @@ SHA256: 7789b0e1937d9ff7067b5f6a041e608e7187bf171d00cbd3ecf1337e2fad5113
 **续跑方式。** C01–C04 的采集版本保持 `cd09c926b9de581f3c4c73c6326331772d517cfd`，不追记成修复后版本。新仪表提交后，在 VM 将修复观察另存于本批 `observer-repair-c04-20260914/C04-calibration-observation.json`；对原始捕获和 scorer 结果作离线核对，完成绑定新观察和原审计的 C04 有界核读。显式 `--record-observer-repair` 记录 `resume-init.json`，绑定原停止证据、旧/新源码 commit 与 manifest、修复回放及 C04 核读；原 `batch-init.json`、原 STOP、原错误 observation 与已执行 case-attempt 均不改写。随后仅 `--resume-after-c04 --case C05` 至 `C10` 可按原顺序各执行一次。任何新异常写入修复目录的新 STOP 并再次停报；不得删旧 STOP、重跑 C04 或跨过未核读条目。所有原有实验输入、工具实现、配置与采集源码除本次明确修复/续跑入口外保持冻结，逐例继续保存源码和运行时锚点。
 
 **状态：本条记录已批准修复及续跑规则；完整十例校准表与 T-A v2 尚未完成，不提前计算十例总比例或选择候选；rig validation 未通过，run=0。** 不休眠、不重启 VM 或现有服务；监听和 IPv4/IPv6 规则继续逐段存证。
+
+
+#### A7.8 仪表清单重冻结与清单 STOP 处置（2026-09-15）
+
+用户于本轮明确批准采纳已保存的 142 项候选清单，处置本次源码清单 STOP，并按 A7.7 续跑。原因是 `155e256` 已提交仪表修复，但原 124 项 `SHA256SUMS` 未同步：`calibration_observations.py`、`calibration_observations_selftest.py`、`run_calibration_case.py` 三项哈希需更新；四个新增脚本 `calibration_resume.py`、`calibration_resume_selftest.py`、`check_score_observation_contract.py`、`check_score_observation_contract_selftest.py` 及新增验证材料/收据需入清单。本次仅采纳原候选字节，不再改动仪表代码或实验设计。
+
+- 原清单：124 项，SHA256 = `0b426ef1111e23c0f40326dd00afc8054572687dfa1c47a9d3c30c5a6271caa9`；原批次 `instruments/SHA256SUMS`、本次停止时源码快照及旧证据包均保留，不回写历史采集版本。
+- 新清单：142 项，SHA256 = `50465ef0851df670068d48ef09dfbc9343462211def093795e9cfbf20c04e47c`；与保存的 `observer-repair-c04-20260914/SHA256SUMS.candidate-not-adopted` 逐字节一致，候选文件及其原“未采纳”历史收据原样保留。本机已逐项核对 142 项哈希，并核对它覆盖仪表目录全部受 Git 跟踪文件（清单自身除外）。
+
+本次清单 STOP 的 SHA256 为 `e59c1c00ceebf3f8c58ca53535fa21856210aa5f4e29cb69b7fe397a0f4228c9`，发生于 C04 离线回放及 C05 执行之前。证据包为 `/ephemeral/ubuntu/logs/qwen3-32b-awq-20260914T080414Z/rig-validation-20260914T103238Z/archives/calibration-manifest-stop-20260914T162418Z.tar.gz`，SHA256 = `aa7ff4befcb5e29097a5723714495f66679b8e41a6fce1c6d4bf9021489a6203`；原包不改动。同步并核验新冻结后，将修复目录的本次 `STOP.json` 原字节归档为 `STOP.source-manifest-resolved-a78.json`，另写处置收据绑定旧/新路径、STOP 哈希、新清单哈希及实际新 HEAD；`source-manifest-stop.json` 仍原样保留。**原 C04 批次根目录 STOP、旧观察和所有已执行记录不移动、不改写。** 新异常仍由原续跑入口写新 STOP 并停报。
+
+本机以 `4876b02` 为父版本提交本条及新清单；保留 `4b466ba` 的钩子执行位修复，由实际提交触发 staged AST 契约检查。VM 快进到同一个实际新 HEAD；提交后运行收据记录该 HEAD，后续 `--record-observer-repair` 和 C05–C10 均绑定该 HEAD 与新清单，不再混用 `155e256`。先完成 C04 原始捕获/报告离线核对与绑定修复观察的有界核读，再按 A7.7 记录续跑，C05–C10 依序各一次。A7.2/A7.4/A7.5、提示词、配置、工具描述、后端及判分规则全部保持。
+
+**状态：本次仅批准清单重冻结及所记录 STOP 的处置；C01–C04 不重跑，完整校准表和 T-A v2 尚未完成，rig validation 未通过，run=0。** VM 及现有服务不休眠、不重启；监听和 IPv4/IPv6 规则继续逐段存证。
